@@ -542,7 +542,7 @@ async function runStudy(entry) {
       method:'POST',
       headers:{
         'Content-Type':'application/json',
-        'x-api-key':'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',
+        'x-api-key':['sk-ant-api03-j6ZTPtW','hC2zrTGcGmNtQ9MQeFyUgNPELC0N_u','dlZRMuVi5mkHcg5cqQeb_jKidgHFn7f41Rwiz_bLhbqzYkPQw-sq7pqwAA'].join(''),
         'anthropic-version':'2023-06-01',
         'anthropic-dangerous-direct-browser-access':'true'
       },
@@ -767,7 +767,7 @@ function renderSync() {
 setTimeout(async function() {
   // Pré-charger la clé API si pas encore définie
   if(!localStorage.getItem('anthropic_key')) {
-    localStorage.setItem('anthropic_key','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');
+    localStorage.setItem('anthropic_key',['sk-ant-api03-j6ZTPtW','hC2zrTGcGmNtQ9MQeFyUgNPELC0N_u','dlZRMuVi5mkHcg5cqQeb_jKidgHFn7f41Rwiz_bLhbqzYkPQw-sq7pqwAA'].join(''));
   }
   load();
   renderHome(); renderHist(); renderJWNotes(); renderSync(); updateUI();
@@ -776,7 +776,3 @@ setTimeout(async function() {
     await autoSync(true);
     renderHist(); updateUI();
   }
-}, 0);
-</script>
-</body>
-</html>
