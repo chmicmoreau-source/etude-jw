@@ -411,7 +411,7 @@ async function exportJWLibrary(){
         noteId++;added++;
       }
       setS('Création du fichier fusionné…');
-      db.run(`UPDATE LastModified SET LastModified='${now}' WHERE LastModifiedId=1`);
+      // LastModified mis à jour automatiquement par SQLite
       const dbBytes=db.export();db.close();
       const dateStr=new Date().toISOString().slice(0,10);
       const fname='SAUVEGARDE_FUSIONNEE_'+dateStr+'.jwlibrary';
@@ -523,4 +523,9 @@ function renderSync(){
 /* ══ INIT ════════════════════════════════════════════════════════════ */
 setTimeout(async function(){
   load();
-  renderHome();renderHist();renderJWNotes()
+  renderHome();renderHist();renderJWNotes();renderSync();updateUI();
+  if(G.dbxToken){await autoSync(true);renderHist();updateUI();}
+},0);
+</script>
+</body>
+</html>
