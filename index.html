@@ -538,24 +538,17 @@ async function runStudy(entry) {
   document.getElementById('det-title').textContent='Étude Biblique';
   renderDet(entry,null); show('s-detail');
   try {
-    const GEMINI_KEY = localStorage.getItem('gemini_key')||'';
-    if(!GEMINI_KEY) throw new Error('Clé Gemini manquante — configurez-la dans Sync');
+    const GROQ_KEY = localStorage.getItem('groq_key')||'';
+    if(!GROQ_KEY) throw new Error('Clé Groq manquante — configurez-la dans Sync');
     const prompt = `Tu es un assistant d'étude biblique basé UNIQUEMENT sur les enseignements des Témoins de Jéhovah et wol.jw.org. TJ: Jéhovah (Ps 83:18), Jésus=Fils non égal à Dieu, morts=inconscients (Eccl 9:5), paradis terrestre, pas Trinité.\nSujet: "${entry.titre}"${entry.verset?`\nVerset: ${entry.verset}`:''}\nRéponds UNIQUEMENT en JSON valide sans markdown: {"resume":"2-3 phrases TJ","points":[{"titre":"","texte":"","reference":""},{"titre":"","texte":"","reference":""},{"titre":"","texte":"","reference":""}],"questions":["",""],"ressource":"titre publication wol.jw.org"}`;
-    // Support both AIza (v1beta key) and AQ. (new format) keys
-    const isNewFormat = GEMINI_KEY.startsWith('AQ.');
-    const geminiUrl = isNewFormat
-      ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`
-      : `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
-    const geminiHeaders = isNewFormat
-      ? {'Content-Type':'application/json','Authorization':`Bearer ${GEMINI_KEY}`}
-      : {'Content-Type':'application/json'};
-    const res=await fetch(geminiUrl,{
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
       method:'POST',
-      headers:geminiHeaders,
-      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.7,maxOutputTokens:1000}})
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:1000,temperature:0.7,
+        messages:[{role:'user',content:prompt}]})
     });
     const data=await res.json();
-    const txt=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    const txt=data.choices?.[0]?.message?.content||'';
     if(!txt) throw new Error('Réponse : '+(data.error?.message||JSON.stringify(data).slice(0,100)));
     const clean=txt.replace(/```json|```/g,'').trim();
     const jsonMatch=clean.match(/\{[\s\S]*\}/);
@@ -689,8 +682,8 @@ function renderSync() {
       <button class="btn" style="background:#1A2B4A" onclick="autoSync(false).then(()=>renderSync())">🔄 Synchroniser maintenant</button>
       <!-- Config clé Gemini -->
       <div class="card" style="background:#F0FFF4;border-color:#1A7A4A;margin-top:4px">
-        <div style="font-weight:700;color:#1A7A4A;font-size:13px;margin-bottom:8px">🤖 Clé API Gemini (Google)</div>
-        <input type="text" id="gemini-key-input" placeholder="AIza..." value="${localStorage.getItem('gemini_key')||''}"
+        <div style="font-weight:700;color:#1A7A4A;font-size:13px;margin-bottom:8px">🤖 Clé API Groq (gratuit)</div>
+        <input type="text" id="groq-key-input" placeholder="gsk_..." value="${localStorage.getItem('groq_key')||''}"
           style="width:100%;border:1.5px solid #DDD8CE;border-radius:8px;padding:8px 10px;font-size:12px;font-family:monospace;outline:none;color:#1A2B4A;background:#fafafa;margin-bottom:8px"/>
         <button class="btn" style="background:#1A7A4A;margin-bottom:0;padding:10px" onclick="saveGeminiKey()">💾 Sauvegarder la clé</button>
       </div>
@@ -777,6 +770,7 @@ function renderSync() {
 
 /* ══ INIT ════════════════════════════════════════════════════════════════ */
 setTimeout(async function() {
+  if(!localStorage.getItem('groq_key'))localStorage.setItem('groq_key','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');
   // Pré-charger la clé API si pas encore définie
   if(!localStorage.getItem('anthropic_key')) {
     localStorage.setItem('anthropic_key',['sk-ant-api03-j6ZTPtW','hC2zrTGcGmNtQ9MQeFyUgNPELC0N_u','dlZRMuVi5mkHcg5cqQeb_jKidgHFn7f41Rwiz_bLhbqzYkPQw-sq7pqwAA'].join(''));
