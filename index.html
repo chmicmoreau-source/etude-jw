@@ -476,6 +476,18 @@ async function connectDropbox(){
     await autoSync(false);renderSync();
   }catch(e){toast('Token invalide.',4000);if(btn){btn.textContent='Connecter Dropbox';btn.disabled=false;}}
 }
+async function renewDropboxToken(){
+  const tok=(document.getElementById('dbx-renew-input')||{}).value?.trim();
+  if(!tok){toast('Collez votre nouveau token Dropbox');return;}
+  try{
+    const user=await dbxWho(tok);
+    G.dbxToken=tok;G.dbxUser=user;
+    localStorage.setItem(SK+'t',tok);localStorage.setItem(SK+'u',JSON.stringify(user));
+    document.getElementById('dbx-renew-input').value='';
+    toast('✓ Token renouvelé ! Synchronisation…');
+    updateUI();await autoSync(false);renderSync();
+  }catch(e){toast('Token invalide : '+e.message,4000);}
+}
 function disconnectDropbox(){
   G.dbxToken='';G.dbxUser=null;G.lastSync='';
   ['t','u','s'].forEach(k=>localStorage.removeItem(SK+k));
@@ -500,6 +512,12 @@ function renderSync(){
       <button class="btn" style="background:#1A2B4A" onclick="autoSync(false).then(()=>renderSync())">🔄 Synchroniser maintenant</button>
       <button class="btn" style="background:#8E44AD" onclick="exportJWLibrary()">📖 Exporter vers JW Library</button>
       <div id="export-status" style="font-size:11px;text-align:center;color:#7A8396;margin-top:-4px;margin-bottom:8px"></div>
+      <!-- Renouvellement token Dropbox -->
+      <div class="card" style="background:#FFFBEB;border-color:#C9A84C;margin-bottom:8px">
+        <div style="font-weight:700;color:#92400E;font-size:12px;margin-bottom:8px">🔑 Token expiré ? Renouvelez sans vous déconnecter</div>
+        <textarea id="dbx-renew-input" rows="2" placeholder="Nouveau token sl.u.ABCDE..." style="width:100%;border:1.5px solid #DDD8CE;border-radius:8px;padding:8px 10px;font-size:11px;font-family:monospace;resize:none;outline:none;color:#1A2B4A;background:#fafafa;margin-bottom:8px"></textarea>
+        <button class="btn" style="background:#C9A84C;margin-bottom:0;padding:10px;color:#1A2B4A" onclick="renewDropboxToken()">🔑 Mettre à jour le token</button>
+      </div>
       <button class="btn" style="background:#fff;color:#C0392B;border:1.5px solid #C0392B" onclick="disconnectDropbox()">Se déconnecter</button>
       <div style="font-weight:700;color:#1A2B4A;font-size:14px;margin:16px 0 10px">📋 Notes JW Library (${G.jwNotes.length})</div>
       <div class="card">
@@ -515,11 +533,4 @@ function renderSync(){
       <div style="text-align:center;padding:20px 0 16px"><div style="font-size:48px;margin-bottom:10px">📦</div><div style="font-weight:800;color:#1A2B4A;font-size:18px;margin-bottom:6px">Connecter Dropbox</div><div style="font-size:13px;color:#7A8396;line-height:1.5">Sync automatique entre tous vos appareils</div></div>
       <div class="card" style="background:#FFF8F0;border-color:#C9A84C;margin-bottom:14px">
         <div style="font-weight:700;color:#92400E;font-size:13px;margin-bottom:10px">Comment obtenir votre token Dropbox</div>
-        <div style="font-size:12px;color:#444;line-height:2"><strong>1.</strong> Allez sur <a href="https://dropbox.com/developers/apps" target="_blank" style="color:#0061FF;font-weight:700">dropbox.com/developers/apps</a><br><strong>2.</strong> Cliquez <strong>"Create app"</strong> → Scoped → Full Dropbox<br><strong>3.</strong> Onglet <strong>"Permissions"</strong> → cochez files.content.read + write → Submit<br><strong>4.</strong> Onglet <strong>"Settings"</strong> → <strong>"Generated access token"</strong> → Generate<br><strong>5.</strong> Copiez le token</div>
-      </div>
-      <div style="font-size:13px;font-weight:700;color:#1A2B4A;margin-bottom:8px">Votre token Dropbox :</div>
-      <textarea id="dbx-token-input" rows="3" placeholder="sl.u.ABCDE..." style="width:100%;border:1.5px solid #DDD8CE;border-radius:10px;padding:10px 12px;font-size:12px;resize:none;outline:none;color:#1A2B4A;background:#fafafa;margin-bottom:10px"></textarea>
-      <button id="dbx-connect-btn" class="btn" style="background:#0061FF" onclick="connectDropbox()">📦 Connecter Dropbox</button>
-      <div class="card" style="background:#EFF6FF;border-color:#2B5EA7;margin-bottom:14px">
-        <div style="font-weight:700;color:#2B5EA7;font-size:13px;margin-bottom:8px">🤖 Clé API Groq (génération IA gratuite)</div>
-        <input type="text" id="groq-key-input" placeholder="gsk_..." value="${localStorage.getItem('groq_key')||''}" style="width:100%;border:
+        <div style="font-size:12px;color:#444;line-height:2"><strong>1.</strong> Allez sur <a href="https://dropbox.com/developers/apps" target="_b
