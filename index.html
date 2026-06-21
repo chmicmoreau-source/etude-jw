@@ -390,6 +390,11 @@ async function exportJWLibrary(){
       // Titres existants pour éviter doublons
       const existRes=db.exec('SELECT Title FROM Note WHERE Title IS NOT NULL');
       const existTitles=new Set((existRes[0]?.values||[]).map(r=>r[0]));
+      // UserMark max pour les couleurs
+      const maxUMRes=db.exec('SELECT MAX(UserMarkId) FROM UserMark');
+      let userMarkId=(maxUMRes[0]?.values[0][0]||0)+1;
+      // Couleurs par catégorie (ColorIndex JW Library: 1=Jaune 2=Vert 3=Bleu 4=Rose 5=Orange 6=Violet 7=Rouge)
+      const CAT_COLOR={foi:1,famille:4,royaume:3,moral:5,etude:2,histoire:6,espoir:7};
       const etudes=G.history.filter(h=>h.resume);
       const now=new Date().toISOString().replace('Z','+00:00');
       let noteId=maxNote+1,tagMapId=maxTagMap+1,added=0;
@@ -402,9 +407,13 @@ async function exportJWLibrary(){
           e.questions?'\nQuestions :\n'+e.questions.map((q,i)=>'Q'+(i+1)+'. '+q).join('\n'):'',
           e.ressource?'\nPublication : '+e.ressource:'',
         ].filter(Boolean).join('\n').trim();
-        db.run('INSERT INTO Note (NoteId,Guid,UserMarkId,LocationId,Title,Content,LastModified,Created,BlockType,BlockIdentifier) VALUES (?,?,NULL,919,?,?,?,?,0,NULL)',[noteId,uuid(),e.titre,content,now,now]);
+        // Créer UserMark (couleur) selon la catégorie
+        const colorIdx=CAT_COLOR[e.categorie]||1;
+        db.run('INSERT OR IGNORE INTO UserMark (UserMarkId,ColorIndex,LocationId,StyleIndex,UserMarkGuid,Version) VALUES (?,?,919,0,?,1)',[userMarkId,colorIdx,uuid()]);
+        // Note liée au UserMark pour la couleur
+        db.run('INSERT INTO Note (NoteId,Guid,UserMarkId,LocationId,Title,Content,LastModified,Created,BlockType,BlockIdentifier) VALUES (?,?,?,919,?,?,?,?,0,NULL)',[noteId,uuid(),userMarkId,e.titre,content,now,now]);
+        userMarkId++;
         const tagId=CAT_TAG[e.categorie]||23;
-        // Récupérer la position max existante pour cette note (évite UNIQUE constraint)
         let pos=0;
         db.run('INSERT OR IGNORE INTO TagMap (TagMapId,PlaylistItemId,LocationId,NoteId,TagId,Position) VALUES (?,NULL,NULL,?,?,?)',[tagMapId,noteId,tagId,pos]);tagMapId++;pos++;
         if(tagId!==23){db.run('INSERT OR IGNORE INTO TagMap (TagMapId,PlaylistItemId,LocationId,NoteId,TagId,Position) VALUES (?,NULL,NULL,?,23,?)',[tagMapId,noteId,pos]);tagMapId++;}
@@ -513,17 +522,4 @@ function renderSync(){
       <button id="dbx-connect-btn" class="btn" style="background:#0061FF" onclick="connectDropbox()">📦 Connecter Dropbox</button>
       <div class="card" style="background:#EFF6FF;border-color:#2B5EA7;margin-bottom:14px">
         <div style="font-weight:700;color:#2B5EA7;font-size:13px;margin-bottom:8px">🤖 Clé API Groq (génération IA gratuite)</div>
-        <input type="text" id="groq-key-input" placeholder="gsk_..." value="${localStorage.getItem('groq_key')||''}" style="width:100%;border:1.5px solid #DDD8CE;border-radius:8px;padding:8px 10px;font-size:12px;font-family:monospace;outline:none;color:#1A2B4A;background:#fafafa;margin-bottom:8px"/>
-        <button class="btn" style="background:#2B5EA7;margin-bottom:0;padding:10px" onclick="saveGroqKey()">💾 Sauvegarder la clé Groq</button>
-      </div>
-      <div style="height:30px"></div></div>`;
-  }
-}
-
-/* ══ INIT ════════════════════════════════════════════════════════════ */
-setTimeout(async function(){
-  load();
-  renderHome();renderHist();renderJWNotes();renderSync();updateUI();
-  if(G.dbxToken){await autoSync(true);renderHist();updateUI();}
-},0);
-</scri
+        <input type="text" id="groq-key-input" placeholder="gsk_..." value="${localStorage.getItem('groq_key')||''}" style="width:100%;border:
