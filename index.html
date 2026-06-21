@@ -6,7 +6,6 @@
 <meta name="theme-color" content="#1A2B4A"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-title" content="Étude JW"/>
 <title>Étude Biblique JW</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -49,41 +48,27 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:#1A
 .jw-note-tag{font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:#E8F0FB;color:#2B5EA7;display:inline-block;margin-right:4px;margin-bottom:3px}
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1A2B4A;color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,0.3);white-space:nowrap;opacity:0;transition:opacity 0.3s;max-width:90%}
 .toast.show{opacity:1}
-.sync-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:8px 0;border-bottom:1px solid #f0f0f0}
-.sync-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-input[type=text],textarea{border:none;outline:none;font-family:inherit}
+input[type=text],textarea{font-family:inherit}
 </style>
 </head>
 <body>
 <div id="app">
-  <!-- ACCUEIL -->
   <div id="s-home" class="screen active">
     <div class="hdr" style="flex-direction:column;gap:0;padding:12px 14px 14px">
       <div style="display:flex;align-items:center;gap:10px;width:100%;margin-bottom:12px">
         <div style="background:#C9A84C;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">📖</div>
-        <div style="flex:1">
-          <div style="color:#fff;font-weight:800;font-size:16px;line-height:1">Étude Biblique</div>
-          <div style="color:#C9A84C;font-size:9px;letter-spacing:1.5px;font-weight:600;margin-top:2px">WOL · JW.ORG · JW LIBRARY</div>
-        </div>
-        <button onclick="show('s-sync')" style="background:none;border:none;cursor:pointer;text-align:center;padding:4px">
-          <div id="sync-icon" style="font-size:18px">⬜</div>
-          <div id="sync-lbl" style="font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;line-height:1.2">sync</div>
-        </button>
+        <div style="flex:1"><div style="color:#fff;font-weight:800;font-size:16px;line-height:1">Étude Biblique</div><div style="color:#C9A84C;font-size:9px;letter-spacing:1.5px;font-weight:600;margin-top:2px">WOL · JW.ORG · JW LIBRARY</div></div>
+        <button onclick="show('s-sync')" style="background:none;border:none;cursor:pointer;text-align:center;padding:4px"><div id="sync-icon" style="font-size:18px">⬜</div><div id="sync-lbl" style="font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;line-height:1.2">sync</div></button>
       </div>
       <div style="background:#fff;border-radius:12px;display:flex;align-items:center;gap:8px;padding:10px 12px;width:100%">
         <span style="color:#7A8396;font-size:15px">◎</span>
-        <input type="text" id="search-q" placeholder="Rechercher dans WOL, JW.ORG, JW Library…"
-          onkeydown="if(event.key==='Enter')doSearch()"
-          style="flex:1;font-size:13px;color:#1A2B4A;background:transparent"/>
+        <input type="text" id="search-q" placeholder="Rechercher dans WOL, JW.ORG, JW Library…" onkeydown="if(event.key==='Enter')doSearch()" style="flex:1;font-size:13px;color:#1A2B4A;background:transparent;border:none;outline:none"/>
         <button id="search-btn" onclick="doSearch()" style="display:none;background:#00827F;color:#fff;border:none;border-radius:8px;padding:5px 11px;cursor:pointer;font-weight:700;font-size:15px">→</button>
       </div>
     </div>
     <div class="scroll">
       <div style="padding:12px 14px 4px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-weight:700;color:#1A2B4A;font-size:13px">Bibliothèque Watchtower</span>
-          <a href="https://wol.jw.org/fr/wol/h/r30/lp-f" target="_blank" style="font-size:11px;color:#2B5EA7;font-weight:700;text-decoration:none">Ouvrir →</a>
-        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-weight:700;color:#1A2B4A;font-size:13px">Bibliothèque Watchtower</span><a href="https://wol.jw.org/fr/wol/h/r30/lp-f" target="_blank" style="font-size:11px;color:#2B5EA7;font-weight:700;text-decoration:none">Ouvrir →</a></div>
         <div class="wol-grid">
           <a href="https://wol.jw.org/fr/wol/binav/r30/lp-f" target="_blank" class="wol-link"><span style="width:5px;height:5px;border-radius:50%;background:#2B5EA7;flex-shrink:0"></span><span style="font-size:11px;color:#1A2B4A;font-weight:600">Bible TMN</span></a>
           <a href="https://wol.jw.org/fr/wol/library/r30/lp-f/toutes-les-publications/la-tour-de-garde" target="_blank" class="wol-link"><span style="width:5px;height:5px;border-radius:50%;background:#2B5EA7;flex-shrink:0"></span><span style="font-size:11px;color:#1A2B4A;font-weight:600">Tour de Garde</span></a>
@@ -94,10 +79,7 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
         </div>
       </div>
       <div class="chip-row" id="chips-home"></div>
-      <div style="padding:0 14px 10px;display:flex;justify-content:space-between">
-        <span style="font-weight:700;color:#1A2B4A;font-size:13px">Thèmes suggérés</span>
-        <span id="sugg-count" style="font-size:11px;color:#7A8396"></span>
-      </div>
+      <div style="padding:0 14px 10px;display:flex;justify-content:space-between"><span style="font-weight:700;color:#1A2B4A;font-size:13px">Thèmes suggérés</span><span id="sugg-count" style="font-size:11px;color:#7A8396"></span></div>
       <div class="grid2" id="sugg-grid"></div>
       <div style="height:24px"></div>
     </div>
@@ -108,8 +90,6 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
       <button class="ntab" onclick="show('s-sync')"><span class="ntab-icon">☁️</span>Sync</button>
     </nav>
   </div>
-
-  <!-- ÉTUDES -->
   <div id="s-history" class="screen">
     <div class="hdr" style="justify-content:center"><span class="hdr-title" id="hist-title">Mes études</span></div>
     <div class="chip-row" id="chips-hist"></div>
@@ -121,8 +101,6 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
       <button class="ntab" onclick="show('s-sync')"><span class="ntab-icon">☁️</span>Sync</button>
     </nav>
   </div>
-
-  <!-- JW NOTES -->
   <div id="s-jwnotes" class="screen">
     <div class="hdr" style="justify-content:center"><span class="hdr-title" id="jw-title">Notes JW Library</span></div>
     <div class="chip-row" id="chips-jw"></div>
@@ -134,13 +112,8 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
       <button class="ntab" onclick="show('s-sync')"><span class="ntab-icon">☁️</span>Sync</button>
     </nav>
   </div>
-
-  <!-- DÉTAIL -->
   <div id="s-detail" class="screen">
-    <div class="hdr">
-      <button class="back-btn" id="det-back" onclick="show('s-home')">←</button>
-      <span class="hdr-title" style="margin-right:32px" id="det-title">Étude</span>
-    </div>
+    <div class="hdr"><button class="back-btn" id="det-back" onclick="show('s-home')">←</button><span class="hdr-title" style="margin-right:32px" id="det-title">Étude</span></div>
     <div class="scroll" id="det-content"></div>
     <nav class="nav">
       <button class="ntab" onclick="show('s-home')"><span class="ntab-icon">◉</span>Accueil</button>
@@ -149,10 +122,8 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
       <button class="ntab" onclick="show('s-sync')"><span class="ntab-icon">☁️</span>Sync</button>
     </nav>
   </div>
-
-  <!-- SYNC / DROPBOX -->
   <div id="s-sync" class="screen">
-    <div class="hdr" style="justify-content:center"><span class="hdr-title">Synchronisation Dropbox</span></div>
+    <div class="hdr" style="justify-content:center"><span class="hdr-title">Synchronisation</span></div>
     <div class="scroll" id="sync-content"></div>
     <nav class="nav">
       <button class="ntab" onclick="show('s-home')"><span class="ntab-icon">◉</span>Accueil</button>
@@ -162,73 +133,19 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
     </nav>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 <input type="file" id="file-jwlib" accept=".jwlibrary" style="display:none" onchange="importJWL(event)"/>
-
 <script>
-/* ══ CONFIG ══════════════════════════════════════════════════════════════ */
-const SK = 'jw_dbx_v1';
-const DBX_PATH_ETUDES = '/etude-biblique-jw/etudes.json';
-
-/* ══ DROPBOX API ═════════════════════════════════════════════════════════ */
-async function dbxUpload(token, path, content) {
-  const body = typeof content === 'string' ? content : JSON.stringify(content);
-  const r = await fetch('https://content.dropboxapi.com/2/files/upload', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer ' + token,
-      'Dropbox-API-Arg': JSON.stringify({
-        path,
-        mode: {'.tag': 'overwrite'},
-        autorename: false,
-        mute: false,
-        strict_conflict: false
-      }),
-      'Content-Type': 'application/octet-stream',
-    },
-    body,
-  });
-  if (!r.ok) {
-    const txt = await r.text().catch(()=>'');
-    let msg = 'HTTP ' + r.status;
-    try { const e=JSON.parse(txt); msg=e?.error_summary||e?.error?.reason?.['.tag']||msg; } catch(e){}
-    throw new Error(msg);
-  }
-  return r.json();
-}
-
-async function dbxDownload(token, path) {
-  const r = await fetch('https://content.dropboxapi.com/2/files/download', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer ' + token,
-      'Dropbox-API-Arg': JSON.stringify({path}),
-    },
-  });
-  if (r.status === 409) return null; // fichier inexistant
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  return r.json();
-}
-
-async function dbxWho(token) {
-  const r = await fetch('https://api.dropboxapi.com/2/users/get_current_account', {
-    method: 'POST',
-    headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
-    body: 'null',
-  });
-  if (!r.ok) throw new Error('Token invalide');
-  return r.json();
-}
-
-/* ══ DONNÉES ════════════════════════════════════════════════════════════ */
-const CATS = [
+/* ══ CONFIG ══════════════════════════════════════════════════════════ */
+const SK='jw_dbx_v1';
+const DBX_PATH='/etude-biblique-jw/etudes.json';
+const CATS=[
   {id:'all',label:'Tout',icon:'◉'},{id:'foi',label:'Foi & Confiance',icon:'🌿'},
   {id:'famille',label:'Famille',icon:'👪'},{id:'royaume',label:'Royaume de Dieu',icon:'🌍'},
   {id:'moral',label:'Valeurs morales',icon:'⚖️'},{id:'etude',label:'Étude & Sagesse',icon:'📖'},
   {id:'histoire',label:'Histoire sacrée',icon:'📜'},{id:'espoir',label:'Espoir & Avenir',icon:'🌅'},
 ];
-const SUGGS = [
+const SUGGS=[
   {id:1,titre:"Quel est le nom de Dieu et pourquoi est-il important ?",cat:"foi",v:"Psaume 83:18"},
   {id:2,titre:"Qu'est-ce que le Royaume de Dieu va accomplir ?",cat:"royaume",v:"Daniel 2:44"},
   {id:3,titre:"Pourquoi la souffrance humaine existe-t-elle ?",cat:"espoir",v:"Romains 5:12"},
@@ -246,80 +163,34 @@ const SUGGS = [
   {id:15,titre:"Abraham, un exemple de foi et d'obéissance",cat:"histoire",v:"Hébreux 11:8"},
   {id:16,titre:"Comment communiquer avec Dieu ?",cat:"etude",v:"Matthieu 6:9"},
 ];
+const CAT_TAG={foi:4,famille:64,royaume:7,moral:17,etude:23,histoire:49,espoir:6};
 
-/* ══ ÉTAT ════════════════════════════════════════════════════════════════ */
-let G = {
-  history:[], catH:'all', catHist:'all',
-  jwNotes:[], jwTags:[], jwFilter:'all',
-  cur:null,
-  dbxToken:'', dbxUser:null, lastSync:'', lastJWL:'',
-  syncing: false,
-};
+/* ══ ÉTAT ════════════════════════════════════════════════════════════ */
+let G={history:[],catH:'all',catHist:'all',jwNotes:[],jwTags:[],jwFilter:'all',
+  cur:null,dbxToken:'',dbxUser:null,lastSync:'',lastJWL:''};
 
-function load() {
-  try {
-    const h=localStorage.getItem(SK);    if(h) G.history=JSON.parse(h);
-    const n=localStorage.getItem(SK+'n');if(n){G.jwNotes=JSON.parse(n);buildJWTags();}
-    const t=localStorage.getItem(SK+'t');if(t) G.dbxToken=t;
-    const u=localStorage.getItem(SK+'u');if(u) G.dbxUser=JSON.parse(u);
-    const s=localStorage.getItem(SK+'s');if(s) G.lastSync=s;
-    const j=localStorage.getItem(SK+'j');if(j) G.lastJWL=j;
-  } catch(e) {}
+function load(){
+  try{
+    const h=localStorage.getItem(SK); if(h) G.history=JSON.parse(h);
+    const n=localStorage.getItem(SK+'n'); if(n){G.jwNotes=JSON.parse(n);buildJWTags();}
+    const t=localStorage.getItem(SK+'t'); if(t) G.dbxToken=t;
+    const u=localStorage.getItem(SK+'u'); if(u) G.dbxUser=JSON.parse(u);
+    const s=localStorage.getItem(SK+'s'); if(s) G.lastSync=s;
+    const j=localStorage.getItem(SK+'j'); if(j) G.lastJWL=j;
+    if(!localStorage.getItem('groq_key')) localStorage.setItem('groq_key','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');
+  }catch(e){}
 }
 function saveH(){try{localStorage.setItem(SK,JSON.stringify(G.history));}catch(e){}}
 function saveN(){try{localStorage.setItem(SK+'n',JSON.stringify(G.jwNotes));}catch(e){}}
 function buildJWTags(){const s=new Set();G.jwNotes.forEach(n=>(n.tags||[]).forEach(t=>s.add(t)));G.jwTags=[...s].sort();}
 
-/* ══ SYNC AUTOMATIQUE DROPBOX ════════════════════════════════════════════ */
-async function autoSync(silent=true) {
-  if (!G.dbxToken || G.syncing) return;
-  G.syncing = true;
-  try {
-    // 1. Télécharger depuis Dropbox (si fichier existe)
-    let remote = null;
-    try { remote = await dbxDownload(G.dbxToken, DBX_PATH_ETUDES); } catch(e) {}
-    if (remote?.etudes?.length) {
-      const map = new Map();
-      [...G.history, ...remote.etudes].forEach(e => {
-        const ex = map.get(e.id);
-        if (!ex || (e.resume && !ex.resume)) map.set(e.id, e);
-      });
-      G.history = [...map.values()].sort((a,b) => b.id - a.id);
-      saveH();
-    }
-    // 2. Uploader — contenu texte simple
-    const content = JSON.stringify({v:1, ts:new Date().toISOString(), etudes:G.history});
-    const r = await fetch('https://content.dropboxapi.com/2/files/upload', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + G.dbxToken,
-        'Dropbox-API-Arg': JSON.stringify({
-          path: DBX_PATH_ETUDES,
-          mode: 'overwrite',
-          autorename: false,
-          mute: true
-        }),
-        'Content-Type': 'application/octet-stream',
-      },
-      body: content,
-    });
-    if (!r.ok) {
-      const txt = await r.text().catch(()=>'');
-      throw new Error('HTTP ' + r.status + ' — ' + txt.slice(0,120));
-    }
-    const t = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-    G.lastSync = t; localStorage.setItem(SK+'s', t);
-    updateUI();
-    if (!silent) toast('✓ Synchronisé avec Dropbox — ' + t);
-  } catch(e) {
-    if (!silent) toast('Erreur : ' + e.message, 6000);
-    else console.warn('Dropbox sync:', e.message);
-  }
-  G.syncing = false;
-}
+/* ══ UTILS ═══════════════════════════════════════════════════════════ */
+function toast(msg,dur=2500){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),dur);}
+function loadScript(src){return new Promise((res,rej)=>{if(document.querySelector(`script[src="${src}"]`))return res();const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+function uuid(){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16);});}
 
-/* ══ NAV ═════════════════════════════════════════════════════════════════ */
-function show(id) {
+/* ══ NAV ═════════════════════════════════════════════════════════════ */
+function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   if(id==='s-history') renderHist();
@@ -328,70 +199,42 @@ function show(id) {
   if(id==='s-jwnotes') renderJWNotes();
   updateUI();
 }
-
-function updateUI() {
-  const n=G.history.length, m=G.jwNotes.length;
+function updateUI(){
+  const n=G.history.length,m=G.jwNotes.length;
   ['b1','b3','b5'].forEach(id=>{const e=document.getElementById(id);if(e){e.textContent=n>9?'9+':String(n);e.style.display=n>0?'block':'none';}});
   ['b2','b4','b6'].forEach(id=>{const e=document.getElementById(id);if(e){e.textContent=m>9?'9+':String(m);e.style.display=m>0?'block':'none';}});
-  const si=document.getElementById('sync-icon');
-  const sl=document.getElementById('sync-lbl');
-  if(si) si.textContent = G.dbxUser ? '📦' : '⬜';
-  if(sl) {
-    sl.textContent = G.dbxUser ? (G.lastSync||'Dropbox') : 'sync';
-    sl.style.color = G.dbxUser ? '#C9A84C' : 'rgba(255,255,255,0.4)';
-  }
+  const si=document.getElementById('sync-icon'),sl=document.getElementById('sync-lbl');
+  if(si) si.textContent=G.dbxUser?'📦':'⬜';
+  if(sl){sl.textContent=G.dbxUser?(G.lastSync||'Dropbox'):'sync';sl.style.color=G.dbxUser?'#C9A84C':'rgba(255,255,255,0.4)';}
 }
 
-function toast(msg, dur=2500) {
-  const el=document.getElementById('toast');
-  el.textContent=msg; el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'), dur);
-}
-
-/* ══ ACCUEIL ═════════════════════════════════════════════════════════════ */
+/* ══ ACCUEIL ═════════════════════════════════════════════════════════ */
 function setCH(c){G.catH=c;renderHome();}
 function setCHist(c){G.catHist=c;renderHist();}
 function setCJW(t){G.jwFilter=t;renderJWNotes();}
-
-function chips(id, active, fn) {
-  const el=document.getElementById(id); if(!el) return;
-  el.innerHTML=CATS.map(c=>`<button class="chip${active===c.id?' active':''}" onclick="${fn}('${c.id}')">${c.icon} ${c.label}</button>`).join('');
-}
-
-function renderHome() {
-  chips('chips-home', G.catH, 'setCH');
-  const grid=document.getElementById('sugg-grid'), cnt=document.getElementById('sugg-count');
-  if(!grid) return;
+function chips(id,active,fn){const el=document.getElementById(id);if(!el)return;el.innerHTML=CATS.map(c=>`<button class="chip${active===c.id?' active':''}" onclick="${fn}('${c.id}')">${c.icon} ${c.label}</button>`).join('');}
+function renderHome(){
+  chips('chips-home',G.catH,'setCH');
+  const grid=document.getElementById('sugg-grid'),cnt=document.getElementById('sugg-count');if(!grid)return;
   const list=G.catH==='all'?SUGGS:SUGGS.filter(s=>s.cat===G.catH);
   if(cnt) cnt.textContent=list.length+' thèmes';
   grid.innerHTML=list.map(item=>{
     const cat=CATS.find(c=>c.id===item.cat)||CATS[1];
     const done=G.history.some(h=>h.titre===item.titre&&h.resume);
     return `<button class="sugg-card" onclick="study(${item.id})" style="${done?'border-color:#00827F':''}">
-      <div style="display:flex;justify-content:space-between;width:100%;margin-bottom:6px">
-        <span style="font-size:18px">${cat.icon}</span>
-        ${done?'<span style="font-size:10px;color:#1A7A4A;font-weight:700">✓</span>':''}
-      </div>
+      <div style="display:flex;justify-content:space-between;width:100%;margin-bottom:6px"><span style="font-size:18px">${cat.icon}</span>${done?'<span style="font-size:10px;color:#1A7A4A;font-weight:700">✓</span>':''}</div>
       <div style="font-weight:700;color:#1A2B4A;font-size:11px;line-height:1.35;margin-bottom:6px">${item.titre}</div>
-      <span class="vtag">${item.v}</span>
-    </button>`;
+      <span class="vtag">${item.v}</span></button>`;
   }).join('');
 }
+document.getElementById('search-q').addEventListener('input',function(){document.getElementById('search-btn').style.display=this.value.trim()?'flex':'none';});
+function doSearch(){const q=document.getElementById('search-q').value.trim();if(!q)return;studyCustom(q);document.getElementById('search-q').value='';document.getElementById('search-btn').style.display='none';}
 
-document.getElementById('search-q').addEventListener('input', function() {
-  document.getElementById('search-btn').style.display = this.value.trim() ? 'flex' : 'none';
-});
-function doSearch() {
-  const q=document.getElementById('search-q').value.trim(); if(!q) return;
-  studyCustom(q); document.getElementById('search-q').value='';
-  document.getElementById('search-btn').style.display='none';
-}
-
-/* ══ HISTORIQUE ══════════════════════════════════════════════════════════ */
-function renderHist() {
-  const t=document.getElementById('hist-title'); if(t) t.textContent='Mes études ('+G.history.length+')';
-  chips('chips-hist', G.catHist, 'setCHist');
-  const el=document.getElementById('hist-list'); if(!el) return;
+/* ══ HISTORIQUE ══════════════════════════════════════════════════════ */
+function renderHist(){
+  const t=document.getElementById('hist-title');if(t) t.textContent='Mes études ('+G.history.length+')';
+  chips('chips-hist',G.catHist,'setCHist');
+  const el=document.getElementById('hist-list');if(!el)return;
   const f=G.catHist==='all'?G.history:G.history.filter(h=>h.categorie===G.catHist);
   if(!f.length){el.innerHTML='<div class="empty"><div style="font-size:40px">📭</div><div style="margin-top:8px">Aucune étude ici</div></div>';return;}
   el.innerHTML='<div style="padding:8px 14px">'+f.map(h=>{
@@ -399,392 +242,288 @@ function renderHist() {
     return `<button class="hist-card" onclick="openStudy('${h.id}')">
       <div style="display:flex;gap:10px;align-items:flex-start">
         <span style="font-size:20px;margin-top:1px">${cat.icon}</span>
-        <div style="flex:1">
-          <div style="font-weight:700;color:#1A2B4A;font-size:13px;margin-bottom:3px;line-height:1.3">${h.titre}</div>
-          <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">
-            <span class="vtag">${cat.label}</span>
-            ${h.verset?`<span style="color:#7A8396;font-size:11px">${h.verset}</span>`:''}
-            ${h.resume?'<span style="font-size:10px;color:#1A7A4A;font-weight:700">✓</span>':''}
-          </div>
-          <div style="color:#7A8396;font-size:11px;margin-top:3px">${h.date}</div>
-        </div>
-        <span style="color:#00827F;font-size:18px">›</span>
-      </div>
-    </button>`;
+        <div style="flex:1"><div style="font-weight:700;color:#1A2B4A;font-size:13px;margin-bottom:3px;line-height:1.3">${h.titre}</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"><span class="vtag">${cat.label}</span>${h.verset?`<span style="color:#7A8396;font-size:11px">${h.verset}</span>`:''}${h.resume?'<span style="font-size:10px;color:#1A7A4A;font-weight:700">✓</span>':''}</div>
+        <div style="color:#7A8396;font-size:11px;margin-top:3px">${h.date}</div></div>
+        <span style="color:#00827F;font-size:18px">›</span></div></button>`;
   }).join('')+'<div style="height:20px"></div></div>';
 }
-
-function openStudy(id) {
-  const s=G.history.find(h=>String(h.id)===String(id)); if(!s) return;
-  G.cur=s;
-  document.getElementById('det-back').onclick=()=>show('s-history');
+function openStudy(id){
+  const s=G.history.find(h=>String(h.id)===String(id));if(!s)return;
+  G.cur=s;document.getElementById('det-back').onclick=()=>show('s-history');
   document.getElementById('det-title').textContent='Étude Biblique';
-  renderDet(s, s.resume?s:null); show('s-detail');
+  renderDet(s,s.resume?s:null);show('s-detail');
 }
 
-/* ══ JW NOTES ════════════════════════════════════════════════════════════ */
-function renderJWNotes() {
-  const t=document.getElementById('jw-title'); if(t) t.textContent='Notes JW Library ('+G.jwNotes.length+')';
+/* ══ JW NOTES ════════════════════════════════════════════════════════ */
+function renderJWNotes(){
+  const t=document.getElementById('jw-title');if(t) t.textContent='Notes JW Library ('+G.jwNotes.length+')';
   const ce=document.getElementById('chips-jw');
-  if(ce){
-    const tags=[{id:'all',label:'Tout'},...G.jwTags.slice(0,20).map(t=>({id:t,label:t}))];
-    ce.innerHTML=tags.map(t=>`<button class="chip${G.jwFilter===t.id?' active':''}" onclick="setCJW('${t.id.replace(/'/g,"\\'")}')"> ${t.label}</button>`).join('');
-  }
-  const el=document.getElementById('jwnotes-list'); if(!el) return;
-  if(!G.jwNotes.length){
-    el.innerHTML=`<div class="empty"><div style="font-size:40px">📋</div>
-      <div style="margin-top:12px;font-weight:700;color:#1A2B4A">Aucune note JW Library</div>
-      <div style="margin-top:6px;max-width:260px;line-height:1.5">Importez votre fichier .jwlibrary dans l'onglet ☁️ Sync</div>
-      <button onclick="show('s-sync')" style="margin-top:16px;background:#1A2B4A;color:#fff;border:none;border-radius:10px;padding:10px 20px;cursor:pointer;font-weight:700;font-family:inherit;font-size:13px">Aller à Sync →</button>
-    </div>`;return;
-  }
+  if(ce){const tags=[{id:'all',label:'Tout'},...G.jwTags.slice(0,20).map(t=>({id:t,label:t}))];ce.innerHTML=tags.map(t=>`<button class="chip${G.jwFilter===t.id?' active':''}" onclick="setCJW('${t.id.replace(/'/g,"\\'")}')"> ${t.label}</button>`).join('');}
+  const el=document.getElementById('jwnotes-list');if(!el)return;
+  if(!G.jwNotes.length){el.innerHTML=`<div class="empty"><div style="font-size:40px">📋</div><div style="margin-top:12px;font-weight:700;color:#1A2B4A">Aucune note JW Library</div><div style="margin-top:6px;max-width:260px;line-height:1.5">Importez votre fichier .jwlibrary dans l'onglet ☁️ Sync</div><button onclick="show('s-sync')" style="margin-top:16px;background:#1A2B4A;color:#fff;border:none;border-radius:10px;padding:10px 20px;cursor:pointer;font-weight:700;font-family:inherit;font-size:13px">Aller à Sync →</button></div>`;return;}
   const f=G.jwFilter==='all'?G.jwNotes:G.jwNotes.filter(n=>(n.tags||[]).includes(G.jwFilter));
   let html='<div style="padding:8px 14px">';
-  if(G.lastJWL) html+=`<div style="font-size:11px;color:#1A7A4A;margin-bottom:10px;text-align:center">✓ Notes JW Library importées : ${G.lastJWL}</div>`;
-  html+=(!f.length
-    ?'<div class="empty" style="padding:30px 0"><div>📭</div><div style="margin-top:6px">Aucune note avec ce tag</div></div>'
-    :f.map(n=>`<div class="jw-note" onclick="openJWNote('${n.id}')">
-        <div style="font-weight:600;color:#1A2B4A;font-size:13px;margin-bottom:5px;line-height:1.35">${n.titre}</div>
-        ${n.content?`<div style="color:#555;font-size:11px;margin-bottom:6px;line-height:1.4">${n.content.slice(0,80)}${n.content.length>80?'…':''}</div>`:''}
-        <div style="display:flex;flex-wrap:wrap;gap:3px;align-items:center">
-          ${(n.tags||[]).slice(0,4).map(t=>`<span class="jw-note-tag">${t}</span>`).join('')}
-          <span style="color:#7A8396;font-size:10px;margin-left:auto">${n.date||''}</span>
-        </div></div>`).join(''));
+  if(G.lastJWL) html+=`<div style="font-size:11px;color:#1A7A4A;margin-bottom:10px;text-align:center">✓ Notes JW Library : ${G.lastJWL}</div>`;
+  html+=(!f.length?'<div class="empty" style="padding:30px 0"><div>📭</div><div>Aucune note avec ce tag</div></div>':f.map(n=>`<div class="jw-note" onclick="openJWNote('${n.id}')"><div style="font-weight:600;color:#1A2B4A;font-size:13px;margin-bottom:5px;line-height:1.35">${n.titre}</div>${n.content?`<div style="color:#555;font-size:11px;margin-bottom:6px;line-height:1.4">${n.content.slice(0,80)}${n.content.length>80?'…':''}</div>`:''}<div style="display:flex;flex-wrap:wrap;gap:3px;align-items:center">${(n.tags||[]).slice(0,4).map(t=>`<span class="jw-note-tag">${t}</span>`).join('')}<span style="color:#7A8396;font-size:10px;margin-left:auto">${n.date||''}</span></div></div>`).join(''));
   html+='<div style="height:20px"></div></div>';
   el.innerHTML=html;
 }
-
-function openJWNote(id) {
-  const note=G.jwNotes.find(n=>String(n.id)===String(id)); if(!note) return;
+function openJWNote(id){
+  const note=G.jwNotes.find(n=>String(n.id)===String(id));if(!note)return;
   document.getElementById('det-back').onclick=()=>show('s-jwnotes');
   document.getElementById('det-title').textContent='Note JW Library';
   document.getElementById('det-content').innerHTML=`
-    <div style="background:#1A2B4A;padding:16px 14px 20px">
-      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
-        ${(note.tags||[]).map(t=>`<span style="background:#E8F0FB;color:#2B5EA7;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px">${t}</span>`).join('')}
-      </div>
-      <h2 style="color:#fff;font-size:15px;margin:0 0 4px;line-height:1.4">${note.titre}</h2>
-      <div style="color:rgba(255,255,255,0.5);font-size:11px">${note.date||''}</div>
-    </div>
-    <div style="padding:14px">
-      ${note.content?`<div class="card" style="white-space:pre-wrap;font-size:13px;color:#333;line-height:1.65">${note.content}</div>`:'<div style="color:#7A8396;font-size:13px;text-align:center;padding:20px 0">Note sans contenu textuel</div>'}
-      <a href="https://wol.jw.org/fr/wol/s/r30/lp-f?q=${encodeURIComponent(note.titre)}&p=par" target="_blank" class="src-link"><div style="width:8px;height:8px;border-radius:50%;background:#2B5EA7"></div><span style="flex:1;font-size:13px;font-weight:600;color:#1A2B4A">Bibliothèque Watchtower</span><span style="color:#2B5EA7;font-size:12px">→</span></a>
-      <a href="https://www.jw.org/fr/rechercher/?q=${encodeURIComponent(note.titre)}" target="_blank" class="src-link"><div style="width:8px;height:8px;border-radius:50%;background:#00827F"></div><span style="flex:1;font-size:13px;font-weight:600;color:#1A2B4A">JW.ORG</span><span style="color:#00827F;font-size:12px">→</span></a>
-      <button onclick="studyCustom('${note.titre.replace(/'/g,"\\'")}');show('s-detail')" style="width:100%;padding:12px;border-radius:12px;border:none;background:#1A2B4A;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;margin-top:8px">📖 Générer un plan d'étude</button>
-      <div style="height:20px"></div>
-    </div>`;
+    <div style="background:#1A2B4A;padding:16px 14px 20px"><div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${(note.tags||[]).map(t=>`<span style="background:#E8F0FB;color:#2B5EA7;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px">${t}</span>`).join('')}</div><h2 style="color:#fff;font-size:15px;margin:0 0 4px;line-height:1.4">${note.titre}</h2><div style="color:rgba(255,255,255,0.5);font-size:11px">${note.date||''}</div></div>
+    <div style="padding:14px">${note.content?`<div class="card" style="white-space:pre-wrap;font-size:13px;color:#333;line-height:1.65">${note.content}</div>`:'<div style="color:#7A8396;font-size:13px;text-align:center;padding:20px 0">Note sans contenu textuel</div>'}
+    <a href="https://wol.jw.org/fr/wol/s/r30/lp-f?q=${encodeURIComponent(note.titre)}&p=par" target="_blank" class="src-link"><div style="width:8px;height:8px;border-radius:50%;background:#2B5EA7"></div><span style="flex:1;font-size:13px;font-weight:600;color:#1A2B4A">Bibliothèque Watchtower</span><span style="color:#2B5EA7;font-size:12px">→</span></a>
+    <a href="https://www.jw.org/fr/rechercher/?q=${encodeURIComponent(note.titre)}" target="_blank" class="src-link"><div style="width:8px;height:8px;border-radius:50%;background:#00827F"></div><span style="flex:1;font-size:13px;font-weight:600;color:#1A2B4A">JW.ORG</span><span style="color:#00827F;font-size:12px">→</span></a>
+    <button onclick="studyCustom('${note.titre.replace(/'/g,"\\'")}');show('s-detail')" style="width:100%;padding:12px;border-radius:12px;border:none;background:#1A2B4A;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;margin-top:8px">📖 Générer un plan d'étude</button>
+    <div style="height:20px"></div></div>`;
   show('s-detail');
 }
 
-/* ══ DÉTAIL ÉTUDE ════════════════════════════════════════════════════════ */
-function renderDet(entry, result) {
+/* ══ DÉTAIL ══════════════════════════════════════════════════════════ */
+function renderDet(entry,result){
   const cat=CATS.find(c=>c.id===entry.categorie)||CATS[1];
-  const srcs=[
-    {label:"Bibliothèque Watchtower",url:`https://wol.jw.org/fr/wol/s/r30/lp-f?q=${encodeURIComponent(entry.titre)}&p=par`,color:"#2B5EA7"},
-    {label:"JW.ORG",url:`https://www.jw.org/fr/rechercher/?q=${encodeURIComponent(entry.titre)}`,color:"#00827F"},
-    {label:"JW Library",url:`jwlibrary:search?q=${encodeURIComponent(entry.titre)}`,color:"#8E44AD"},
-  ];
-  let html=`
-  <div style="background:#1A2B4A;padding:16px 14px 20px">
-    <span style="background:rgba(255,255,255,0.15);color:#fff;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600">${cat.icon} ${cat.label}</span>
-    <h2 style="color:#fff;font-size:16px;margin:8px 0 4px;line-height:1.35">${entry.titre}</h2>
-    ${entry.verset?`<span style="color:#C9A84C;font-size:12px;font-style:italic">${entry.verset}</span>`:''}
-  </div>
-  <div style="padding:12px 14px 0">
-    <div style="font-size:12px;font-weight:700;color:#1A2B4A;margin-bottom:8px">Consulter dans :</div>
-    ${srcs.map(s=>`<a href="${s.url}" target="_blank" class="src-link" style="border-color:${s.color}22">
-      <div style="width:8px;height:8px;border-radius:50%;background:${s.color};flex-shrink:0"></div>
-      <span style="flex:1;font-size:13px;font-weight:600;color:#1A2B4A">${s.label}</span>
-      <span style="color:${s.color};font-size:12px">→</span>
-    </a>`).join('')}
-  </div>
+  const srcs=[{label:"Bibliothèque Watchtower",url:`https://wol.jw.org/fr/wol/s/r30/lp-f?q=${encodeURIComponent(entry.titre)}&p=par`,color:"#2B5EA7"},{label:"JW.ORG",url:`https://www.jw.org/fr/rechercher/?q=${encodeURIComponent(entry.titre)}`,color:"#00827F"},{label:"JW Library",url:`jwlibrary:search?q=${encodeURIComponent(entry.titre)}`,color:"#8E44AD"}];
+  let html=`<div style="background:#1A2B4A;padding:16px 14px 20px"><span style="background:rgba(255,255,255,0.15);color:#fff;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600">${cat.icon} ${cat.label}</span><h2 style="color:#fff;font-size:16px;margin:8px 0 4px;line-height:1.35">${entry.titre}</h2>${entry.verset?`<span style="color:#C9A84C;font-size:12px;font-style:italic">${entry.verset}</span>`:''}</div>
+  <div style="padding:12px 14px 0"><div style="font-size:12px;font-weight:700;color:#1A2B4A;margin-bottom:8px">Consulter dans :</div>${srcs.map(s=>`<a href="${s.url}" target="_blank" class="src-link" style="border-color:${s.color}22"><div style="width:8px;height:8px;border-radius:50%;background:${s.color};flex-shrink:0"></div><span style="flex:1;font-size:13px;font-weight:600;color:#1A2B4A">${s.label}</span><span style="color:${s.color};font-size:12px">→</span></a>`).join('')}</div>
   <div style="padding:12px 14px">`;
-
-  if(!result) html+=`<div class="lbox"><div class="spinner"></div>Préparation du plan d'étude…</div>`;
-  else if(result.error) html+=`<div class="card" style="border-color:#f5c6cb;background:#fff5f5"><p style="margin:0;color:#C0392B;font-size:12px">Impossible de générer. Consultez les sources ci-dessus.</p></div>`;
-  else html+=`
-    <div class="card"><p style="margin:0;color:#1A2B4A;font-size:13px;line-height:1.65">${result.resume}</p></div>
-    <div class="stitle">Plan d'étude</div>
-    ${(result.points||[]).map((pt,i)=>`<div class="point-card">
-      <div class="point-num">${i+1}</div>
-      <div style="flex:1">
-        <div style="font-weight:700;color:#1A2B4A;font-size:13px;margin-bottom:3px">${pt.titre}</div>
-        <div style="color:#444;font-size:12px;line-height:1.5;margin-bottom:5px">${pt.texte}</div>
-        <span class="vtag">${pt.reference}</span>
-      </div>
-    </div>`).join('')}
-    <div class="stitle">Questions de réflexion</div>
-    <div class="card">${(result.questions||[]).map((q,i)=>`<div style="display:flex;gap:8px;${i<result.questions.length-1?'margin-bottom:10px':''}">
-      <span style="color:#C9A84C;font-weight:700;flex-shrink:0;font-size:13px">Q${i+1}.</span>
-      <span style="color:#333;font-size:12px;line-height:1.5">${q}</span>
-    </div>`).join('')}</div>
-    ${result.ressource?`<a href="https://wol.jw.org/fr/wol/s/r30/lp-f?q=${encodeURIComponent(result.ressource)}&p=par" target="_blank" style="display:flex;align-items:center;gap:10px;background:#E8F0FB;border:1px solid #2B5EA7;border-radius:12px;padding:11px 13px;text-decoration:none;margin-bottom:8px">
-      <span>📗</span>
-      <div style="flex:1"><div style="color:#2B5EA7;font-size:12px;font-weight:600">${result.ressource}</div><div style="color:#7A8396;font-size:10px">Bibliothèque Watchtower</div></div>
-      <span style="color:#2B5EA7">→</span>
-    </a>`:''}`;
+  if(!result) html+=`<div class="lbox"><div class="spinner"></div>Génération du plan d'étude…</div>`;
+  else if(result.error) html+=`<div class="card" style="border-color:#f5c6cb;background:#fff5f5"><p style="margin:0;color:#C0392B;font-size:12px">${result.msg||'Impossible de générer. Consultez les sources ci-dessus.'}</p></div>`;
+  else html+=`<div class="card"><p style="margin:0;color:#1A2B4A;font-size:13px;line-height:1.65">${result.resume}</p></div>
+    <div class="stitle">Plan d'étude</div>${(result.points||[]).map((pt,i)=>`<div class="point-card"><div class="point-num">${i+1}</div><div style="flex:1"><div style="font-weight:700;color:#1A2B4A;font-size:13px;margin-bottom:3px">${pt.titre}</div><div style="color:#444;font-size:12px;line-height:1.5;margin-bottom:5px">${pt.texte}</div><span class="vtag">${pt.reference}</span></div></div>`).join('')}
+    <div class="stitle">Questions de réflexion</div><div class="card">${(result.questions||[]).map((q,i)=>`<div style="display:flex;gap:8px;${i<result.questions.length-1?'margin-bottom:10px':''}"><span style="color:#C9A84C;font-weight:700;flex-shrink:0;font-size:13px">Q${i+1}.</span><span style="color:#333;font-size:12px;line-height:1.5">${q}</span></div>`).join('')}</div>
+    ${result.ressource?`<a href="https://wol.jw.org/fr/wol/s/r30/lp-f?q=${encodeURIComponent(result.ressource)}&p=par" target="_blank" style="display:flex;align-items:center;gap:10px;background:#E8F0FB;border:1px solid #2B5EA7;border-radius:12px;padding:11px 13px;text-decoration:none;margin-bottom:8px"><span>📗</span><div style="flex:1"><div style="color:#2B5EA7;font-size:12px;font-weight:600">${result.ressource}</div><div style="color:#7A8396;font-size:10px">Bibliothèque Watchtower</div></div><span style="color:#2B5EA7">→</span></a>`:''}`;
   html+='<div style="height:30px"></div></div>';
   document.getElementById('det-content').innerHTML=html;
 }
 
-/* ══ ÉTUDE IA ════════════════════════════════════════════════════════════ */
+/* ══ ÉTUDE IA (GROQ) ════════════════════════════════════════════════ */
 function study(id){const item=SUGGS.find(s=>s.id===id);if(!item)return;runStudy({id:Date.now(),titre:item.titre,categorie:item.cat,verset:item.v,date:new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}),resume:null,points:null,questions:null,ressource:null});}
 function studyCustom(q){runStudy({id:Date.now(),titre:q,categorie:'foi',verset:'',date:new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}),resume:null,points:null,questions:null,ressource:null});}
-
-async function runStudy(entry) {
+async function runStudy(entry){
   G.history=[entry,...G.history.filter(h=>h.titre!==entry.titre)].slice(0,100);
-  saveH(); G.cur=entry;
+  saveH();G.cur=entry;
   document.getElementById('det-back').onclick=()=>show('s-history');
   document.getElementById('det-title').textContent='Étude Biblique';
-  renderDet(entry,null); show('s-detail');
-  try {
-    const GROQ_KEY = localStorage.getItem('groq_key')||'';
-    if(!GROQ_KEY) throw new Error('Clé Groq manquante — configurez-la dans Sync');
-    const prompt = `Tu es un assistant d'étude biblique basé UNIQUEMENT sur les enseignements des Témoins de Jéhovah et wol.jw.org. TJ: Jéhovah (Ps 83:18), Jésus=Fils non égal à Dieu, morts=inconscients (Eccl 9:5), paradis terrestre, pas Trinité.\nSujet: "${entry.titre}"${entry.verset?`\nVerset: ${entry.verset}`:''}\nRéponds UNIQUEMENT en JSON valide sans markdown: {"resume":"2-3 phrases TJ","points":[{"titre":"","texte":"","reference":""},{"titre":"","texte":"","reference":""},{"titre":"","texte":"","reference":""}],"questions":["",""],"ressource":"titre publication wol.jw.org"}`;
-    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
-      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:1000,temperature:0.7,
-        messages:[{role:'user',content:prompt}]})
-    });
+  renderDet(entry,null);show('s-detail');
+  try{
+    const key=localStorage.getItem('groq_key')||'';
+    if(!key) throw new Error('Clé Groq manquante');
+    const prompt=`Tu es un assistant d'étude biblique basé UNIQUEMENT sur les enseignements des Témoins de Jéhovah et wol.jw.org. TJ: Jéhovah (Ps 83:18), Jésus=Fils non égal à Dieu, morts=inconscients (Eccl 9:5), paradis terrestre, pas Trinité.\nSujet: "${entry.titre}"${entry.verset?`\nVerset: ${entry.verset}`:''}\nRéponds UNIQUEMENT en JSON valide sans markdown: {"resume":"2-3 phrases TJ","points":[{"titre":"","texte":"","reference":""},{"titre":"","texte":"","reference":""},{"titre":"","texte":"","reference":""}],"questions":["",""],"ressource":"titre publication wol.jw.org"}`;
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:1000,temperature:0.7,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();
     const txt=data.choices?.[0]?.message?.content||'';
-    if(!txt) throw new Error('Réponse : '+(data.error?.message||JSON.stringify(data).slice(0,100)));
-    const clean=txt.replace(/```json|```/g,'').trim();
-    const jsonMatch=clean.match(/\{[\s\S]*\}/);
-    if(!jsonMatch) throw new Error('JSON introuvable');
-    const parsed=JSON.parse(jsonMatch[0]);
+    if(!txt) throw new Error(data.error?.message||'Réponse vide');
+    const match=txt.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
+    if(!match) throw new Error('JSON introuvable');
+    const parsed=JSON.parse(match[0]);
     Object.assign(entry,parsed);
     G.history=[entry,...G.history.filter(h=>h.titre!==entry.titre)].slice(0,100);
-    saveH();
-    // Sync automatique après chaque étude
-    autoSync(true);
+    saveH();autoSync();
     if(G.cur&&G.cur.id===entry.id) renderDet(entry,entry);
-  } catch(e) {
-    if(G.cur&&G.cur.id===entry.id) renderDet(entry,{error:true});
+  }catch(e){
+    if(G.cur&&G.cur.id===entry.id) renderDet(entry,{error:true,msg:e.message});
   }
   updateUI();
 }
 
-/* ══ IMPORT .jwlibrary ═══════════════════════════════════════════════════ */
-async function importJWL(e) {
-  const file=e.target.files[0]; if(!file) return;
-  e.target.value='';
-  const statusEl=document.getElementById('jwl-status');
-  const setS=msg=>{if(statusEl)statusEl.textContent=msg;};
+/* ══ IMPORT JW LIBRARY ═══════════════════════════════════════════════ */
+async function importJWL(e){
+  const file=e.target.files[0];if(!file)return;e.target.value='';
+  const setS=msg=>{const el=document.getElementById('jwl-status');if(el)el.textContent=msg;};
   setS('Lecture en cours…');
-  try {
-    if(!window.JSZip) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
-    if(!window.initSqlJs) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js');
+  try{
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js');
     const buf=await file.arrayBuffer();
     setS('Décompression…');
     const zip=await window.JSZip.loadAsync(buf);
-    const dbFile=zip.file('userData.db'); if(!dbFile) throw new Error('userData.db introuvable');
+    const dbFile=zip.file('userData.db');if(!dbFile)throw new Error('userData.db introuvable');
     const dbBuf=await dbFile.async('arraybuffer');
     setS('Extraction des notes…');
     const SQL=await window.initSqlJs({locateFile:f=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${f}`});
     const db=new SQL.Database(new Uint8Array(dbBuf));
     const res=db.exec(`SELECT n.NoteId,n.Title,n.Content,n.LastModified,GROUP_CONCAT(t.Name,'||') as tags FROM Note n LEFT JOIN TagMap tm ON tm.NoteId=n.NoteId LEFT JOIN Tag t ON t.TagId=tm.TagId GROUP BY n.NoteId ORDER BY n.LastModified DESC`);
     db.close();
-    if(!res.length) throw new Error('Aucune note trouvée');
+    if(!res.length)throw new Error('Aucune note trouvée');
     const [cols,rows]=[res[0].columns,res[0].values];
-    G.jwNotes=rows.map(row=>{
-      const o={};cols.forEach((c,i)=>o[c]=row[i]);
-      const tags=(o.tags||'').split('||').map(t=>t.trim()).filter(t=>t&&t!=='null');
-      return {id:String(o.NoteId),titre:(o.Title||'').replace(/\u00A0/g,' ').trim(),content:(o.Content||'').trim(),tags,date:(o.LastModified||'').slice(0,10)};
-    }).filter(n=>n.titre);
-    saveN(); buildJWTags();
+    G.jwNotes=rows.map(row=>{const o={};cols.forEach((c,i)=>o[c]=row[i]);const tags=(o.tags||'').split('||').map(t=>t.trim()).filter(t=>t&&t!=='null');return {id:String(o.NoteId),titre:(o.Title||'').replace(/\u00A0/g,' ').trim(),content:(o.Content||'').trim(),tags,date:(o.LastModified||'').slice(0,10)};}).filter(n=>n.titre);
+    saveN();buildJWTags();
     const t=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-    G.lastJWL=t; localStorage.setItem(SK+'j',t);
-    updateUI(); renderSync();
+    G.lastJWL=t;localStorage.setItem(SK+'j',t);
+    updateUI();renderSync();
     toast('✓ '+G.jwNotes.length+' notes JW Library importées');
-  } catch(err) {
-    setS('Erreur : '+err.message);
-    toast('Erreur : '+err.message, 4000);
-  }
+  }catch(err){setS('Erreur : '+err.message);toast('Erreur : '+err.message,4000);}
 }
 
-function loadScript(src){
-  return new Promise((res,rej)=>{
-    if(document.querySelector(`script[src="${src}"]`))return res();
-    const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;
-    document.head.appendChild(s);
-  });
+/* ══ EXPORT VERS JW LIBRARY (FUSION) ════════════════════════════════
+   Lit votre sauvegarde existante, ajoute vos études, exporte le tout
+════════════════════════════════════════════════════════════════════ */
+async function exportJWLibrary(){
+  const status=document.getElementById('export-status');
+  const setS=msg=>{if(status)status.textContent=msg;};
+  setS('Sélectionnez votre sauvegarde SAUVEGARDE_LIBRARY.jwlibrary…');
+  const input=document.createElement('input');
+  input.type='file';input.accept='.jwlibrary';
+  input.onchange=async(ev)=>{
+    const file=ev.target.files[0];if(!file)return;
+    setS('Chargement des librairies…');
+    try{
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js');
+      setS('Lecture de votre sauvegarde JW Library…');
+      const buf=await file.arrayBuffer();
+      const zip=await window.JSZip.loadAsync(buf);
+      const dbFile=zip.file('userData.db');if(!dbFile)throw new Error('userData.db introuvable');
+      const dbBuf=await dbFile.async('arraybuffer');
+      setS('Fusion des études…');
+      const SQL=await window.initSqlJs({locateFile:f=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${f}`});
+      const db=new SQL.Database(new Uint8Array(dbBuf));
+      // Récupérer les IDs max
+      const maxNote=db.exec('SELECT MAX(NoteId) FROM Note')[0].values[0][0]||926;
+      const maxTagMap=db.exec('SELECT MAX(TagMapId) FROM TagMap')[0].values[0][0]||1896;
+      // Ajouter Location pour l'app
+      db.run("INSERT OR IGNORE INTO Location (LocationId,BookNumber,ChapterNumber,DocumentId,Track,IssueTagNumber,KeySymbol,MepsLanguage,Type,Title,Specialty,Edition) VALUES (919,NULL,NULL,NULL,NULL,0,'nwtsty',4,0,'Application Etude Biblique',NULL,NULL)");
+      // Titres existants pour éviter doublons
+      const existRes=db.exec('SELECT Title FROM Note WHERE Title IS NOT NULL');
+      const existTitles=new Set((existRes[0]?.values||[]).map(r=>r[0]));
+      const etudes=G.history.filter(h=>h.resume);
+      const now=new Date().toISOString().replace('Z','+00:00');
+      let noteId=maxNote+1,tagMapId=maxTagMap+1,added=0;
+      for(const e of etudes){
+        if(existTitles.has(e.titre)) continue;
+        const content=[
+          e.verset?'Verset clé : '+e.verset:'',
+          e.resume||'',
+          e.points?'\nPlan d\'étude :\n'+e.points.map((p,i)=>(i+1)+'. '+p.titre+' — '+p.reference+'\n'+p.texte).join('\n'):'',
+          e.questions?'\nQuestions :\n'+e.questions.map((q,i)=>'Q'+(i+1)+'. '+q).join('\n'):'',
+          e.ressource?'\nPublication : '+e.ressource:'',
+        ].filter(Boolean).join('\n').trim();
+        db.run('INSERT INTO Note (NoteId,Guid,UserMarkId,LocationId,Title,Content,LastModified,Created,BlockType,BlockIdentifier) VALUES (?,?,NULL,919,?,?,?,?,0,NULL)',[noteId,uuid(),e.titre,content,now,now]);
+        const tagId=CAT_TAG[e.categorie]||23;
+        db.run('INSERT INTO TagMap (TagMapId,PlaylistItemId,LocationId,NoteId,TagId,Position) VALUES (?,NULL,NULL,?,?,0)',[tagMapId,noteId,tagId]);tagMapId++;
+        if(tagId!==23){db.run('INSERT INTO TagMap (TagMapId,PlaylistItemId,LocationId,NoteId,TagId,Position) VALUES (?,NULL,NULL,?,23,1)',[tagMapId,noteId]);tagMapId++;}
+        noteId++;added++;
+      }
+      setS('Création du fichier fusionné…');
+      db.run(`UPDATE LastModified SET LastModified='${now}' WHERE LastModifiedId=1`);
+      const dbBytes=db.export();db.close();
+      const dateStr=new Date().toISOString().slice(0,10);
+      const fname='SAUVEGARDE_FUSIONNEE_'+dateStr+'.jwlibrary';
+      const manifest={name:fname,creationDate:new Date().toISOString(),version:1,type:0,
+        userDataBackup:{lastModifiedDate:new Date().toISOString(),deviceName:'CHMIC',databaseName:'userData.db',hash:'',schemaVersion:16}};
+      const zipOut=new window.JSZip();
+      zipOut.file('manifest.json',JSON.stringify(manifest,null,2));
+      zipOut.file('userData.db',dbBytes);
+      const blob=await zipOut.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download=fname;a.click();
+      URL.revokeObjectURL(url);
+      setS(`✓ ${added} études ajoutées à vos ${existTitles.size} notes — restaurez dans JW Library`);
+      toast(`✓ ${added} études fusionnées ! Restaurez dans JW Library.`);
+    }catch(err){setS('Erreur : '+err.message);toast('Erreur : '+err.message,4000);}
+  };
+  input.click();
 }
 
-/* ══ RENDU SYNC ══════════════════════════════════════════════════════════ */
-async function connectDropbox() {
+/* ══ DROPBOX ═════════════════════════════════════════════════════════ */
+async function dbxWho(tok){const r=await fetch('https://api.dropboxapi.com/2/users/get_current_account',{method:'POST',headers:{'Authorization':'Bearer '+tok,'Content-Type':'application/json'},body:'null'});if(!r.ok)throw new Error('Token invalide');return r.json();}
+async function dbxDownload(tok,path){const r=await fetch('https://content.dropboxapi.com/2/files/download',{method:'POST',headers:{'Authorization':'Bearer '+tok,'Dropbox-API-Arg':JSON.stringify({path})}});if(r.status===409)return null;if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
+async function autoSync(silent=true){
+  if(!G.dbxToken||G.syncing)return;G.syncing=true;
+  try{
+    let remote=null;try{remote=await dbxDownload(G.dbxToken,DBX_PATH);}catch(e){}
+    if(remote?.etudes?.length){const map=new Map();[...G.history,...remote.etudes].forEach(e=>{const ex=map.get(e.id);if(!ex||(e.resume&&!ex.resume))map.set(e.id,e);});G.history=[...map.values()].sort((a,b)=>b.id-a.id);saveH();}
+    const content=JSON.stringify({v:1,ts:new Date().toISOString(),etudes:G.history});
+    const r=await fetch('https://content.dropboxapi.com/2/files/upload',{method:'POST',headers:{'Authorization':'Bearer '+G.dbxToken,'Dropbox-API-Arg':JSON.stringify({path:DBX_PATH,mode:'overwrite',autorename:false,mute:true}),'Content-Type':'application/octet-stream'},body:content});
+    if(!r.ok){const txt=await r.text().catch(()=>'');throw new Error('HTTP '+r.status+' — '+txt.slice(0,80));}
+    const t=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    G.lastSync=t;localStorage.setItem(SK+'s',t);updateUI();
+    if(!silent)toast('✓ Synchronisé avec Dropbox — '+t);
+  }catch(e){if(!silent)toast('Erreur sync : '+e.message,4000);}
+  G.syncing=false;
+}
+
+/* ══ RENDU SYNC ══════════════════════════════════════════════════════ */
+function saveGroqKey(){
+  const k=(document.getElementById('groq-key-input')||{}).value?.trim();
+  if(!k){toast('Collez votre clé Groq');return;}
+  localStorage.setItem('groq_key',k);toast('✓ Clé Groq sauvegardée !');
+}
+async function connectDropbox(){
   const inp=document.getElementById('dbx-token-input');
-  const tok=(inp?.value||'').trim(); if(!tok){toast('Collez votre token Dropbox');return;}
-  const btn=document.getElementById('dbx-connect-btn');
-  if(btn){btn.textContent='Vérification…';btn.disabled=true;}
-  try {
+  const tok=(inp?.value||'').trim();if(!tok){toast('Collez votre token Dropbox');return;}
+  const btn=document.getElementById('dbx-connect-btn');if(btn){btn.textContent='Vérification…';btn.disabled=true;}
+  try{
     const user=await dbxWho(tok);
-    G.dbxToken=tok; G.dbxUser=user;
-    localStorage.setItem(SK+'t',tok);
-    localStorage.setItem(SK+'u',JSON.stringify(user));
-    updateUI(); renderSync();
-    toast('✓ Dropbox connecté — Sync en cours…');
-    await autoSync(false);
-    renderSync();
-  } catch(e) {
-    toast('Token invalide. Vérifiez et réessayez.', 4000);
-    if(btn){btn.textContent='Connecter Dropbox';btn.disabled=false;}
-  }
+    G.dbxToken=tok;G.dbxUser=user;
+    localStorage.setItem(SK+'t',tok);localStorage.setItem(SK+'u',JSON.stringify(user));
+    updateUI();renderSync();toast('✓ Dropbox connecté !');
+    await autoSync(false);renderSync();
+  }catch(e){toast('Token invalide.',4000);if(btn){btn.textContent='Connecter Dropbox';btn.disabled=false;}}
 }
-
-function disconnectDropbox() {
-  G.dbxToken=''; G.dbxUser=null; G.lastSync='';
+function disconnectDropbox(){
+  G.dbxToken='';G.dbxUser=null;G.lastSync='';
   ['t','u','s'].forEach(k=>localStorage.removeItem(SK+k));
-  updateUI(); renderSync();
+  updateUI();renderSync();
 }
-
-function renderSync() {
-  const el=document.getElementById('sync-content'); if(!el) return;
-
-  if(G.dbxUser) {
-    // Connecté
+function renderSync(){
+  const el=document.getElementById('sync-content');if(!el)return;
+  if(G.dbxUser){
     el.innerHTML=`<div style="padding:14px">
-
-      <!-- Statut Dropbox -->
-      <div class="card" style="background:#F0FFF4;border-color:#1A7A4A;margin-bottom:14px">
+      <div class="card" style="background:#F0FFF4;border-color:#1A7A4A;margin-bottom:12px">
         <div style="display:flex;align-items:center;gap:12px">
-          <div style="width:46px;height:46px;border-radius:12px;background:#D1FAE5;display:flex;align-items:center;justify-content:center;font-size:26px">📦</div>
-          <div style="flex:1">
-            <div style="font-weight:700;color:#1A7A4A;font-size:14px">Dropbox connecté</div>
-            <div style="font-size:12px;color:#7A8396;margin-top:2px">${G.dbxUser.name?.display_name||G.dbxUser.email||''}</div>
-            ${G.lastSync?`<div style="font-size:11px;color:#1A7A4A;margin-top:2px">Dernière sync : ${G.lastSync}</div>`:''}
-          </div>
+          <div style="width:46px;height:46px;border-radius:12px;background:#D1FAE5;display:flex;align-items:center;justify-content:center;font-size:24px">📦</div>
+          <div style="flex:1"><div style="font-weight:700;color:#1A7A4A;font-size:14px">Dropbox connecté</div><div style="font-size:12px;color:#7A8396;margin-top:2px">${G.dbxUser.name?.display_name||G.dbxUser.email||''}</div>${G.lastSync?`<div style="font-size:11px;color:#1A7A4A;margin-top:2px">Sync : ${G.lastSync}</div>`:''}</div>
         </div>
-        <div style="margin-top:10px;background:rgba(0,0,0,0.04);border-radius:8px;padding:8px 10px;font-size:11px;color:#7A8396">
-          📁 /etude-biblique-jw/etudes.json · ${G.history.length} études
-        </div>
+        <div style="margin-top:10px;background:rgba(0,0,0,0.04);border-radius:8px;padding:8px 10px;font-size:11px;color:#7A8396">📁 /etude-biblique-jw/etudes.json · ${G.history.length} études</div>
       </div>
-
-      <!-- Sync automatique info -->
-      <div class="card" style="background:#EFF6FF;border-color:#2B5EA7;margin-bottom:14px">
-        <div style="font-weight:700;color:#2B5EA7;font-size:13px;margin-bottom:8px">🔄 Sync automatique active</div>
-        <div style="font-size:12px;color:#444;line-height:1.7">
-          ✓ Chaque nouvelle étude est sauvegardée sur Dropbox<br>
-          ✓ Au démarrage, l'app récupère les études des autres appareils<br>
-          ✓ Fusion intelligente — aucune étude perdue
-        </div>
+      <div class="card" style="background:#EFF6FF;border-color:#2B5EA7;margin-bottom:12px">
+        <div style="font-weight:700;color:#2B5EA7;font-size:13px;margin-bottom:8px">🤖 Clé API Groq (génération IA)</div>
+        <input type="text" id="groq-key-input" placeholder="gsk_..." value="${localStorage.getItem('groq_key')||''}" style="width:100%;border:1.5px solid #DDD8CE;border-radius:8px;padding:8px 10px;font-size:12px;font-family:monospace;outline:none;color:#1A2B4A;background:#fafafa;margin-bottom:8px"/>
+        <button class="btn" style="background:#2B5EA7;margin-bottom:0;padding:10px" onclick="saveGroqKey()">💾 Sauvegarder la clé Groq</button>
       </div>
-
-      <!-- Appareils -->
-      <div class="card" style="margin-bottom:14px">
-        <div style="font-weight:700;color:#1A2B4A;font-size:13px;margin-bottom:10px">Appareils synchronisés</div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:18px">📱</span><span style="font-size:12px;color:#1A7A4A;flex:1">Android (cet appareil)</span><span style="font-size:10px;color:#1A7A4A;font-weight:700">✓ actif</span></div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:18px">💻</span><span style="font-size:12px;color:#7A8396;flex:1">Surface Pro</span><span style="font-size:10px;color:#7A8396">même token Dropbox</span></div>
-        <div style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">🌐</span><span style="font-size:12px;color:#7A8396;flex:1">Tout navigateur</span><span style="font-size:10px;color:#7A8396">même token Dropbox</span></div>
-      </div>
-
       <button class="btn" style="background:#1A2B4A" onclick="autoSync(false).then(()=>renderSync())">🔄 Synchroniser maintenant</button>
-      <button class="btn" style="background:#2B5EA7" onclick="exportJWLibrary()">📖 Exporter vers JW Library (.jwlibrary)</button>
-      <div id="export-status" style="font-size:11px;text-align:center;color:#7A8396;margin-top:-4px"></div>
-      <!-- Config clé Gemini -->
-      <div class="card" style="background:#F0FFF4;border-color:#1A7A4A;margin-top:4px">
-        <div style="font-weight:700;color:#1A7A4A;font-size:13px;margin-bottom:8px">🤖 Clé API Groq (gratuit)</div>
-        <input type="text" id="groq-key-input" placeholder="gsk_..." value="${localStorage.getItem('groq_key')||''}"
-          style="width:100%;border:1.5px solid #DDD8CE;border-radius:8px;padding:8px 10px;font-size:12px;font-family:monospace;outline:none;color:#1A2B4A;background:#fafafa;margin-bottom:8px"/>
-        <button class="btn" style="background:#1A7A4A;margin-bottom:0;padding:10px" onclick="saveGeminiKey()">💾 Sauvegarder la clé</button>
-      </div>
+      <button class="btn" style="background:#8E44AD" onclick="exportJWLibrary()">📖 Exporter vers JW Library</button>
+      <div id="export-status" style="font-size:11px;text-align:center;color:#7A8396;margin-top:-4px;margin-bottom:8px"></div>
       <button class="btn" style="background:#fff;color:#C0392B;border:1.5px solid #C0392B" onclick="disconnectDropbox()">Se déconnecter</button>
-
-      <!-- Import JW Library -->
-      <div style="height:8px"></div>
-      <div style="font-weight:700;color:#1A2B4A;font-size:15px;margin-bottom:12px">📋 Notes JW Library (${G.jwNotes.length})</div>
+      <div style="font-weight:700;color:#1A2B4A;font-size:14px;margin:16px 0 10px">📋 Notes JW Library (${G.jwNotes.length})</div>
       <div class="card">
-        <div style="font-size:12px;color:#555;line-height:1.8;margin-bottom:12px">
-          <strong>1.</strong> Dans JW Library → <strong>Paramètres → Sauvegarder</strong><br>
-          <strong>2.</strong> Choisissez <strong>"Enregistrer sur cet appareil"</strong><br>
-          <strong>3.</strong> Importez le fichier .jwlibrary ci-dessous
-        </div>
-        <button class="btn" style="background:#2B5EA7;margin-bottom:0" onclick="document.getElementById('file-jwlib').click()">
-          📂 Importer fichier .jwlibrary
-        </button>
-        <div id="jwl-status" style="font-size:11px;color:#7A8396;margin-top:6px;text-align:center">
-          ${G.lastJWL?'✓ Dernier import : '+G.lastJWL:''}
-        </div>
+        <div style="font-size:12px;color:#555;line-height:1.8;margin-bottom:12px"><strong>1.</strong> Dans JW Library → <strong>Paramètres → Sauvegarder</strong><br><strong>2.</strong> Choisissez <strong>"Enregistrer sur cet appareil"</strong><br><strong>3.</strong> Importez le fichier ci-dessous</div>
+        <button class="btn" style="background:#2B5EA7;margin-bottom:0" onclick="document.getElementById('file-jwlib').click()">📂 Importer fichier .jwlibrary</button>
+        <div id="jwl-status" style="font-size:11px;color:#7A8396;margin-top:6px;text-align:center">${G.lastJWL?'✓ Dernier import : '+G.lastJWL:''}</div>
       </div>
-
-      <!-- Stats -->
       <div style="font-weight:700;color:#1A2B4A;font-size:14px;margin:16px 0 10px">Études par catégorie</div>
-      ${CATS.slice(1).map(c=>{
-        const n=G.history.filter(h=>h.categorie===c.id).length;
-        const p=G.history.length?Math.round(n/G.history.length*100):0;
-        return `<div class="card" style="padding:10px 12px;margin-bottom:8px">
-          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-            <span style="font-size:12px;font-weight:600;color:#1A2B4A">${c.icon} ${c.label}</span>
-            <span style="font-size:12px;color:#7A8396;font-weight:700">${n}</span>
-          </div>
-          <div class="bar"><div class="bar-fill" style="width:${p}%"></div></div>
-        </div>`;
-      }).join('')}
-      <div style="height:30px"></div>
-    </div>`;
-
-  } else {
-    // Non connecté — formulaire token
+      ${CATS.slice(1).map(c=>{const n=G.history.filter(h=>h.categorie===c.id).length;const p=G.history.length?Math.round(n/G.history.length*100):0;return`<div class="card" style="padding:10px 12px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:600;color:#1A2B4A">${c.icon} ${c.label}</span><span style="font-size:12px;color:#7A8396;font-weight:700">${n}</span></div><div class="bar"><div class="bar-fill" style="width:${p}%"></div></div></div>`;}).join('')}
+      <div style="height:30px"></div></div>`;
+  }else{
     el.innerHTML=`<div style="padding:14px">
-
-      <div style="text-align:center;padding:20px 0 16px">
-        <div style="font-size:48px;margin-bottom:10px">📦</div>
-        <div style="font-weight:800;color:#1A2B4A;font-size:18px;margin-bottom:6px">Connecter Dropbox</div>
-        <div style="font-size:13px;color:#7A8396;line-height:1.5">Synchronisation automatique entre tous vos appareils</div>
-      </div>
-
-      <!-- Guide -->
+      <div style="text-align:center;padding:20px 0 16px"><div style="font-size:48px;margin-bottom:10px">📦</div><div style="font-weight:800;color:#1A2B4A;font-size:18px;margin-bottom:6px">Connecter Dropbox</div><div style="font-size:13px;color:#7A8396;line-height:1.5">Sync automatique entre tous vos appareils</div></div>
       <div class="card" style="background:#FFF8F0;border-color:#C9A84C;margin-bottom:14px">
         <div style="font-weight:700;color:#92400E;font-size:13px;margin-bottom:10px">Comment obtenir votre token Dropbox</div>
-        <div style="font-size:12px;color:#444;line-height:2">
-          <strong>1.</strong> Allez sur <a href="https://dropbox.com/developers/apps" target="_blank" style="color:#0061FF;font-weight:700">dropbox.com/developers/apps</a><br>
-          <strong>2.</strong> Cliquez <strong>"Create app"</strong><br>
-          <strong>3.</strong> Choisissez <strong>Scoped access → Full Dropbox</strong><br>
-          <strong>4.</strong> Nom : <code style="background:#f0f0f0;padding:1px 5px;border-radius:4px">EtudeBibliqueJW</code><br>
-          <strong>5.</strong> Onglet <strong>"Permissions"</strong> → cochez <code>files.content.read</code> + <code>files.content.write</code> → <strong>Submit</strong><br>
-          <strong>6.</strong> Onglet <strong>"Settings"</strong> → section <strong>"OAuth 2"</strong> → <strong>"Generated access token"</strong> → <strong>Generate</strong><br>
-          <strong>7.</strong> Copiez le token et collez-le ci-dessous
-        </div>
+        <div style="font-size:12px;color:#444;line-height:2"><strong>1.</strong> Allez sur <a href="https://dropbox.com/developers/apps" target="_blank" style="color:#0061FF;font-weight:700">dropbox.com/developers/apps</a><br><strong>2.</strong> Cliquez <strong>"Create app"</strong> → Scoped → Full Dropbox<br><strong>3.</strong> Onglet <strong>"Permissions"</strong> → cochez files.content.read + write → Submit<br><strong>4.</strong> Onglet <strong>"Settings"</strong> → <strong>"Generated access token"</strong> → Generate<br><strong>5.</strong> Copiez le token</div>
       </div>
-
       <div style="font-size:13px;font-weight:700;color:#1A2B4A;margin-bottom:8px">Votre token Dropbox :</div>
-      <textarea id="dbx-token-input" rows="3"
-        placeholder="sl.u.ABCDE..."
-        style="width:100%;border:1.5px solid #DDD8CE;border-radius:10px;padding:10px 12px;font-size:12px;font-family:monospace;resize:none;outline:none;color:#1A2B4A;background:#fafafa;margin-bottom:10px"></textarea>
-      <button id="dbx-connect-btn" class="btn" style="background:#0061FF" onclick="connectDropbox()">
-        📦 Connecter Dropbox
-      </button>
-
-      <div class="card" style="background:#EFF6FF;border-color:#2B5EA7;margin-top:4px">
-        <div style="font-size:12px;color:#1A2B4A;line-height:1.7">
-          <strong>Ce que vous obtenez :</strong><br>
-          🔄 Sync automatique à chaque étude<br>
-          📱 Android ↔ 💻 Surface Pro ↔ 🌐 Navigateur<br>
-          📋 Import de vos notes JW Library<br>
-          🔒 Token stocké sur cet appareil uniquement
-        </div>
+      <textarea id="dbx-token-input" rows="3" placeholder="sl.u.ABCDE..." style="width:100%;border:1.5px solid #DDD8CE;border-radius:10px;padding:10px 12px;font-size:12px;resize:none;outline:none;color:#1A2B4A;background:#fafafa;margin-bottom:10px"></textarea>
+      <button id="dbx-connect-btn" class="btn" style="background:#0061FF" onclick="connectDropbox()">📦 Connecter Dropbox</button>
+      <div class="card" style="background:#EFF6FF;border-color:#2B5EA7;margin-bottom:14px">
+        <div style="font-weight:700;color:#2B5EA7;font-size:13px;margin-bottom:8px">🤖 Clé API Groq (génération IA gratuite)</div>
+        <input type="text" id="groq-key-input" placeholder="gsk_..." value="${localStorage.getItem('groq_key')||''}" style="width:100%;border:1.5px solid #DDD8CE;border-radius:8px;padding:8px 10px;font-size:12px;font-family:monospace;outline:none;color:#1A2B4A;background:#fafafa;margin-bottom:8px"/>
+        <button class="btn" style="background:#2B5EA7;margin-bottom:0;padding:10px" onclick="saveGroqKey()">💾 Sauvegarder la clé Groq</button>
       </div>
-      <div style="height:30px"></div>
-    </div>`;
+      <div style="height:30px"></div></div>`;
   }
 }
 
-/* ══ INIT ════════════════════════════════════════════════════════════════ */
-setTimeout(async function() {
-  if(!localStorage.getItem('groq_key'))localStorage.setItem('groq_key','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');
-  // Pré-charger la clé API si pas encore définie
-  if(!localStorage.getItem('anthropic_key')) {
-    localStorage.setItem('anthropic_key',['sk-ant-api03-j6ZTPtW','hC2zrTGcGmNtQ9MQeFyUgNPELC0N_u','dlZRMuVi5mkHcg5cqQeb_jKidgHFn7f41Rwiz_bLhbqzYkPQw-sq7pqwAA'].join(''));
-  }
+/* ══ INIT ════════════════════════════════════════════════════════════ */
+setTimeout(async function(){
   load();
-  renderHome(); renderHist(); renderJWNotes(); renderSync(); updateUI();
-  // Sync automatique au démarrage si connecté
-  if (G.dbxToken) {
-    await autoSync(true);
-    renderHist(); updateUI();
-  }
-}, 0);
+  renderHome();renderHist();renderJWNotes();renderSync();updateUI();
+  if(G.dbxToken){await autoSync(true);renderHist();updateUI();}
+},0);
 </script>
 </body>
 </html>
