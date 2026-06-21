@@ -406,8 +406,8 @@ async function exportJWLibrary(){
         const tagId=CAT_TAG[e.categorie]||23;
         // Récupérer la position max existante pour cette note (évite UNIQUE constraint)
         let pos=0;
-        db.run('INSERT INTO TagMap (TagMapId,PlaylistItemId,LocationId,NoteId,TagId,Position) VALUES (?,NULL,NULL,?,?,?)',[tagMapId,noteId,tagId,pos]);tagMapId++;pos++;
-        if(tagId!==23){db.run('INSERT INTO TagMap (TagMapId,PlaylistItemId,LocationId,NoteId,TagId,Position) VALUES (?,NULL,NULL,?,23,?)',[tagMapId,noteId,pos]);tagMapId++;}
+        db.run('INSERT OR IGNORE INTO TagMap (TagMapId,PlaylistItemId,LocationId,NoteId,TagId,Position) VALUES (?,NULL,NULL,?,?,?)',[tagMapId,noteId,tagId,pos]);tagMapId++;pos++;
+        if(tagId!==23){db.run('INSERT OR IGNORE INTO TagMap (TagMapId,PlaylistItemId,LocationId,NoteId,TagId,Position) VALUES (?,NULL,NULL,?,23,?)',[tagMapId,noteId,pos]);tagMapId++;}
         noteId++;added++;
       }
       setS('Création du fichier fusionné…');
@@ -526,6 +526,4 @@ setTimeout(async function(){
   renderHome();renderHist();renderJWNotes();renderSync();updateUI();
   if(G.dbxToken){await autoSync(true);renderHist();updateUI();}
 },0);
-</script>
-</body>
-</html>
+</scri
