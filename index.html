@@ -1659,6 +1659,51 @@ if ('serviceWorker' in navigator) {
   if(weekSelect){ weekSelect.addEventListener("change", fillUrl); }
   fillUrl();
 
+  // ---- Préparation automatique de la semaine en cours, au lancement de l'app ----
+  function autoPrepareCurrentWeek(){
+    var id = weekId(mondayOf(new Date()));
+    if(document.getElementById(id)){ return; } // déjà préparée (statique ou générée)
+    var sched = schedById(id);
+    if(!sched || !sched.url){ return; }
+    var lastTry = lsGet("autoTry:" + id);
+    if(lastTry && (Date.now() - Number(lastTry)) < 6*3600000){ return; } // pas plus d'une tentative auto toutes les 6h
+    lsSet("autoTry:" + id, String(Date.now()));
+
+    var proxy = lsGet("corsProxy") || "https://api.allorigins.win/raw?url=";
+    var key = lsGet(SHARED_GROQ_KEY) || "";
+    var url = sched.url;
+    var isMeetings = url.indexOf("/meetings/") >= 0;
+    setB("Préparation automatique de la semaine en cours…");
+    fetch(proxy + encodeURIComponent(url)).then(function(res){
+      if(!res || !res.ok){ throw new Error("proxy/reseau"); }
+      return res.text();
+    }).then(function(html1){
+      if(isMeetings){
+        var prog = findProgramUrl(html1);
+        if(prog){
+          return fetch(proxy + encodeURIComponent(prog)).then(function(r){
+            if(!r || !r.ok){ throw new Error("programme"); }
+            return r.text();
+          });
+        }
+      }
+      return html1;
+    }).then(function(html2){
+      return callLLM(key, buildWeekPrompt(extractText(html2)));
+    }).then(function(raw){
+      var data = JSON.parse(stripFences(raw));
+      if(!data.dates){ data.dates = sched.dates; }
+      renderWeek(id, data);
+      saveWeek(id, data);
+      if(weekSelect && weekSelect.value === id){ showWeek(id); }
+      setB("Semaine générée automatiquement — pense à vérifier les versets sur wol.jw.org.");
+      if(typeof toast === "function"){ toast("✓ Réunion de la semaine préparée automatiquement"); }
+    }).catch(function(e){
+      setB("Préparation automatique impossible (" + (e && e.message ? e.message : "erreur") + "). Utilise « Récupérer et générer » ci-dessus.");
+    });
+  }
+  autoPrepareCurrentWeek();
+
   function findProgramUrl(html){
     var m = String(html).match(/\/fr\/wol\/d\/r30\/lp-f\/\d+/);
     return m ? ("https://wol.jw.org" + m[0]) : null;
