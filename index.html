@@ -131,7 +131,7 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
 #s-reunion .builder{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 14px}
 #s-reunion .builder summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--gold);padding:9px 0}
 #s-reunion .builder-help{font-size:13px;color:var(--muted);margin:6px 0}
-#s-reunion .builder input{width:100%;font-family:inherit;font-size:14px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;margin:5px 0;background:#fff}
+#s-reunion .builder input,#s-reunion .builder textarea{width:100%;font-family:inherit;font-size:14px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;margin:5px 0;background:#fff;resize:vertical}
 #s-reunion .builder .brow{margin:6px 0 10px}
 #s-reunion .builder button{appearance:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:500;padding:9px 15px;border-radius:8px;border:1px solid var(--gold);background:var(--gold);color:#fff}
 #s-reunion .builder button:disabled{opacity:.5;cursor:default}
@@ -283,8 +283,11 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
             <summary>➕ Préparer une nouvelle semaine (mode autonome)</summary>
             <p class="builder-help">Sélectionne d'abord la semaine dans le menu ci-dessus : le lien wol.jw.org se remplit tout seul. Le site récupère le programme, le structure (gratuitement, sans clé) et enregistre la semaine sur cet appareil. Une clé Groq est facultative (plus rapide et plus fiable — la même que dans l'onglet Sync).</p>
             <input id="bUrl" type="url" placeholder="Lien wol.jw.org du programme de la semaine">
+            <a id="bOpenLink" href="#" target="_blank" rel="noopener" style="display:inline-block;font-size:13px;color:var(--gold);font-weight:600;margin:2px 0 8px;text-decoration:none">Ouvrir ce lien dans un nouvel onglet →</a>
             <input id="bKey" type="password" placeholder="Clé API Groq — facultative (sinon génération gratuite)">
             <input id="bProxy" type="text" value="https://api.allorigins.win/raw?url=" placeholder="Proxy CORS">
+            <p class="builder-help">Si la récupération automatique échoue (proxy indisponible) : ouvre le lien ci-dessus dans un nouvel onglet, sélectionne tout le texte du programme, copie-le et colle-le ci-dessous — la génération se fera directement à partir de ce texte, sans passer par un proxy.</p>
+            <textarea id="bText" rows="4" placeholder="Colle ici le texte du programme copié depuis wol.jw.org (facultatif — remplace la récupération automatique si rempli)"></textarea>
             <div class="brow"><button id="bRun">Récupérer et générer</button></div>
             <div class="bstatus" id="bStatus"></div>
           </details>
@@ -1642,6 +1645,7 @@ if ('serviceWorker' in navigator) {
   var bUrl = document.getElementById("bUrl");
   var bKey = document.getElementById("bKey");
   var bProxy = document.getElementById("bProxy");
+  var bText = document.getElementById("bText");
   var bStatus = document.getElementById("bStatus");
   function setB(m){ if(bStatus){ bStatus.textContent = m; } }
 
@@ -1651,30 +1655,31 @@ if ('serviceWorker' in navigator) {
   restoreWeeks();
 
   // Remplit le lien wol selon la semaine choisie
+  var bOpenLink = document.getElementById("bOpenLink");
   function fillUrl(){
     if(!bUrl || !weekSelect){ return; }
     var wk = schedById(weekSelect.value);
-    if(wk && wk.url){ bUrl.value = wk.url; }
+    if(wk && wk.url){ bUrl.value = wk.url; if(bOpenLink){ bOpenLink.href = wk.url; } }
   }
   if(weekSelect){ weekSelect.addEventListener("change", fillUrl); }
   fillUrl();
 
-  // ---- Récupération via proxy CORS, avec repli sur plusieurs proxies publics ----
+  // ---- Récupération via proxy CORS, avec repli sur plusieurs services publics ----
   var CORS_PROXIES = [
-    "https://api.allorigins.win/raw?url=",
-    "https://corsproxy.io/?url=",
-    "https://api.codetabs.com/v1/proxy?quest="
+    function(u){ return "https://r.jina.ai/" + u; },
+    function(u){ return "https://api.allorigins.win/raw?url=" + encodeURIComponent(u); },
+    function(u){ return "https://corsproxy.io/?url=" + encodeURIComponent(u); },
+    function(u){ return "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(u); }
   ];
   async function fetchViaProxy(url, preferredProxy){
     var list = CORS_PROXIES.slice();
     if(preferredProxy){
-      list = list.filter(function(p){ return p !== preferredProxy; });
-      list.unshift(preferredProxy);
+      list.unshift(function(u){ return preferredProxy + encodeURIComponent(u); });
     }
     var lastErr = new Error("aucun proxy CORS disponible");
     for(var i=0;i<list.length;i++){
       try{
-        var fetchP = fetch(list[i] + encodeURIComponent(url));
+        var fetchP = fetch(list[i](url));
         var toP = new Promise(function(_,rej){ setTimeout(function(){ rej(new Error("timeout proxy")); },20000); });
         var res = await Promise.race([fetchP,toP]);
         if(res && res.ok){ return await res.text(); }
@@ -1731,26 +1736,34 @@ if ('serviceWorker' in navigator) {
   if(bRun){
     bRun.addEventListener("click", function(){
       var url = bUrl ? trim(bUrl.value) : "";
+      var pasted = bText ? trim(bText.value) : "";
       var key = bKey ? trim(bKey.value) : "";
       var proxy = bProxy ? trim(bProxy.value) : "";
       var id = weekSelect ? weekSelect.value : "";
-      if(!url){ setB("Colle le lien wol.jw.org du programme."); return; }
+      if(!url && !pasted){ setB("Colle le lien wol.jw.org du programme, ou colle directement le texte du programme ci-dessous."); return; }
       if(!id){ setB("Selectionne d'abord une semaine dans le menu."); return; }
       if(key){ lsSet(SHARED_GROQ_KEY, key); }
       lsSet("corsProxy", proxy);
-      setB("Recuperation du programme...");
       bRun.disabled = true;
       var isMeetings = url.indexOf("/meetings/") >= 0;
-      fetchViaProxy(url, proxy).then(function(html1){
-        if(isMeetings){
-          var prog = findProgramUrl(html1);
-          if(prog){
-            setB("Ouverture du programme...");
-            return fetchViaProxy(prog, proxy);
+      var htmlChain;
+      if(pasted){
+        setB("Texte collé détecté — pas besoin de proxy.");
+        htmlChain = Promise.resolve(pasted);
+      } else {
+        setB("Recuperation du programme...");
+        htmlChain = fetchViaProxy(url, proxy).then(function(html1){
+          if(isMeetings){
+            var prog = findProgramUrl(html1);
+            if(prog){
+              setB("Ouverture du programme...");
+              return fetchViaProxy(prog, proxy);
+            }
           }
-        }
-        return html1;
-      }).then(function(html2){
+          return html1;
+        });
+      }
+      htmlChain.then(function(html2){
         setB(key ? "Structuration avec Groq..." : "Structuration (gratuite, sans cle)...");
         return callLLM(key, buildWeekPrompt(extractText(html2)));
       }).then(function(raw){
