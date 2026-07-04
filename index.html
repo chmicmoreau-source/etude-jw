@@ -1094,6 +1094,148 @@ function loadScript(src){
   });
 }
 
+/* ══ EXPORT VERS JW LIBRARY (fusion additive, portable entre bibliothèques) ══
+   Lit une sauvegarde .jwlibrary existante, y ajoute les études générées comme
+   notes, et propose le fichier fusionné en téléchargement. N'écrit jamais sur
+   le fichier d'origine : tout se passe en mémoire côté navigateur.
+════════════════════════════════════════════════════════════════════════ */
+function uuid(){
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){
+    var r=Math.random()*16|0, v=(c==='x')?r:(r&0x3|0x8);
+    return v.toString(16);
+  });
+}
+
+function tableColumns(db, table){
+  var res=db.exec('PRAGMA table_info(' + table + ')');
+  if(!res.length) return [];
+  return res[0].values.map(function(r){ return r[1]; });
+}
+
+function queryOne(db, sql, params){
+  var stmt=db.prepare(sql);
+  if(params) stmt.bind(params);
+  var row=stmt.step() ? stmt.getAsObject() : null;
+  stmt.free();
+  return row;
+}
+
+function findOrCreateLocation(db, title){
+  var row=queryOne(db, 'SELECT LocationId AS id FROM Location WHERE Title = ?', [title]);
+  if(row && row.id != null) return row.id;
+  var maxRow=queryOne(db, 'SELECT MAX(LocationId) AS m FROM Location');
+  var newId=((maxRow && maxRow.m) || 0) + 1;
+  db.run('INSERT INTO Location (LocationId,BookNumber,ChapterNumber,DocumentId,Track,IssueTagNumber,KeySymbol,MepsLanguage,Type,Title,Specialty,Edition) VALUES (?,NULL,NULL,NULL,NULL,0,?,4,0,?,NULL,NULL)', [newId, 'nwtsty', title]);
+  return newId;
+}
+
+function findOrCreateTag(db, name){
+  var row=queryOne(db, 'SELECT TagId AS id FROM Tag WHERE Name = ?', [name]);
+  if(row && row.id != null) return row.id;
+  var maxRow=queryOne(db, 'SELECT MAX(TagId) AS m FROM Tag');
+  var newId=((maxRow && maxRow.m) || 0) + 1;
+  var cols=tableColumns(db, 'Tag');
+  if(cols.indexOf('TagType') >= 0){
+    db.run('INSERT INTO Tag (TagId,TagType,Name) VALUES (?,?,?)', [newId, 1, name]);
+  } else {
+    db.run('INSERT INTO Tag (TagId,Name) VALUES (?,?)', [newId, name]);
+  }
+  return newId;
+}
+
+function exportJWLibrary(){
+  var status=document.getElementById('export-status');
+  var setS=function(msg){ if(status) status.textContent=msg; };
+  var etudes=G.history.filter(function(h){ return h.resume; });
+  if(!etudes.length){ setS('Aucune étude générée à exporter pour le moment.'); return; }
+
+  setS('Sélectionnez votre sauvegarde .jwlibrary…');
+  var input=document.createElement('input');
+  input.type='file'; input.accept='.jwlibrary';
+  input.onchange=async function(ev){
+    var file=ev.target.files[0]; if(!file) return;
+    setS('Chargement…');
+    try {
+      if(!window.JSZip) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+      if(!window.initSqlJs) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js');
+      setS('Lecture de votre sauvegarde JW Library…');
+      var buf=await file.arrayBuffer();
+      var zip=await window.JSZip.loadAsync(buf);
+      var dbFile=zip.file('userData.db'); if(!dbFile) throw new Error('userData.db introuvable dans ce fichier');
+      var dbBuf=await dbFile.async('arraybuffer');
+      var SQL=await window.initSqlJs({locateFile:function(f){return 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/'+f;}});
+      var db=new SQL.Database(new Uint8Array(dbBuf));
+
+      setS('Fusion des études…');
+      var locId=findOrCreateLocation(db, 'Application Étude Biblique');
+
+      var existRow=db.exec('SELECT Title FROM Note WHERE Title IS NOT NULL');
+      var existTitles={};
+      if(existRow.length){ existRow[0].values.forEach(function(r){ existTitles[r[0]]=true; }); }
+
+      var maxNoteRow=queryOne(db, 'SELECT MAX(NoteId) AS m FROM Note');
+      var maxUMRow=queryOne(db, 'SELECT MAX(UserMarkId) AS m FROM UserMark');
+      var maxTMRow=queryOne(db, 'SELECT MAX(TagMapId) AS m FROM TagMap');
+      var noteId=((maxNoteRow && maxNoteRow.m) || 0) + 1;
+      var userMarkId=((maxUMRow && maxUMRow.m) || 0) + 1;
+      var tagMapId=((maxTMRow && maxTMRow.m) || 0) + 1;
+
+      var CAT_COLOR={foi:1,famille:4,royaume:3,moral:5,etude:2,histoire:6,espoir:7};
+      var now=new Date().toISOString().replace('Z','+00:00');
+      var added=0, skipped=0, failed=0;
+
+      for(var i=0;i<etudes.length;i++){
+        var e=etudes[i];
+        if(existTitles[e.titre]){ skipped++; continue; }
+        try {
+          var parts=[];
+          if(e.verset) parts.push('Verset clé : ' + e.verset);
+          if(e.resume) parts.push(e.resume);
+          if(e.points && e.points.length) parts.push('\nPlan d\'étude :\n' + e.points.map(function(p,i2){ return (i2+1) + '. ' + p.titre + ' — ' + p.reference + '\n' + p.texte; }).join('\n'));
+          if(e.questions && e.questions.length) parts.push('\nQuestions :\n' + e.questions.map(function(q,i2){ return 'Q' + (i2+1) + '. ' + q; }).join('\n'));
+          if(e.ressource) parts.push('\nPublication : ' + e.ressource);
+          var content=parts.join('\n').trim();
+
+          var cat=CATS.find(function(c){ return c.id === e.categorie; });
+          var catLabel=cat ? cat.label : 'Étude';
+          var tagId=findOrCreateTag(db, catLabel);
+          var colorIdx=CAT_COLOR[e.categorie] || 1;
+
+          db.run('INSERT INTO UserMark (UserMarkId,ColorIndex,LocationId,StyleIndex,UserMarkGuid,Version) VALUES (?,?,?,0,?,1)', [userMarkId, colorIdx, locId, uuid()]);
+          db.run('INSERT INTO Note (NoteId,Guid,UserMarkId,LocationId,Title,Content,LastModified,Created,BlockType,BlockIdentifier) VALUES (?,?,?,?,?,?,?,?,0,NULL)', [noteId, uuid(), userMarkId, locId, e.titre, content, now, now]);
+          db.run('INSERT INTO TagMap (TagMapId,PlaylistItemId,LocationId,NoteId,TagId,Position) VALUES (?,NULL,NULL,?,?,0)', [tagMapId, noteId, tagId]);
+
+          noteId++; userMarkId++; tagMapId++; added++;
+        } catch(errNote) { failed++; }
+      }
+
+      setS('Création du fichier fusionné…');
+      var dbBytes=db.export(); db.close();
+      var dateStr=new Date().toISOString().slice(0,10);
+      var fname='SAUVEGARDE_FUSIONNEE_' + dateStr + '.jwlibrary';
+      var manifest={
+        name: fname, creationDate: new Date().toISOString(), version: 1, type: 0,
+        userDataBackup: { lastModifiedDate: new Date().toISOString(), deviceName: 'EtudeBibliqueJW', databaseName: 'userData.db', hash: '', schemaVersion: 16 }
+      };
+      var zipOut=new window.JSZip();
+      zipOut.file('manifest.json', JSON.stringify(manifest, null, 2));
+      zipOut.file('userData.db', dbBytes);
+      var blob=await zipOut.generateAsync({type:'blob', compression:'DEFLATE', compressionOptions:{level:6}});
+      var url=URL.createObjectURL(blob);
+      var a=document.createElement('a'); a.href=url; a.download=fname; a.click();
+      URL.revokeObjectURL(url);
+
+      var msg='✓ ' + added + ' étude(s) ajoutée(s)' + (skipped ? ', ' + skipped + ' déjà présente(s)' : '') + (failed ? ', ' + failed + ' échec(s)' : '') + '.';
+      setS(msg + ' Restaure ce fichier dans JW Library.');
+      toast(msg);
+    } catch(err) {
+      setS('Erreur : ' + err.message);
+      toast('Erreur : ' + err.message, 5000);
+    }
+  };
+  input.click();
+}
+
 /* ══ RENDU SYNC ══════════════════════════════════════════════════════════ */
 async function connectGitHub() {
   var inp=document.getElementById('gh-token-input');
@@ -1125,6 +1267,25 @@ function disconnectGitHub() {
 
 function renderSync() {
   var el=document.getElementById('sync-content'); if(!el) return;
+
+  var jwCard='<div style="font-weight:700;color:#1A2B4A;font-size:15px;margin-bottom:12px">📋 Notes JW Library (' + G.jwNotes.length + ')</div>'
+    + '<div class="card" style="margin-bottom:14px">'
+    + '<div style="font-size:12px;color:#555;line-height:1.8;margin-bottom:12px">'
+    + '<strong>1.</strong> Dans JW Library → <strong>Paramètres → Sauvegarder</strong><br>'
+    + '<strong>2.</strong> Choisissez <strong>"Enregistrer sur cet appareil"</strong><br>'
+    + '<strong>3.</strong> Importez le fichier .jwlibrary ci-dessous'
+    + '</div>'
+    + '<button class="btn" style="background:#2B5EA7;margin-bottom:0" onclick="document.getElementById(\'file-jwlib\').click()">'
+    + '📂 Importer fichier .jwlibrary'
+    + '</button>'
+    + '<div id="jwl-status" style="font-size:11px;color:#7A8396;margin-top:6px;text-align:center">'
+    + (G.lastJWL?'✓ Dernier import : '+G.lastJWL:'')
+    + '</div>'
+    + '<div style="height:14px"></div>'
+    + '<div style="font-size:12px;color:#555;line-height:1.6;margin-bottom:10px">Ajoute vos études générées dans l\'app à une sauvegarde JW Library existante, pour les retrouver comme notes dans JW Library lui-même.</div>'
+    + '<button class="btn" style="background:#8E44AD;margin-bottom:0" onclick="exportJWLibrary()">📖 Exporter vers JW Library</button>'
+    + '<div id="export-status" style="font-size:11px;color:#7A8396;margin-top:6px;text-align:center"></div>'
+    + '</div>';
 
   if(G.ghUser) {
     // Connecté
@@ -1171,20 +1332,7 @@ function renderSync() {
       + '<button class="btn" style="background:#1A2B4A" onclick="autoSync(false).then(function(){renderSync();})">🔄 Synchroniser maintenant</button>'
       + '<button class="btn" style="background:#fff;color:#C0392B;border:1.5px solid #C0392B" onclick="disconnectGitHub()">Se déconnecter</button>'
       + '<div style="height:8px"></div>'
-      + '<div style="font-weight:700;color:#1A2B4A;font-size:15px;margin-bottom:12px">📋 Notes JW Library (' + G.jwNotes.length + ')</div>'
-      + '<div class="card">'
-      + '<div style="font-size:12px;color:#555;line-height:1.8;margin-bottom:12px">'
-      + '<strong>1.</strong> Dans JW Library → <strong>Paramètres → Sauvegarder</strong><br>'
-      + '<strong>2.</strong> Choisissez <strong>"Enregistrer sur cet appareil"</strong><br>'
-      + '<strong>3.</strong> Importez le fichier .jwlibrary ci-dessous'
-      + '</div>'
-      + '<button class="btn" style="background:#2B5EA7;margin-bottom:0" onclick="document.getElementById(\'file-jwlib\').click()">'
-      + '📂 Importer fichier .jwlibrary'
-      + '</button>'
-      + '<div id="jwl-status" style="font-size:11px;color:#7A8396;margin-top:6px;text-align:center">'
-      + (G.lastJWL?'✓ Dernier import : '+G.lastJWL:'')
-      + '</div>'
-      + '</div>'
+      + jwCard
       + '<div style="font-weight:700;color:#1A2B4A;font-size:14px;margin:16px 0 10px">Études par catégorie</div>'
       + catRows
       + '<div style="height:30px"></div>'
@@ -1223,6 +1371,7 @@ function renderSync() {
       + '🔒 Token stocké sur cet appareil uniquement, Gist visible seulement par vous'
       + '</div>'
       + '</div>'
+      + jwCard
       + '<div style="height:30px"></div>'
       + '</div>';
   }
