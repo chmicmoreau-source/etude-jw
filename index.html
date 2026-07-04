@@ -256,7 +256,7 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
 
   <!-- SYNC / DROPBOX -->
   <div id="s-sync" class="screen">
-    <div class="hdr" style="justify-content:center"><span class="hdr-title">Synchronisation Dropbox</span></div>
+    <div class="hdr" style="justify-content:center"><span class="hdr-title">Synchronisation</span></div>
     <div class="scroll" id="sync-content"></div>
     <nav class="nav">
       <button class="ntab" onclick="show('s-home')"><span class="ntab-icon">◉</span>Accueil</button>
@@ -643,7 +643,7 @@ Produis ces sections :
 <script>
 /* ══ CONFIG ══════════════════════════════════════════════════════════════ */
 var SK = 'jw_dbx_v1';
-var DBX_PATH_ETUDES = '/etude-biblique-jw/etudes.json';
+var GIST_FILENAME = 'etude-biblique-jw-sync.json';
 var GROQ_MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'gemma2-9b-it'];
 
 /* ══ UTIL RÉSEAU ═════════════════════════════════════════════════════════ */
@@ -656,53 +656,56 @@ function withTimeout(promise, ms) {
   ]);
 }
 
-/* ══ DROPBOX API ═════════════════════════════════════════════════════════ */
-async function dbxUpload(token, path, content) {
-  var body = typeof content === 'string' ? content : JSON.stringify(content);
-  var r = await withTimeout(fetch('https://content.dropboxapi.com/2/files/upload', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer ' + token,
-      'Dropbox-API-Arg': JSON.stringify({
-        path: path,
-        mode: {'.tag': 'overwrite'},
-        autorename: false,
-        mute: false,
-        strict_conflict: false
-      }),
-      'Content-Type': 'application/octet-stream',
-    },
-    body: body,
-  }), 15000);
-  if (!r.ok) {
-    var txt = await r.text().catch(function() { return ''; });
-    var msg = 'HTTP ' + r.status;
-    try { var e = JSON.parse(txt); msg = (e && e.error_summary) || (e && e.error && e.error.reason && e.error.reason['.tag']) || msg; } catch(e2) {}
-    throw new Error(msg);
-  }
-  return r.json();
-}
-
-async function dbxDownload(token, path) {
-  var r = await withTimeout(fetch('https://content.dropboxapi.com/2/files/download', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer ' + token,
-      'Dropbox-API-Arg': JSON.stringify({path: path}),
-    },
-  }), 15000);
-  if (r.status === 409) return null; // fichier inexistant
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  return r.json();
-}
-
-async function dbxWho(token) {
-  var r = await withTimeout(fetch('https://api.dropboxapi.com/2/users/get_current_account', {
-    method: 'POST',
-    headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
-    body: 'null',
+/* ══ GITHUB GIST API (backend de synchronisation) ═══════════════════════ */
+async function ghWho(token) {
+  var r = await withTimeout(fetch('https://api.github.com/user', {
+    headers: {'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json'}
   }), 15000);
   if (!r.ok) throw new Error('Token invalide');
+  return r.json();
+}
+
+async function ghFindOrCreateGist(token) {
+  var r = await withTimeout(fetch('https://api.github.com/gists?per_page=100', {
+    headers: {'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json'}
+  }), 15000);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  var list = await r.json();
+  for (var i=0;i<list.length;i++) {
+    if (list[i].files && list[i].files[GIST_FILENAME]) { return list[i].id; }
+  }
+  var body = { description: 'Étude Biblique JW — synchronisation', public: false, files: {} };
+  body.files[GIST_FILENAME] = { content: JSON.stringify({v:1, ts:new Date().toISOString(), etudes:[]}) };
+  var cr = await withTimeout(fetch('https://api.github.com/gists', {
+    method: 'POST',
+    headers: {'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json'},
+    body: JSON.stringify(body)
+  }), 15000);
+  if (!cr.ok) throw new Error('HTTP ' + cr.status);
+  var created = await cr.json();
+  return created.id;
+}
+
+async function ghGistDownload(token, gistId) {
+  var r = await withTimeout(fetch('https://api.github.com/gists/' + gistId, {
+    headers: {'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json'}
+  }), 15000);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  var data = await r.json();
+  var file = data.files && data.files[GIST_FILENAME];
+  if (!file || !file.content) return null;
+  try { return JSON.parse(file.content); } catch(e) { return null; }
+}
+
+async function ghGistUpload(token, gistId, content) {
+  var body = { files: {} };
+  body.files[GIST_FILENAME] = { content: typeof content === 'string' ? content : JSON.stringify(content) };
+  var r = await withTimeout(fetch('https://api.github.com/gists/' + gistId, {
+    method: 'PATCH',
+    headers: {'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json'},
+    body: JSON.stringify(body)
+  }), 15000);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
   return r.json();
 }
 
@@ -737,7 +740,7 @@ var G = {
   history:[], catH:'all', catHist:'all',
   jwNotes:[], jwTags:[], jwFilter:'all',
   cur:null,
-  dbxToken:'', dbxUser:null, lastSync:'', lastJWL:'',
+  ghToken:'', ghUser:null, ghGistId:'', lastSync:'', lastJWL:'',
   groqKey:'',
   syncing: false,
 };
@@ -746,8 +749,9 @@ function load() {
   try {
     var h=localStorage.getItem(SK);    if(h) G.history=JSON.parse(h);
     var n=localStorage.getItem(SK+'n');if(n){G.jwNotes=JSON.parse(n);buildJWTags();}
-    var t=localStorage.getItem(SK+'t');if(t) G.dbxToken=t;
-    var u=localStorage.getItem(SK+'u');if(u) G.dbxUser=JSON.parse(u);
+    var t=localStorage.getItem(SK+'t');if(t) G.ghToken=t;
+    var u=localStorage.getItem(SK+'u');if(u) G.ghUser=JSON.parse(u);
+    var gid=localStorage.getItem(SK+'gid');if(gid) G.ghGistId=gid;
     var s=localStorage.getItem(SK+'s');if(s) G.lastSync=s;
     var j=localStorage.getItem(SK+'j');if(j) G.lastJWL=j;
     var gk=localStorage.getItem(SK+'gk');if(gk) G.groqKey=gk;
@@ -757,15 +761,15 @@ function saveH(){try{localStorage.setItem(SK,JSON.stringify(G.history));}catch(e
 function saveN(){try{localStorage.setItem(SK+'n',JSON.stringify(G.jwNotes));}catch(e){}}
 function buildJWTags(){var s=new Set();G.jwNotes.forEach(function(n){(n.tags||[]).forEach(function(t){s.add(t);});});G.jwTags=[...s].sort();}
 
-/* ══ SYNC AUTOMATIQUE DROPBOX ════════════════════════════════════════════ */
+/* ══ SYNC AUTOMATIQUE (GitHub Gist) ══════════════════════════════════════ */
 async function autoSync(silent) {
   if (silent === undefined) silent = true;
-  if (!G.dbxToken || G.syncing) return;
+  if (!G.ghToken || !G.ghGistId || G.syncing) return;
   G.syncing = true;
   try {
-    // 1. Télécharger depuis Dropbox (si fichier existe)
+    // 1. Télécharger depuis le Gist (si contenu existant)
     var remote = null;
-    try { remote = await dbxDownload(G.dbxToken, DBX_PATH_ETUDES); } catch(e) {}
+    try { remote = await ghGistDownload(G.ghToken, G.ghGistId); } catch(e) {}
     if (remote && remote.etudes && remote.etudes.length) {
       var map = new Map();
       [...G.history, ...remote.etudes].forEach(function(e) {
@@ -776,14 +780,14 @@ async function autoSync(silent) {
       saveH();
     }
     // 2. Uploader — contenu texte simple
-    await dbxUpload(G.dbxToken, DBX_PATH_ETUDES, {v:1, ts:new Date().toISOString(), etudes:G.history});
+    await ghGistUpload(G.ghToken, G.ghGistId, {v:1, ts:new Date().toISOString(), etudes:G.history});
     var t = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
     G.lastSync = t; localStorage.setItem(SK+'s', t);
     updateUI();
-    if (!silent) toast('✓ Synchronisé avec Dropbox — ' + t);
+    if (!silent) toast('✓ Synchronisé avec GitHub — ' + t);
   } catch(e) {
     if (!silent) toast('Erreur : ' + e.message, 6000);
-    else console.warn('Dropbox sync:', e.message);
+    else console.warn('GitHub sync:', e.message);
   }
   G.syncing = false;
 }
@@ -805,10 +809,10 @@ function updateUI() {
   ['b2','b4','b6'].forEach(function(id){var e=document.getElementById(id);if(e){e.textContent=m>9?'9+':String(m);e.style.display=m>0?'block':'none';}});
   var si=document.getElementById('sync-icon');
   var sl=document.getElementById('sync-lbl');
-  if(si) si.textContent = G.dbxUser ? '📦' : '⬜';
+  if(si) si.textContent = G.ghUser ? '🐙' : '⬜';
   if(sl) {
-    sl.textContent = G.dbxUser ? (G.lastSync||'Dropbox') : 'sync';
-    sl.style.color = G.dbxUser ? '#C9A84C' : 'rgba(255,255,255,0.4)';
+    sl.textContent = G.ghUser ? (G.lastSync||'GitHub') : 'sync';
+    sl.style.color = G.ghUser ? '#C9A84C' : 'rgba(255,255,255,0.4)';
   }
 }
 
@@ -1119,29 +1123,31 @@ function loadScript(src){
 }
 
 /* ══ RENDU SYNC ══════════════════════════════════════════════════════════ */
-async function connectDropbox() {
-  var inp=document.getElementById('dbx-token-input');
-  var tok=((inp&&inp.value)||'').trim(); if(!tok){toast('Collez votre token Dropbox');return;}
-  var btn=document.getElementById('dbx-connect-btn');
+async function connectGitHub() {
+  var inp=document.getElementById('gh-token-input');
+  var tok=((inp&&inp.value)||'').trim(); if(!tok){toast('Collez votre token GitHub');return;}
+  var btn=document.getElementById('gh-connect-btn');
   if(btn){btn.textContent='Vérification…';btn.disabled=true;}
   try {
-    var user=await dbxWho(tok);
-    G.dbxToken=tok; G.dbxUser=user;
+    var user=await ghWho(tok);
+    var gistId=await ghFindOrCreateGist(tok);
+    G.ghToken=tok; G.ghUser=user; G.ghGistId=gistId;
     localStorage.setItem(SK+'t',tok);
     localStorage.setItem(SK+'u',JSON.stringify(user));
+    localStorage.setItem(SK+'gid',gistId);
     updateUI(); renderSync();
-    toast('✓ Dropbox connecté — Sync en cours…');
+    toast('✓ GitHub connecté — Sync en cours…');
     await autoSync(false);
     renderSync();
   } catch(e) {
     toast('Token invalide. Vérifiez et réessayez.', 4000);
-    if(btn){btn.textContent='Connecter Dropbox';btn.disabled=false;}
+    if(btn){btn.textContent='Connecter GitHub';btn.disabled=false;}
   }
 }
 
-function disconnectDropbox() {
-  G.dbxToken=''; G.dbxUser=null; G.lastSync='';
-  ['t','u','s'].forEach(function(k){localStorage.removeItem(SK+k);});
+function disconnectGitHub() {
+  G.ghToken=''; G.ghUser=null; G.ghGistId=''; G.lastSync='';
+  ['t','u','s','gid'].forEach(function(k){localStorage.removeItem(SK+k);});
   updateUI(); renderSync();
 }
 
@@ -1167,7 +1173,7 @@ function renderSync() {
     + '<button class="btn" style="background:#00827F;margin-bottom:0" onclick="saveGroqKey()">Enregistrer la clé Groq</button>'
     + '</div>';
 
-  if(G.dbxUser) {
+  if(G.ghUser) {
     // Connecté
     var catRows=CATS.slice(1).map(function(c){
       var n=G.history.filter(function(h){return h.categorie===c.id;}).length;
@@ -1184,21 +1190,21 @@ function renderSync() {
     el.innerHTML='<div style="padding:14px">'
       + '<div class="card" style="background:#F0FFF4;border-color:#1A7A4A;margin-bottom:14px">'
       + '<div style="display:flex;align-items:center;gap:12px">'
-      + '<div style="width:46px;height:46px;border-radius:12px;background:#D1FAE5;display:flex;align-items:center;justify-content:center;font-size:26px">📦</div>'
+      + '<div style="width:46px;height:46px;border-radius:12px;background:#D1FAE5;display:flex;align-items:center;justify-content:center;font-size:26px">🐙</div>'
       + '<div style="flex:1">'
-      + '<div style="font-weight:700;color:#1A7A4A;font-size:14px">Dropbox connecté</div>'
-      + '<div style="font-size:12px;color:#7A8396;margin-top:2px">' + ((G.dbxUser.name&&G.dbxUser.name.display_name)||G.dbxUser.email||'') + '</div>'
+      + '<div style="font-weight:700;color:#1A7A4A;font-size:14px">GitHub connecté</div>'
+      + '<div style="font-size:12px;color:#7A8396;margin-top:2px">' + (G.ghUser.name||G.ghUser.login||'') + '</div>'
       + (G.lastSync?'<div style="font-size:11px;color:#1A7A4A;margin-top:2px">Dernière sync : '+G.lastSync+'</div>':'')
       + '</div>'
       + '</div>'
       + '<div style="margin-top:10px;background:rgba(0,0,0,0.04);border-radius:8px;padding:8px 10px;font-size:11px;color:#7A8396">'
-      + '📁 /etude-biblique-jw/etudes.json · ' + G.history.length + ' études'
+      + '📝 Gist privé · ' + G.history.length + ' études'
       + '</div>'
       + '</div>'
       + '<div class="card" style="background:#EFF6FF;border-color:#2B5EA7;margin-bottom:14px">'
       + '<div style="font-weight:700;color:#2B5EA7;font-size:13px;margin-bottom:8px">🔄 Sync automatique active</div>'
       + '<div style="font-size:12px;color:#444;line-height:1.7">'
-      + '✓ Chaque nouvelle étude est sauvegardée sur Dropbox<br>'
+      + '✓ Chaque nouvelle étude est sauvegardée dans le Gist<br>'
       + '✓ Au démarrage, l\'app récupère les études des autres appareils<br>'
       + '✓ Fusion intelligente — aucune étude perdue'
       + '</div>'
@@ -1206,11 +1212,11 @@ function renderSync() {
       + '<div class="card" style="margin-bottom:14px">'
       + '<div style="font-weight:700;color:#1A2B4A;font-size:13px;margin-bottom:10px">Appareils synchronisés</div>'
       + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:18px">📱</span><span style="font-size:12px;color:#1A7A4A;flex:1">Android (cet appareil)</span><span style="font-size:10px;color:#1A7A4A;font-weight:700">✓ actif</span></div>'
-      + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:18px">💻</span><span style="font-size:12px;color:#7A8396;flex:1">Surface Pro</span><span style="font-size:10px;color:#7A8396">même token Dropbox</span></div>'
-      + '<div style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">🌐</span><span style="font-size:12px;color:#7A8396;flex:1">Tout navigateur</span><span style="font-size:10px;color:#7A8396">même token Dropbox</span></div>'
+      + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:18px">💻</span><span style="font-size:12px;color:#7A8396;flex:1">Surface Pro</span><span style="font-size:10px;color:#7A8396">même token GitHub</span></div>'
+      + '<div style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">🌐</span><span style="font-size:12px;color:#7A8396;flex:1">Tout navigateur</span><span style="font-size:10px;color:#7A8396">même token GitHub</span></div>'
       + '</div>'
       + '<button class="btn" style="background:#1A2B4A" onclick="autoSync(false).then(function(){renderSync();})">🔄 Synchroniser maintenant</button>'
-      + '<button class="btn" style="background:#fff;color:#C0392B;border:1.5px solid #C0392B" onclick="disconnectDropbox()">Se déconnecter</button>'
+      + '<button class="btn" style="background:#fff;color:#C0392B;border:1.5px solid #C0392B" onclick="disconnectGitHub()">Se déconnecter</button>'
       + '<div style="height:8px"></div>'
       + groqCard
       + '<div style="font-weight:700;color:#1A2B4A;font-size:15px;margin-bottom:12px">📋 Notes JW Library (' + G.jwNotes.length + ')</div>'
@@ -1236,26 +1242,25 @@ function renderSync() {
     // Non connecté — formulaire token
     el.innerHTML='<div style="padding:14px">'
       + '<div style="text-align:center;padding:20px 0 16px">'
-      + '<div style="font-size:48px;margin-bottom:10px">📦</div>'
-      + '<div style="font-weight:800;color:#1A2B4A;font-size:18px;margin-bottom:6px">Connecter Dropbox</div>'
-      + '<div style="font-size:13px;color:#7A8396;line-height:1.5">Synchronisation automatique entre tous vos appareils</div>'
+      + '<div style="font-size:48px;margin-bottom:10px">🐙</div>'
+      + '<div style="font-weight:800;color:#1A2B4A;font-size:18px;margin-bottom:6px">Connecter GitHub</div>'
+      + '<div style="font-size:13px;color:#7A8396;line-height:1.5">Synchronisation automatique entre tous vos appareils, via un Gist privé (gratuit)</div>'
       + '</div>'
       + '<div class="card" style="background:#FFF8F0;border-color:#C9A84C;margin-bottom:14px">'
-      + '<div style="font-weight:700;color:#92400E;font-size:13px;margin-bottom:10px">Comment obtenir votre token Dropbox</div>'
+      + '<div style="font-weight:700;color:#92400E;font-size:13px;margin-bottom:10px">Comment obtenir votre token GitHub</div>'
       + '<div style="font-size:12px;color:#444;line-height:2">'
-      + '<strong>1.</strong> Allez sur <a href="https://dropbox.com/developers/apps" target="_blank" style="color:#0061FF;font-weight:700">dropbox.com/developers/apps</a><br>'
-      + '<strong>2.</strong> Cliquez <strong>"Create app"</strong><br>'
-      + '<strong>3.</strong> Choisissez <strong>Scoped access → Full Dropbox</strong><br>'
-      + '<strong>4.</strong> Nom : <code style="background:#f0f0f0;padding:1px 5px;border-radius:4px">EtudeBibliqueJW</code><br>'
-      + '<strong>5.</strong> Onglet <strong>"Permissions"</strong> → cochez <code>files.content.read</code> + <code>files.content.write</code> → <strong>Submit</strong><br>'
-      + '<strong>6.</strong> Onglet <strong>"Settings"</strong> → section <strong>"OAuth 2"</strong> → <strong>"Generated access token"</strong> → <strong>Generate</strong><br>'
-      + '<strong>7.</strong> Copiez le token et collez-le ci-dessous'
+      + '<strong>1.</strong> Allez sur <a href="https://github.com/settings/tokens/new" target="_blank" style="color:#0969DA;font-weight:700">github.com/settings/tokens/new</a><br>'
+      + '<strong>2.</strong> Note : <code style="background:#f0f0f0;padding:1px 5px;border-radius:4px">EtudeBibliqueJW</code><br>'
+      + '<strong>3.</strong> Expiration : à votre convenance (ou "No expiration")<br>'
+      + '<strong>4.</strong> Cochez uniquement la case <code>gist</code><br>'
+      + '<strong>5.</strong> Cliquez <strong>"Generate token"</strong> tout en bas<br>'
+      + '<strong>6.</strong> Copiez le token et collez-le ci-dessous'
       + '</div>'
       + '</div>'
-      + '<div style="font-size:13px;font-weight:700;color:#1A2B4A;margin-bottom:8px">Votre token Dropbox :</div>'
-      + '<textarea id="dbx-token-input" rows="3" placeholder="sl.u.ABCDE..." style="width:100%;border:1.5px solid #DDD8CE;border-radius:10px;padding:10px 12px;font-size:12px;font-family:monospace;resize:none;outline:none;color:#1A2B4A;background:#fafafa;margin-bottom:10px"></textarea>'
-      + '<button id="dbx-connect-btn" class="btn" style="background:#0061FF" onclick="connectDropbox()">'
-      + '📦 Connecter Dropbox'
+      + '<div style="font-size:13px;font-weight:700;color:#1A2B4A;margin-bottom:8px">Votre token GitHub :</div>'
+      + '<textarea id="gh-token-input" rows="3" placeholder="ghp_ABCDE..." style="width:100%;border:1.5px solid #DDD8CE;border-radius:10px;padding:10px 12px;font-size:12px;font-family:monospace;resize:none;outline:none;color:#1A2B4A;background:#fafafa;margin-bottom:10px"></textarea>'
+      + '<button id="gh-connect-btn" class="btn" style="background:#24292F" onclick="connectGitHub()">'
+      + '🐙 Connecter GitHub'
       + '</button>'
       + '<div class="card" style="background:#EFF6FF;border-color:#2B5EA7;margin-top:4px;margin-bottom:14px">'
       + '<div style="font-size:12px;color:#1A2B4A;line-height:1.7">'
@@ -1263,7 +1268,7 @@ function renderSync() {
       + '🔄 Sync automatique à chaque étude<br>'
       + '📱 Android ↔ 💻 Surface Pro ↔ 🌐 Navigateur<br>'
       + '📋 Import de vos notes JW Library<br>'
-      + '🔒 Token stocké sur cet appareil uniquement'
+      + '🔒 Token stocké sur cet appareil uniquement, Gist visible seulement par vous'
       + '</div>'
       + '</div>'
       + groqCard
@@ -1277,7 +1282,7 @@ setTimeout(async function() {
   load();
   renderHome(); renderHist(); renderJWNotes(); renderSync(); updateUI();
   // Sync automatique au démarrage si connecté
-  if (G.dbxToken) {
+  if (G.ghToken && G.ghGistId) {
     await autoSync(true);
     renderHist(); updateUI();
   }
