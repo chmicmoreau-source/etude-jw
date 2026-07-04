@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#1A2B4A"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Étude JW"/>
 <title>Étude Biblique JW</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -13,15 +14,800 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:#1A
 #app{height:100vh;display:flex;flex-direction:column;max-width:430px;margin:0 auto;background:#F7F5F0;position:relative;overflow:hidden}
 .screen{display:none;flex-direction:column;height:100%;overflow:hidden}
 .screen.active{display:flex}
-.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:80px}
-.hdr{background:#1A2B4A;padding:10px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:72px}
+.hdr{background:#1A2B4A;padding:12px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0}
 .hdr-title{color:#fff;font-weight:700;font-size:15px;flex:1;text-align:center}
 .back-btn{background:rgba(255,255,255,0.15);border:none;border-radius:8px;color:#fff;width:32px;height:32px;font-size:18px;cursor:pointer;flex-shrink:0}
-.nav{position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #DDD8CE;display:flex;justify-content:space-around;padding:6px 0 12px;z-index:100}
-.ntab{background:none;border:none;display:flex;flex-direction:column;align-items:center;color:#7A8396;cursor:pointer;font-weight:600;padding:3px 6px;font-family:inherit;font-size:9px;gap:1px}
+.nav{position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #DDD8CE;display:flex;justify-content:space-around;padding:8px 0 14px;z-index:100}
+.ntab{background:none;border:none;display:flex;flex-direction:column;align-items:center;color:#7A8396;cursor:pointer;font-weight:600;padding:4px 10px;font-family:inherit;font-size:10px;gap:2px}
 .ntab.active{color:#1A2B4A}
-.ntab-icon{font-size:19px;position:relative}
+.ntab-icon{font-size:20px;position:relative}
 .badge{position:absolute;top:-4px;right:-6px;background:#00827F;color:#fff;font-size:9px;font-weight:800;padding:1px 4px;border-radius:8px;line-height:1.4}
-.chip-row{display:flex;gap:6px;padding:8px 14px;overflow-x:auto;flex-shrink:0;scrollbar-width:none}
+.chip-row{display:flex;gap:6px;padding:10px 14px;overflow-x:auto;flex-shrink:0;scrollbar-width:none}
 .chip-row::-webkit-scrollbar{display:none}
-.chip{background:#fff;border:1.5px solid #DDD8CE;border-radius:20px;padding:4px 10px;f
+.chip{background:#fff;border:1.5px solid #DDD8CE;border-radius:20px;padding:5px 11px;font-size:12px;color:#7A8396;cursor:pointer;white-space:nowrap;font-weight:600;font-family:inherit}
+.chip.active{background:#1A2B4A;border-color:#1A2B4A;color:#fff}
+.card{background:#fff;border:1px solid #DDD8CE;border-radius:14px;padding:14px;margin-bottom:12px}
+.vtag{background:#EAF4F4;color:#00827F;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;display:inline-block}
+.btn{width:100%;padding:13px;border-radius:12px;border:none;color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px}
+.sugg-card{background:#fff;border:1px solid #DDD8CE;border-radius:14px;padding:12px 11px;display:flex;flex-direction:column;align-items:flex-start;cursor:pointer;text-align:left;box-shadow:0 1px 4px rgba(0,0,0,0.06);width:100%}
+.wol-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.wol-link{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#fff;border:1.5px solid rgba(43,94,167,0.15);border-radius:10px;text-decoration:none}
+.src-link{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:11px;background:#fff;border:2px solid rgba(0,0,0,0.06);text-decoration:none;margin-bottom:6px}
+.point-card{background:#fff;border:1px solid #DDD8CE;border-radius:14px;padding:13px;margin-bottom:10px;display:flex;gap:11px;align-items:flex-start}
+.point-num{color:#fff;width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;background:#1A2B4A}
+.stitle{font-weight:700;color:#1A2B4A;font-size:14px;margin:14px 0 10px}
+.hist-card{background:#fff;border:1px solid #DDD8CE;border-radius:14px;padding:13px;width:100%;cursor:pointer;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.05);display:block;text-align:left}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:#7A8396;font-size:13px;text-align:center}
+.spinner{width:30px;height:30px;border:3px solid #DDD8CE;border-top:3px solid #00827F;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.lbox{display:flex;flex-direction:column;align-items:center;padding:30px 20px;color:#7A8396;font-size:13px}
+.bar{height:4px;background:#DDD8CE;border-radius:4px;margin-top:5px}
+.bar-fill{height:4px;background:#00827F;border-radius:4px;transition:width 0.3s}
+.jw-note{background:#fff;border:1px solid #DDD8CE;border-radius:12px;padding:12px;margin-bottom:8px;cursor:pointer}
+.jw-note-tag{font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:#E8F0FB;color:#2B5EA7;display:inline-block;margin-right:4px;margin-bottom:3px}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1A2B4A;color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,0.3);white-space:nowrap;opacity:0;transition:opacity 0.3s;max-width:90%}
+.toast.show{opacity:1}
+.sync-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:8px 0;border-bottom:1px solid #f0f0f0}
+.sync-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+input[type=text],textarea{border:none;outline:none;font-family:inherit}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- ACCUEIL -->
+  <div id="s-home" class="screen active">
+    <div class="hdr" style="flex-direction:column;gap:0;padding:12px 14px 14px">
+      <div style="display:flex;align-items:center;gap:10px;width:100%;margin-bottom:12px">
+        <div style="background:#C9A84C;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">📖</div>
+        <div style="flex:1">
+          <div style="color:#fff;font-weight:800;font-size:16px;line-height:1">Étude Biblique</div>
+          <div style="color:#C9A84C;font-size:9px;letter-spacing:1.5px;font-weight:600;margin-top:2px">WOL · JW.ORG · JW LIBRARY</div>
+        </div>
+        <button onclick="show('s-sync')" style="background:none;border:none;cursor:pointer;text-align:center;padding:4px">
+          <div id="sync-icon" style="font-size:18px">⬜</div>
+          <div id="sync-lbl" style="font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;line-height:1.2">sync</div>
+        </button>
+      </div>
+      <div style="background:#fff;border-radius:12px;display:flex;align-items:center;gap:8px;padding:10px 12px;width:100%">
+        <span style="color:#7A8396;font-size:15px">◎</span>
+        <input type="text" id="search-q" placeholder="Rechercher dans WOL, JW.ORG, JW Library…"
+          onkeydown="if(event.key==='Enter')doSearch()"
+          style="flex:1;font-size:13px;color:#1A2B4A;background:transparent"/>
+        <button id="search-btn" onclick="doSearch()" style="display:none;background:#00827F;color:#fff;border:none;border-radius:8px;padding:5px 11px;cursor:pointer;font-weight:700;font-size:15px">→</button>
+      </div>
+    </div>
+    <div class="scroll">
+      <div style="padding:12px 14px 4px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-weight:700;color:#1A2B4A;font-size:13px">Bibliothèque Watchtower</span>
+          <a href="https://wol.jw.org/fr/wol/h/r30/lp-f" target="_blank" style="font-size:11px;color:#2B5EA7;font-weight:700;text-decoration:none">Ouvrir →</a>
+        </div>
+        <div class="wol-grid">
+          <a href="https://wol.jw.org/fr/wol/binav/r30/lp-f" target="_blank" class="wol-link"><span style="width:5px;height:5px;border-radius:50%;background:#2B5EA7;flex-shrink:0"></span><span style="font-size:11px;color:#1A2B4A;font-weight:600">Bible TMN</span></a>
+          <a href="https://wol.jw.org/fr/wol/library/r30/lp-f/toutes-les-publications/la-tour-de-garde" target="_blank" class="wol-link"><span style="width:5px;height:5px;border-radius:50%;background:#2B5EA7;flex-shrink:0"></span><span style="font-size:11px;color:#1A2B4A;font-weight:600">Tour de Garde</span></a>
+          <a href="https://wol.jw.org/fr/wol/library/r30/lp-f/toutes-les-publications/réveillez-vous" target="_blank" class="wol-link"><span style="width:5px;height:5px;border-radius:50%;background:#2B5EA7;flex-shrink:0"></span><span style="font-size:11px;color:#1A2B4A;font-weight:600">Réveillez-vous</span></a>
+          <a href="https://wol.jw.org/fr/wol/library/r30/lp-f/toutes-les-publications/livres" target="_blank" class="wol-link"><span style="width:5px;height:5px;border-radius:50%;background:#2B5EA7;flex-shrink:0"></span><span style="font-size:11px;color:#1A2B4A;font-weight:600">Livres</span></a>
+          <a href="https://wol.jw.org/fr/wol/library/r30/lp-f/toutes-les-publications/étude-perspicace" target="_blank" class="wol-link"><span style="width:5px;height:5px;border-radius:50%;background:#2B5EA7;flex-shrink:0"></span><span style="font-size:11px;color:#1A2B4A;font-weight:600">Perspicace</span></a>
+          <a href="https://wol.jw.org/fr/wol/meetings/r30/lp-f" target="_blank" class="wol-link"><span style="width:5px;height:5px;border-radius:50%;background:#2B5EA7;flex-shrink:0"></span><span style="font-size:11px;color:#1A2B4A;font-weight:600">Réunions</span></a>
+        </div>
+      </div>
+      <div class="chip-row" id="chips-home"></div>
+      <div style="padding:0 14px 10px;display:flex;justify-content:space-between">
+        <span style="font-weight:700;color:#1A2B4A;font-size:13px">Thèmes suggérés</span>
+        <span id="sugg-count" style="font-size:11px;color:#7A8396"></span>
+      </div>
+      <div class="grid2" id="sugg-grid"></div>
+      <div style="height:24px"></div>
+    </div>
+    <nav class="nav">
+      <button class="ntab active" onclick="show('s-home')"><span class="ntab-icon">◉</span>Accueil</button>
+      <button class="ntab" onclick="show('s-history')"><span class="ntab-icon">☰<span class="badge" id="b1" style="display:none"></span></span>Études</button>
+      <button class="ntab" onclick="show('s-jwnotes')"><span class="ntab-icon">📋<span class="badge" id="b2" style="display:none"></span></span>JW Notes</button>
+      <button class="ntab" onclick="show('s-sync')"><span class="ntab-icon">☁️</span>Sync</button>
+    </nav>
+  </div>
+
+  <!-- ÉTUDES -->
+  <div id="s-history" class="screen">
+    <div class="hdr" style="justify-content:center"><span class="hdr-title" id="hist-title">Mes études</span></div>
+    <div class="chip-row" id="chips-hist"></div>
+    <div class="scroll" id="hist-list"></div>
+    <nav class="nav">
+      <button class="ntab" onclick="show('s-home')"><span class="ntab-icon">◉</span>Accueil</button>
+      <button class="ntab active" onclick="show('s-history')"><span class="ntab-icon">☰<span class="badge" id="b3" style="display:none"></span></span>Études</button>
+      <button class="ntab" onclick="show('s-jwnotes')"><span class="ntab-icon">📋<span class="badge" id="b4" style="display:none"></span></span>JW Notes</button>
+      <button class="ntab" onclick="show('s-sync')"><span class="ntab-icon">☁️</span>Sync</button>
+    </nav>
+  </div>
+
+  <!-- JW NOTES -->
+  <div id="s-jwnotes" class="screen">
+    <div class="hdr" style="justify-content:center"><span class="hdr-title" id="jw-title">Notes JW Library</span></div>
+    <div class="chip-row" id="chips-jw"></div>
+    <div class="scroll" id="jwnotes-list"></div>
+    <nav class="nav">
+      <button class="ntab" onclick="show('s-home')"><span class="ntab-icon">◉</span>Accueil</button>
+      <button class="ntab" onclick="show('s-history')"><span class="ntab-icon">☰<span class="badge" id="b5" style="display:none"></span></span>Études</button>
+      <button class="ntab active" onclick="show('s-jwnotes')"><span class="ntab-icon">📋<span class="badge" id="b6" style="display:none"></span></span>JW Notes</button>
+      <button class="ntab" onclick="show('s-sync')"><span class="ntab-icon">☁️</span>Sync</button>
+    </nav>
+  </div>
+
+  <!-- DÉTAIL -->
+  <div id="s-detail" class="screen">
+    <div class="hdr">
+      <button class="back-btn" id="det-back" onclick="show('s-home')">←</button>
+      <span class="hdr-title" style="margin-right:32px" id="det-title">Étude</span>
+    </div>
+    <div class="scroll" id="det-content"></div>
+    <nav class="nav">
+      <button class="ntab" onclick="show('s-home')"><span class="ntab-icon">◉</span>Accueil</button>
+      <button class="ntab" onclick="show('s-history')"><span class="ntab-icon">☰</span>Études</button>
+      <button class="ntab" onclick="show('s-jwnotes')"><span class="ntab-icon">📋</span>JW Notes</button>
+      <button class="ntab" onclick="show('s-sync')"><span class="ntab-icon">☁️</span>Sync</button>
+    </nav>
+  </div>
+
+  <!-- SYNC / DROPBOX -->
+  <div id="s-sync" class="screen">
+    <div class="hdr" style="justify-content:center"><span class="hdr-title">Synchronisation Dropbox</span></div>
+    <div class="scroll" id="sync-content"></div>
+    <nav class="nav">
+      <button class="ntab" onclick="show('s-home')"><span class="ntab-icon">◉</span>Accueil</button>
+      <button class="ntab" onclick="show('s-history')"><span class="ntab-icon">☰</span>Études</button>
+      <button class="ntab" onclick="show('s-jwnotes')"><span class="ntab-icon">📋</span>JW Notes</button>
+      <button class="ntab active" onclick="show('s-sync')"><span class="ntab-icon">☁️</span>Sync</button>
+    </nav>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="file-jwlib" accept=".jwlibrary" style="display:none" onchange="importJWL(event)"/>
+
+<script>
+/* ══ CONFIG ══════════════════════════════════════════════════════════════ */
+var SK = 'jw_dbx_v1';
+var DBX_PATH_ETUDES = '/etude-biblique-jw/etudes.json';
+var GROQ_MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'gemma2-9b-it'];
+
+/* ══ UTIL RÉSEAU ═════════════════════════════════════════════════════════ */
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise(function(resolve, reject) {
+      setTimeout(function() { reject(new Error('Délai dépassé')); }, ms);
+    })
+  ]);
+}
+
+/* ══ DROPBOX API ═════════════════════════════════════════════════════════ */
+async function dbxUpload(token, path, content) {
+  var body = typeof content === 'string' ? content : JSON.stringify(content);
+  var r = await withTimeout(fetch('https://content.dropboxapi.com/2/files/upload', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Dropbox-API-Arg': JSON.stringify({
+        path: path,
+        mode: {'.tag': 'overwrite'},
+        autorename: false,
+        mute: false,
+        strict_conflict: false
+      }),
+      'Content-Type': 'application/octet-stream',
+    },
+    body: body,
+  }), 15000);
+  if (!r.ok) {
+    var txt = await r.text().catch(function() { return ''; });
+    var msg = 'HTTP ' + r.status;
+    try { var e = JSON.parse(txt); msg = (e && e.error_summary) || (e && e.error && e.error.reason && e.error.reason['.tag']) || msg; } catch(e2) {}
+    throw new Error(msg);
+  }
+  return r.json();
+}
+
+async function dbxDownload(token, path) {
+  var r = await withTimeout(fetch('https://content.dropboxapi.com/2/files/download', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Dropbox-API-Arg': JSON.stringify({path: path}),
+    },
+  }), 15000);
+  if (r.status === 409) return null; // fichier inexistant
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+async function dbxWho(token) {
+  var r = await withTimeout(fetch('https://api.dropboxapi.com/2/users/get_current_account', {
+    method: 'POST',
+    headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
+    body: 'null',
+  }), 15000);
+  if (!r.ok) throw new Error('Token invalide');
+  return r.json();
+}
+
+/* ══ DONNÉES ════════════════════════════════════════════════════════════ */
+var CATS = [
+  {id:'all',label:'Tout',icon:'◉'},{id:'foi',label:'Foi & Confiance',icon:'🌿'},
+  {id:'famille',label:'Famille',icon:'👪'},{id:'royaume',label:'Royaume de Dieu',icon:'🌍'},
+  {id:'moral',label:'Valeurs morales',icon:'⚖️'},{id:'etude',label:'Étude & Sagesse',icon:'📖'},
+  {id:'histoire',label:'Histoire sacrée',icon:'📜'},{id:'espoir',label:'Espoir & Avenir',icon:'🌅'},
+];
+var SUGGS = [
+  {id:1,titre:"Quel est le nom de Dieu et pourquoi est-il important ?",cat:"foi",v:"Psaume 83:18"},
+  {id:2,titre:"Qu'est-ce que le Royaume de Dieu va accomplir ?",cat:"royaume",v:"Daniel 2:44"},
+  {id:3,titre:"Pourquoi la souffrance humaine existe-t-elle ?",cat:"espoir",v:"Romains 5:12"},
+  {id:4,titre:"Qu'arrive-t-il aux morts selon la Bible ?",cat:"espoir",v:"Ecclésiaste 9:5"},
+  {id:5,titre:"Comment élever des enfants avec des valeurs bibliques ?",cat:"famille",v:"Proverbes 22:6"},
+  {id:6,titre:"Comment étudier efficacement la Bible ?",cat:"etude",v:"2 Timothée 2:15"},
+  {id:7,titre:"Le paradis terrestre : une promesse de Dieu ?",cat:"espoir",v:"Psaume 37:29"},
+  {id:8,titre:"Qu'est-ce que l'âme selon la Bible ?",cat:"foi",v:"Genèse 2:7"},
+  {id:9,titre:"Mariage et amour : les principes bibliques",cat:"famille",v:"Éphésiens 5:25"},
+  {id:10,titre:"Pourquoi éviter le sang selon les Écritures ?",cat:"moral",v:"Actes 15:28-29"},
+  {id:11,titre:"Noé et le déluge : quel enseignement pour aujourd'hui ?",cat:"histoire",v:"Matthieu 24:37"},
+  {id:12,titre:"La Trinité : que dit vraiment la Bible ?",cat:"foi",v:"Jean 14:28"},
+  {id:13,titre:"Comment rester intègre face aux pressions du monde ?",cat:"moral",v:"Jacques 4:4"},
+  {id:14,titre:"Qu'est-ce que l'Armaguédon selon la Bible ?",cat:"royaume",v:"Apocalypse 16:14"},
+  {id:15,titre:"Abraham, un exemple de foi et d'obéissance",cat:"histoire",v:"Hébreux 11:8"},
+  {id:16,titre:"Comment communiquer avec Dieu ?",cat:"etude",v:"Matthieu 6:9"},
+];
+
+/* ══ ÉTAT ════════════════════════════════════════════════════════════════ */
+var G = {
+  history:[], catH:'all', catHist:'all',
+  jwNotes:[], jwTags:[], jwFilter:'all',
+  cur:null,
+  dbxToken:'', dbxUser:null, lastSync:'', lastJWL:'',
+  groqKey:'',
+  syncing: false,
+};
+
+function load() {
+  try {
+    var h=localStorage.getItem(SK);    if(h) G.history=JSON.parse(h);
+    var n=localStorage.getItem(SK+'n');if(n){G.jwNotes=JSON.parse(n);buildJWTags();}
+    var t=localStorage.getItem(SK+'t');if(t) G.dbxToken=t;
+    var u=localStorage.getItem(SK+'u');if(u) G.dbxUser=JSON.parse(u);
+    var s=localStorage.getItem(SK+'s');if(s) G.lastSync=s;
+    var j=localStorage.getItem(SK+'j');if(j) G.lastJWL=j;
+    var gk=localStorage.getItem(SK+'gk');if(gk) G.groqKey=gk;
+  } catch(e) {}
+}
+function saveH(){try{localStorage.setItem(SK,JSON.stringify(G.history));}catch(e){}}
+function saveN(){try{localStorage.setItem(SK+'n',JSON.stringify(G.jwNotes));}catch(e){}}
+function buildJWTags(){var s=new Set();G.jwNotes.forEach(function(n){(n.tags||[]).forEach(function(t){s.add(t);});});G.jwTags=[...s].sort();}
+
+/* ══ SYNC AUTOMATIQUE DROPBOX ════════════════════════════════════════════ */
+async function autoSync(silent) {
+  if (silent === undefined) silent = true;
+  if (!G.dbxToken || G.syncing) return;
+  G.syncing = true;
+  try {
+    // 1. Télécharger depuis Dropbox (si fichier existe)
+    var remote = null;
+    try { remote = await dbxDownload(G.dbxToken, DBX_PATH_ETUDES); } catch(e) {}
+    if (remote && remote.etudes && remote.etudes.length) {
+      var map = new Map();
+      [...G.history, ...remote.etudes].forEach(function(e) {
+        var ex = map.get(e.id);
+        if (!ex || (e.resume && !ex.resume)) map.set(e.id, e);
+      });
+      G.history = [...map.values()].sort(function(a,b) { return b.id - a.id; });
+      saveH();
+    }
+    // 2. Uploader — contenu texte simple
+    await dbxUpload(G.dbxToken, DBX_PATH_ETUDES, {v:1, ts:new Date().toISOString(), etudes:G.history});
+    var t = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    G.lastSync = t; localStorage.setItem(SK+'s', t);
+    updateUI();
+    if (!silent) toast('✓ Synchronisé avec Dropbox — ' + t);
+  } catch(e) {
+    if (!silent) toast('Erreur : ' + e.message, 6000);
+    else console.warn('Dropbox sync:', e.message);
+  }
+  G.syncing = false;
+}
+
+/* ══ NAV ═════════════════════════════════════════════════════════════════ */
+function show(id) {
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+  if(id==='s-history') renderHist();
+  if(id==='s-sync')    renderSync();
+  if(id==='s-home')    renderHome();
+  if(id==='s-jwnotes') renderJWNotes();
+  updateUI();
+}
+
+function updateUI() {
+  var n=G.history.length, m=G.jwNotes.length;
+  ['b1','b3','b5'].forEach(function(id){var e=document.getElementById(id);if(e){e.textContent=n>9?'9+':String(n);e.style.display=n>0?'block':'none';}});
+  ['b2','b4','b6'].forEach(function(id){var e=document.getElementById(id);if(e){e.textContent=m>9?'9+':String(m);e.style.display=m>0?'block':'none';}});
+  var si=document.getElementById('sync-icon');
+  var sl=document.getElementById('sync-lbl');
+  if(si) si.textContent = G.dbxUser ? '📦' : '⬜';
+  if(sl) {
+    sl.textContent = G.dbxUser ? (G.lastSync||'Dropbox') : 'sync';
+    sl.style.color = G.dbxUser ? '#C9A84C' : 'rgba(255,255,255,0.4)';
+  }
+}
+
+function toast(msg, dur) {
+  if (dur === undefined) dur = 2500;
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(function(){el.classList.remove('show');}, dur);
+}
+
+/* ══ ACCUEIL ═════════════════════════════════════════════════════════════ */
+function setCH(c){G.catH=c;renderHome();}
+function setCHist(c){G.catHist=c;renderHist();}
+function setCJW(t){G.jwFilter=t;renderJWNotes();}
+
+function chips(id, active, fn) {
+  var el=document.getElementById(id); if(!el) return;
+  el.innerHTML=CATS.map(function(c){
+    return '<button class="chip' + (active===c.id?' active':'') + '" onclick="' + fn + '(\'' + c.id + '\')">' + c.icon + ' ' + c.label + '</button>';
+  }).join('');
+}
+
+function renderHome() {
+  chips('chips-home', G.catH, 'setCH');
+  var grid=document.getElementById('sugg-grid'), cnt=document.getElementById('sugg-count');
+  if(!grid) return;
+  var list=G.catH==='all'?SUGGS:SUGGS.filter(function(s){return s.cat===G.catH;});
+  if(cnt) cnt.textContent=list.length+' thèmes';
+  grid.innerHTML=list.map(function(item){
+    var cat=CATS.find(function(c){return c.id===item.cat;})||CATS[1];
+    var done=G.history.some(function(h){return h.titre===item.titre&&h.resume;});
+    return '<button class="sugg-card" onclick="study(' + item.id + ')" style="' + (done?'border-color:#00827F':'') + '">'
+      + '<div style="display:flex;justify-content:space-between;width:100%;margin-bottom:6px">'
+      + '<span style="font-size:18px">' + cat.icon + '</span>'
+      + (done?'<span style="font-size:10px;color:#1A7A4A;font-weight:700">✓</span>':'')
+      + '</div>'
+      + '<div style="font-weight:700;color:#1A2B4A;font-size:11px;line-height:1.35;margin-bottom:6px">' + item.titre + '</div>'
+      + '<span class="vtag">' + item.v + '</span>'
+      + '</button>';
+  }).join('');
+}
+
+document.getElementById('search-q').addEventListener('input', function() {
+  document.getElementById('search-btn').style.display = this.value.trim() ? 'flex' : 'none';
+});
+function doSearch() {
+  var q=document.getElementById('search-q').value.trim(); if(!q) return;
+  studyCustom(q); document.getElementById('search-q').value='';
+  document.getElementById('search-btn').style.display='none';
+}
+
+/* ══ HISTORIQUE ══════════════════════════════════════════════════════════ */
+function renderHist() {
+  var t=document.getElementById('hist-title'); if(t) t.textContent='Mes études ('+G.history.length+')';
+  chips('chips-hist', G.catHist, 'setCHist');
+  var el=document.getElementById('hist-list'); if(!el) return;
+  var f=G.catHist==='all'?G.history:G.history.filter(function(h){return h.categorie===G.catHist;});
+  if(!f.length){el.innerHTML='<div class="empty"><div style="font-size:40px">📭</div><div style="margin-top:8px">Aucune étude ici</div></div>';return;}
+  el.innerHTML='<div style="padding:8px 14px">'+f.map(function(h){
+    var cat=CATS.find(function(c){return c.id===h.categorie;})||CATS[1];
+    return '<button class="hist-card" onclick="openStudy(\'' + h.id + '\')">'
+      + '<div style="display:flex;gap:10px;align-items:flex-start">'
+      + '<span style="font-size:20px;margin-top:1px">' + cat.icon + '</span>'
+      + '<div style="flex:1">'
+      + '<div style="font-weight:700;color:#1A2B4A;font-size:13px;margin-bottom:3px;line-height:1.3">' + h.titre + '</div>'
+      + '<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">'
+      + '<span class="vtag">' + cat.label + '</span>'
+      + (h.verset?'<span style="color:#7A8396;font-size:11px">'+h.verset+'</span>':'')
+      + (h.resume?'<span style="font-size:10px;color:#1A7A4A;font-weight:700">✓</span>':'')
+      + '</div>'
+      + '<div style="color:#7A8396;font-size:11px;margin-top:3px">' + h.date + '</div>'
+      + '</div>'
+      + '<span style="color:#00827F;font-size:18px">›</span>'
+      + '</div>'
+      + '</button>';
+  }).join('')+'<div style="height:20px"></div></div>';
+}
+
+function openStudy(id) {
+  var s=G.history.find(function(h){return String(h.id)===String(id);}); if(!s) return;
+  G.cur=s;
+  document.getElementById('det-back').onclick=function(){show('s-history');};
+  document.getElementById('det-title').textContent='Étude Biblique';
+  renderDet(s, s.resume?s:null); show('s-detail');
+}
+
+/* ══ JW NOTES ════════════════════════════════════════════════════════════ */
+function renderJWNotes() {
+  var t=document.getElementById('jw-title'); if(t) t.textContent='Notes JW Library ('+G.jwNotes.length+')';
+  var ce=document.getElementById('chips-jw');
+  if(ce){
+    var tags=[{id:'all',label:'Tout'}].concat(G.jwTags.slice(0,20).map(function(t){return {id:t,label:t};}));
+    ce.innerHTML=tags.map(function(t){
+      return '<button class="chip' + (G.jwFilter===t.id?' active':'') + '" onclick="setCJW(\'' + t.id.replace(/'/g,"\\'") + '\')"> ' + t.label + '</button>';
+    }).join('');
+  }
+  var el=document.getElementById('jwnotes-list'); if(!el) return;
+  if(!G.jwNotes.length){
+    el.innerHTML='<div class="empty"><div style="font-size:40px">📋</div>'
+      + '<div style="margin-top:12px;font-weight:700;color:#1A2B4A">Aucune note JW Library</div>'
+      + '<div style="margin-top:6px;max-width:260px;line-height:1.5">Importez votre fichier .jwlibrary dans l\'onglet ☁️ Sync</div>'
+      + '<button onclick="show(\'s-sync\')" style="margin-top:16px;background:#1A2B4A;color:#fff;border:none;border-radius:10px;padding:10px 20px;cursor:pointer;font-weight:700;font-family:inherit;font-size:13px">Aller à Sync →</button>'
+      + '</div>';
+    return;
+  }
+  var f=G.jwFilter==='all'?G.jwNotes:G.jwNotes.filter(function(n){return (n.tags||[]).includes(G.jwFilter);});
+  var html='<div style="padding:8px 14px">';
+  if(G.lastJWL) html+='<div style="font-size:11px;color:#1A7A4A;margin-bottom:10px;text-align:center">✓ Notes JW Library importées : ' + G.lastJWL + '</div>';
+  html+=(!f.length
+    ?'<div class="empty" style="padding:30px 0"><div>📭</div><div style="margin-top:6px">Aucune note avec ce tag</div></div>'
+    :f.map(function(n){
+      return '<div class="jw-note" onclick="openJWNote(\'' + n.id + '\')">'
+        + '<div style="font-weight:600;color:#1A2B4A;font-size:13px;margin-bottom:5px;line-height:1.35">' + n.titre + '</div>'
+        + (n.content?'<div style="color:#555;font-size:11px;margin-bottom:6px;line-height:1.4">'+n.content.slice(0,80)+(n.content.length>80?'…':'')+'</div>':'')
+        + '<div style="display:flex;flex-wrap:wrap;gap:3px;align-items:center">'
+        + (n.tags||[]).slice(0,4).map(function(t){return '<span class="jw-note-tag">'+t+'</span>';}).join('')
+        + '<span style="color:#7A8396;font-size:10px;margin-left:auto">' + (n.date||'') + '</span>'
+        + '</div></div>';
+    }).join(''));
+  html+='<div style="height:20px"></div></div>';
+  el.innerHTML=html;
+}
+
+function openJWNote(id) {
+  var note=G.jwNotes.find(function(n){return String(n.id)===String(id);}); if(!note) return;
+  document.getElementById('det-back').onclick=function(){show('s-jwnotes');};
+  document.getElementById('det-title').textContent='Note JW Library';
+  var html='<div style="background:#1A2B4A;padding:16px 14px 20px">'
+    + '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">'
+    + (note.tags||[]).map(function(t){return '<span style="background:#E8F0FB;color:#2B5EA7;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px">'+t+'</span>';}).join('')
+    + '</div>'
+    + '<h2 style="color:#fff;font-size:15px;margin:0 0 4px;line-height:1.4">' + note.titre + '</h2>'
+    + '<div style="color:rgba(255,255,255,0.5);font-size:11px">' + (note.date||'') + '</div>'
+    + '</div>'
+    + '<div style="padding:14px">'
+    + (note.content
+        ? '<div class="card" style="white-space:pre-wrap;font-size:13px;color:#333;line-height:1.65">'+note.content+'</div>'
+        : '<div style="color:#7A8396;font-size:13px;text-align:center;padding:20px 0">Note sans contenu textuel</div>')
+    + '<a href="https://wol.jw.org/fr/wol/s/r30/lp-f?q=' + encodeURIComponent(note.titre) + '&p=par" target="_blank" class="src-link"><div style="width:8px;height:8px;border-radius:50%;background:#2B5EA7"></div><span style="flex:1;font-size:13px;font-weight:600;color:#1A2B4A">Bibliothèque Watchtower</span><span style="color:#2B5EA7;font-size:12px">→</span></a>'
+    + '<a href="https://www.jw.org/fr/rechercher/?q=' + encodeURIComponent(note.titre) + '" target="_blank" class="src-link"><div style="width:8px;height:8px;border-radius:50%;background:#00827F"></div><span style="flex:1;font-size:13px;font-weight:600;color:#1A2B4A">JW.ORG</span><span style="color:#00827F;font-size:12px">→</span></a>'
+    + '<button onclick="studyCustom(\'' + note.titre.replace(/'/g,"\\'") + '\');show(\'s-detail\')" style="width:100%;padding:12px;border-radius:12px;border:none;background:#1A2B4A;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;margin-top:8px">📖 Générer un plan d\'étude</button>'
+    + '<div style="height:20px"></div>'
+    + '</div>';
+  document.getElementById('det-content').innerHTML=html;
+  show('s-detail');
+}
+
+/* ══ DÉTAIL ÉTUDE ════════════════════════════════════════════════════════ */
+function renderDet(entry, result) {
+  var cat=CATS.find(function(c){return c.id===entry.categorie;})||CATS[1];
+  var srcs=[
+    {label:"Bibliothèque Watchtower",url:"https://wol.jw.org/fr/wol/s/r30/lp-f?q="+encodeURIComponent(entry.titre)+"&p=par",color:"#2B5EA7"},
+    {label:"JW.ORG",url:"https://www.jw.org/fr/rechercher/?q="+encodeURIComponent(entry.titre),color:"#00827F"},
+    {label:"JW Library",url:"jwlibrary:search?q="+encodeURIComponent(entry.titre),color:"#8E44AD"},
+  ];
+  var html='<div style="background:#1A2B4A;padding:16px 14px 20px">'
+    + '<span style="background:rgba(255,255,255,0.15);color:#fff;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600">' + cat.icon + ' ' + cat.label + '</span>'
+    + '<h2 style="color:#fff;font-size:16px;margin:8px 0 4px;line-height:1.35">' + entry.titre + '</h2>'
+    + (entry.verset?'<span style="color:#C9A84C;font-size:12px;font-style:italic">'+entry.verset+'</span>':'')
+    + '</div>'
+    + '<div style="padding:12px 14px 0">'
+    + '<div style="font-size:12px;font-weight:700;color:#1A2B4A;margin-bottom:8px">Consulter dans :</div>'
+    + srcs.map(function(s){
+        return '<a href="' + s.url + '" target="_blank" class="src-link" style="border-color:' + s.color + '22">'
+          + '<div style="width:8px;height:8px;border-radius:50%;background:' + s.color + ';flex-shrink:0"></div>'
+          + '<span style="flex:1;font-size:13px;font-weight:600;color:#1A2B4A">' + s.label + '</span>'
+          + '<span style="color:' + s.color + ';font-size:12px">→</span>'
+          + '</a>';
+      }).join('')
+    + '</div>'
+    + '<div style="padding:12px 14px">';
+
+  if(!result) html+='<div class="lbox"><div class="spinner"></div>Préparation du plan d\'étude…</div>';
+  else if(result.error) html+='<div class="card" style="border-color:#f5c6cb;background:#fff5f5"><p style="margin:0;color:#C0392B;font-size:12px">Impossible de générer. Consultez les sources ci-dessus.</p></div>';
+  else {
+    html+='<div class="card"><p style="margin:0;color:#1A2B4A;font-size:13px;line-height:1.65">' + result.resume + '</p></div>'
+      + '<div class="stitle">Plan d\'étude</div>'
+      + (result.points||[]).map(function(pt,i){
+          return '<div class="point-card">'
+            + '<div class="point-num">' + (i+1) + '</div>'
+            + '<div style="flex:1">'
+            + '<div style="font-weight:700;color:#1A2B4A;font-size:13px;margin-bottom:3px">' + pt.titre + '</div>'
+            + '<div style="color:#444;font-size:12px;line-height:1.5;margin-bottom:5px">' + pt.texte + '</div>'
+            + '<span class="vtag">' + pt.reference + '</span>'
+            + '</div>'
+            + '</div>';
+        }).join('')
+      + '<div class="stitle">Questions de réflexion</div>'
+      + '<div class="card">' + (result.questions||[]).map(function(q,i){
+          return '<div style="display:flex;gap:8px;' + (i<result.questions.length-1?'margin-bottom:10px':'') + '">'
+            + '<span style="color:#C9A84C;font-weight:700;flex-shrink:0;font-size:13px">Q' + (i+1) + '.</span>'
+            + '<span style="color:#333;font-size:12px;line-height:1.5">' + q + '</span>'
+            + '</div>';
+        }).join('') + '</div>'
+      + (result.ressource
+          ? '<a href="https://wol.jw.org/fr/wol/s/r30/lp-f?q=' + encodeURIComponent(result.ressource) + '&p=par" target="_blank" style="display:flex;align-items:center;gap:10px;background:#E8F0FB;border:1px solid #2B5EA7;border-radius:12px;padding:11px 13px;text-decoration:none;margin-bottom:8px">'
+            + '<span>📗</span>'
+            + '<div style="flex:1"><div style="color:#2B5EA7;font-size:12px;font-weight:600">' + result.ressource + '</div><div style="color:#7A8396;font-size:10px">Bibliothèque Watchtower</div></div>'
+            + '<span style="color:#2B5EA7">→</span>'
+            + '</a>'
+          : '');
+  }
+  html+='<div style="height:30px"></div></div>';
+  document.getElementById('det-content').innerHTML=html;
+}
+
+/* ══ ÉTUDE IA (Groq, fallback Pollinations) ═════════════════════════════ */
+function study(id){var item=SUGGS.find(function(s){return s.id===id;});if(!item)return;runStudy({id:Date.now(),titre:item.titre,categorie:item.cat,verset:item.v,date:new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}),resume:null,points:null,questions:null,ressource:null});}
+function studyCustom(q){runStudy({id:Date.now(),titre:q,categorie:'foi',verset:'',date:new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}),resume:null,points:null,questions:null,ressource:null});}
+
+async function callGroq(model, prompt) {
+  var r = await withTimeout(fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+G.groqKey},
+    body:JSON.stringify({model:model,messages:[{role:'user',content:prompt}],temperature:0.5,max_tokens:1200})
+  }), 15000);
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  var data = await r.json();
+  var txt = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+  if(!txt) throw new Error('Réponse Groq vide');
+  return txt;
+}
+
+async function callPollinations(prompt) {
+  var r = await withTimeout(fetch('https://text.pollinations.ai/' + encodeURIComponent(prompt)), 20000);
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return r.text();
+}
+
+async function generateStudyText(prompt) {
+  if (G.groqKey) {
+    for (var i=0; i<GROQ_MODELS.length; i++) {
+      try { return await callGroq(GROQ_MODELS[i], prompt); } catch(e) { /* essai du modèle suivant */ }
+    }
+  }
+  return await callPollinations(prompt);
+}
+
+async function runStudy(entry) {
+  G.history=[entry].concat(G.history.filter(function(h){return h.titre!==entry.titre;})).slice(0,100);
+  saveH(); G.cur=entry;
+  document.getElementById('det-back').onclick=function(){show('s-history');};
+  document.getElementById('det-title').textContent='Étude Biblique';
+  renderDet(entry,null); show('s-detail');
+  try {
+    var prompt = 'Assistant étude biblique TJ basé sur wol.jw.org. TJ: Jéhovah (Ps 83:18), Jésus=Fils non égal à Dieu, morts=inconscients (Eccl 9:5), paradis terrestre, pas Trinité.\n'
+      + 'Sujet: "' + entry.titre + '"'
+      + (entry.verset ? '\nVerset: ' + entry.verset : '')
+      + '\nRéponds uniquement avec ce JSON, sans texte autour : {"resume":"2-3 phrases TJ","points":[{"titre":"","texte":"","reference":""},{"titre":"","texte":"","reference":""},{"titre":"","texte":"","reference":""}],"questions":["",""],"ressource":"publication wol.jw.org"}';
+    var txt = await generateStudyText(prompt);
+    var parsed=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    Object.assign(entry,parsed);
+    G.history=[entry].concat(G.history.filter(function(h){return h.titre!==entry.titre;})).slice(0,100);
+    saveH();
+    // Sync automatique après chaque étude
+    autoSync(true);
+    if(G.cur&&G.cur.id===entry.id) renderDet(entry,entry);
+  } catch(e) {
+    if(G.cur&&G.cur.id===entry.id) renderDet(entry,{error:true});
+  }
+  updateUI();
+}
+
+/* ══ IMPORT .jwlibrary ═══════════════════════════════════════════════════ */
+async function importJWL(e) {
+  var file=e.target.files[0]; if(!file) return;
+  e.target.value='';
+  var statusEl=document.getElementById('jwl-status');
+  var setS=function(msg){if(statusEl)statusEl.textContent=msg;};
+  setS('Lecture en cours…');
+  try {
+    if(!window.JSZip) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+    if(!window.initSqlJs) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js');
+    var buf=await file.arrayBuffer();
+    setS('Décompression…');
+    var zip=await window.JSZip.loadAsync(buf);
+    var dbFile=zip.file('userData.db'); if(!dbFile) throw new Error('userData.db introuvable');
+    var dbBuf=await dbFile.async('arraybuffer');
+    setS('Extraction des notes…');
+    var SQL=await window.initSqlJs({locateFile:function(f){return 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/'+f;}});
+    var db=new SQL.Database(new Uint8Array(dbBuf));
+    var res=db.exec('SELECT n.NoteId,n.Title,n.Content,n.LastModified,GROUP_CONCAT(t.Name,\'||\') as tags FROM Note n LEFT JOIN TagMap tm ON tm.NoteId=n.NoteId LEFT JOIN Tag t ON t.TagId=tm.TagId GROUP BY n.NoteId ORDER BY n.LastModified DESC');
+    db.close();
+    if(!res.length) throw new Error('Aucune note trouvée');
+    var cols=res[0].columns, rows=res[0].values;
+    G.jwNotes=rows.map(function(row){
+      var o={};cols.forEach(function(c,i){o[c]=row[i];});
+      var tags=(o.tags||'').split('||').map(function(t){return t.trim();}).filter(function(t){return t&&t!=='null';});
+      return {id:String(o.NoteId),titre:(o.Title||'').replace(/ /g,' ').trim(),content:(o.Content||'').trim(),tags:tags,date:(o.LastModified||'').slice(0,10)};
+    }).filter(function(n){return n.titre;});
+    saveN(); buildJWTags();
+    var t=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    G.lastJWL=t; localStorage.setItem(SK+'j',t);
+    updateUI(); renderSync();
+    toast('✓ '+G.jwNotes.length+' notes JW Library importées');
+  } catch(err) {
+    setS('Erreur : '+err.message);
+    toast('Erreur : '+err.message, 4000);
+  }
+}
+
+function loadScript(src){
+  return new Promise(function(resolve, reject){
+    if(document.querySelector('script[src="'+src+'"]'))return resolve();
+    var s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;
+    document.head.appendChild(s);
+  });
+}
+
+/* ══ RENDU SYNC ══════════════════════════════════════════════════════════ */
+async function connectDropbox() {
+  var inp=document.getElementById('dbx-token-input');
+  var tok=((inp&&inp.value)||'').trim(); if(!tok){toast('Collez votre token Dropbox');return;}
+  var btn=document.getElementById('dbx-connect-btn');
+  if(btn){btn.textContent='Vérification…';btn.disabled=true;}
+  try {
+    var user=await dbxWho(tok);
+    G.dbxToken=tok; G.dbxUser=user;
+    localStorage.setItem(SK+'t',tok);
+    localStorage.setItem(SK+'u',JSON.stringify(user));
+    updateUI(); renderSync();
+    toast('✓ Dropbox connecté — Sync en cours…');
+    await autoSync(false);
+    renderSync();
+  } catch(e) {
+    toast('Token invalide. Vérifiez et réessayez.', 4000);
+    if(btn){btn.textContent='Connecter Dropbox';btn.disabled=false;}
+  }
+}
+
+function disconnectDropbox() {
+  G.dbxToken=''; G.dbxUser=null; G.lastSync='';
+  ['t','u','s'].forEach(function(k){localStorage.removeItem(SK+k);});
+  updateUI(); renderSync();
+}
+
+function saveGroqKey() {
+  var inp=document.getElementById('groq-key-input');
+  var key=((inp&&inp.value)||'').trim();
+  G.groqKey=key;
+  try {
+    if(key) localStorage.setItem(SK+'gk',key);
+    else localStorage.removeItem(SK+'gk');
+  } catch(e) {}
+  toast(key?'✓ Clé Groq enregistrée':'Clé Groq retirée');
+  renderSync();
+}
+
+function renderSync() {
+  var el=document.getElementById('sync-content'); if(!el) return;
+
+  var groqCard='<div class="card" style="margin-bottom:14px">'
+    + '<div style="font-weight:700;color:#1A2B4A;font-size:13px;margin-bottom:8px">🤖 Génération IA (Groq)</div>'
+    + '<div style="font-size:11px;color:#7A8396;line-height:1.6;margin-bottom:10px">Clé API Groq (gratuite sur console.groq.com) utilisée pour générer les plans d\'étude. Sans clé, un service de secours (Pollinations) est utilisé automatiquement, avec une fiabilité moindre.</div>'
+    + '<textarea id="groq-key-input" rows="2" placeholder="gsk_..." style="width:100%;border:1.5px solid #DDD8CE;border-radius:10px;padding:8px 10px;font-size:12px;font-family:monospace;resize:none;outline:none;color:#1A2B4A;background:#fafafa;margin-bottom:8px">' + (G.groqKey||'') + '</textarea>'
+    + '<button class="btn" style="background:#00827F;margin-bottom:0" onclick="saveGroqKey()">Enregistrer la clé Groq</button>'
+    + '</div>';
+
+  if(G.dbxUser) {
+    // Connecté
+    var catRows=CATS.slice(1).map(function(c){
+      var n=G.history.filter(function(h){return h.categorie===c.id;}).length;
+      var p=G.history.length?Math.round(n/G.history.length*100):0;
+      return '<div class="card" style="padding:10px 12px;margin-bottom:8px">'
+        + '<div style="display:flex;justify-content:space-between;margin-bottom:5px">'
+        + '<span style="font-size:12px;font-weight:600;color:#1A2B4A">' + c.icon + ' ' + c.label + '</span>'
+        + '<span style="font-size:12px;color:#7A8396;font-weight:700">' + n + '</span>'
+        + '</div>'
+        + '<div class="bar"><div class="bar-fill" style="width:' + p + '%"></div></div>'
+        + '</div>';
+    }).join('');
+
+    el.innerHTML='<div style="padding:14px">'
+      + '<div class="card" style="background:#F0FFF4;border-color:#1A7A4A;margin-bottom:14px">'
+      + '<div style="display:flex;align-items:center;gap:12px">'
+      + '<div style="width:46px;height:46px;border-radius:12px;background:#D1FAE5;display:flex;align-items:center;justify-content:center;font-size:26px">📦</div>'
+      + '<div style="flex:1">'
+      + '<div style="font-weight:700;color:#1A7A4A;font-size:14px">Dropbox connecté</div>'
+      + '<div style="font-size:12px;color:#7A8396;margin-top:2px">' + ((G.dbxUser.name&&G.dbxUser.name.display_name)||G.dbxUser.email||'') + '</div>'
+      + (G.lastSync?'<div style="font-size:11px;color:#1A7A4A;margin-top:2px">Dernière sync : '+G.lastSync+'</div>':'')
+      + '</div>'
+      + '</div>'
+      + '<div style="margin-top:10px;background:rgba(0,0,0,0.04);border-radius:8px;padding:8px 10px;font-size:11px;color:#7A8396">'
+      + '📁 /etude-biblique-jw/etudes.json · ' + G.history.length + ' études'
+      + '</div>'
+      + '</div>'
+      + '<div class="card" style="background:#EFF6FF;border-color:#2B5EA7;margin-bottom:14px">'
+      + '<div style="font-weight:700;color:#2B5EA7;font-size:13px;margin-bottom:8px">🔄 Sync automatique active</div>'
+      + '<div style="font-size:12px;color:#444;line-height:1.7">'
+      + '✓ Chaque nouvelle étude est sauvegardée sur Dropbox<br>'
+      + '✓ Au démarrage, l\'app récupère les études des autres appareils<br>'
+      + '✓ Fusion intelligente — aucune étude perdue'
+      + '</div>'
+      + '</div>'
+      + '<div class="card" style="margin-bottom:14px">'
+      + '<div style="font-weight:700;color:#1A2B4A;font-size:13px;margin-bottom:10px">Appareils synchronisés</div>'
+      + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:18px">📱</span><span style="font-size:12px;color:#1A7A4A;flex:1">Android (cet appareil)</span><span style="font-size:10px;color:#1A7A4A;font-weight:700">✓ actif</span></div>'
+      + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:18px">💻</span><span style="font-size:12px;color:#7A8396;flex:1">Surface Pro</span><span style="font-size:10px;color:#7A8396">même token Dropbox</span></div>'
+      + '<div style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">🌐</span><span style="font-size:12px;color:#7A8396;flex:1">Tout navigateur</span><span style="font-size:10px;color:#7A8396">même token Dropbox</span></div>'
+      + '</div>'
+      + '<button class="btn" style="background:#1A2B4A" onclick="autoSync(false).then(function(){renderSync();})">🔄 Synchroniser maintenant</button>'
+      + '<button class="btn" style="background:#fff;color:#C0392B;border:1.5px solid #C0392B" onclick="disconnectDropbox()">Se déconnecter</button>'
+      + '<div style="height:8px"></div>'
+      + groqCard
+      + '<div style="font-weight:700;color:#1A2B4A;font-size:15px;margin-bottom:12px">📋 Notes JW Library (' + G.jwNotes.length + ')</div>'
+      + '<div class="card">'
+      + '<div style="font-size:12px;color:#555;line-height:1.8;margin-bottom:12px">'
+      + '<strong>1.</strong> Dans JW Library → <strong>Paramètres → Sauvegarder</strong><br>'
+      + '<strong>2.</strong> Choisissez <strong>"Enregistrer sur cet appareil"</strong><br>'
+      + '<strong>3.</strong> Importez le fichier .jwlibrary ci-dessous'
+      + '</div>'
+      + '<button class="btn" style="background:#2B5EA7;margin-bottom:0" onclick="document.getElementById(\'file-jwlib\').click()">'
+      + '📂 Importer fichier .jwlibrary'
+      + '</button>'
+      + '<div id="jwl-status" style="font-size:11px;color:#7A8396;margin-top:6px;text-align:center">'
+      + (G.lastJWL?'✓ Dernier import : '+G.lastJWL:'')
+      + '</div>'
+      + '</div>'
+      + '<div style="font-weight:700;color:#1A2B4A;font-size:14px;margin:16px 0 10px">Études par catégorie</div>'
+      + catRows
+      + '<div style="height:30px"></div>'
+      + '</div>';
+
+  } else {
+    // Non connecté — formulaire token
+    el.innerHTML='<div style="padding:14px">'
+      + '<div style="text-align:center;padding:20px 0 16px">'
+      + '<div style="font-size:48px;margin-bottom:10px">📦</div>'
+      + '<div style="font-weight:800;color:#1A2B4A;font-size:18px;margin-bottom:6px">Connecter Dropbox</div>'
+      + '<div style="font-size:13px;color:#7A8396;line-height:1.5">Synchronisation automatique entre tous vos appareils</div>'
+      + '</div>'
+      + '<div class="card" style="background:#FFF8F0;border-color:#C9A84C;margin-bottom:14px">'
+      + '<div style="font-weight:700;color:#92400E;font-size:13px;margin-bottom:10px">Comment obtenir votre token Dropbox</div>'
+      + '<div style="font-size:12px;color:#444;line-height:2">'
+      + '<strong>1.</strong> Allez sur <a href="https://dropbox.com/developers/apps" target="_blank" style="color:#0061FF;font-weight:700">dropbox.com/developers/apps</a><br>'
+      + '<strong>2.</strong> Cliquez <strong>"Create app"</strong><br>'
+      + '<strong>3.</strong> Choisissez <strong>Scoped access → Full Dropbox</strong><br>'
+      + '<strong>4.</strong> Nom : <code style="background:#f0f0f0;padding:1px 5px;border-radius:4px">EtudeBibliqueJW</code><br>'
+      + '<strong>5.</strong> Onglet <strong>"Permissions"</strong> → cochez <code>files.content.read</code> + <code>files.content.write</code> → <strong>Submit</strong><br>'
+      + '<strong>6.</strong> Onglet <strong>"Settings"</strong> → section <strong>"OAuth 2"</strong> → <strong>"Generated access token"</strong> → <strong>Generate</strong><br>'
+      + '<strong>7.</strong> Copiez le token et collez-le ci-dessous'
+      + '</div>'
+      + '</div>'
+      + '<div style="font-size:13px;font-weight:700;color:#1A2B4A;margin-bottom:8px">Votre token Dropbox :</div>'
+      + '<textarea id="dbx-token-input" rows="3" placeholder="sl.u.ABCDE..." style="width:100%;border:1.5px solid #DDD8CE;border-radius:10px;padding:10px 12px;font-size:12px;font-family:monospace;resize:none;outline:none;color:#1A2B4A;background:#fafafa;margin-bottom:10px"></textarea>'
+      + '<button id="dbx-connect-btn" class="btn" style="background:#0061FF" onclick="connectDropbox()">'
+      + '📦 Connecter Dropbox'
+      + '</button>'
+      + '<div class="card" style="background:#EFF6FF;border-color:#2B5EA7;margin-top:4px;margin-bottom:14px">'
+      + '<div style="font-size:12px;color:#1A2B4A;line-height:1.7">'
+      + '<strong>Ce que vous obtenez :</strong><br>'
+      + '🔄 Sync automatique à chaque étude<br>'
+      + '📱 Android ↔ 💻 Surface Pro ↔ 🌐 Navigateur<br>'
+      + '📋 Import de vos notes JW Library<br>'
+      + '🔒 Token stocké sur cet appareil uniquement'
+      + '</div>'
+      + '</div>'
+      + groqCard
+      + '<div style="height:30px"></div>'
+      + '</div>';
+  }
+}
+
+/* ══ INIT ════════════════════════════════════════════════════════════════ */
+setTimeout(async function() {
+  load();
+  renderHome(); renderHist(); renderJWNotes(); renderSync(); updateUI();
+  // Sync automatique au démarrage si connecté
+  if (G.dbxToken) {
+    await autoSync(true);
+    renderHist(); updateUI();
+  }
+}, 0);
+</script>
+</body>
+</html>
