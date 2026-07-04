@@ -1120,12 +1120,48 @@ function queryOne(db, sql, params){
   return row;
 }
 
-function findOrCreateLocation(db, title){
-  var row=queryOne(db, 'SELECT LocationId AS id FROM Location WHERE Title = ?', [title]);
+var BOOK_MAP={"genese":1,"exode":2,"levitique":3,"nombres":4,"deuteronome":5,"josue":6,"juges":7,"ruth":8,
+  "1 samuel":9,"2 samuel":10,"1 rois":11,"2 rois":12,"1 chroniques":13,"2 chroniques":14,"esdras":15,"nehemie":16,
+  "esther":17,"job":18,"psaumes":19,"psaume":19,"proverbes":20,"ecclesiaste":21,"cantique des cantiques":22,
+  "isaie":23,"jeremie":24,"lamentations":25,"ezekiel":26,"daniel":27,"osee":28,"joel":29,"amos":30,"abdias":31,
+  "jonas":32,"michee":33,"nahum":34,"habacuc":35,"sophonie":36,"aggee":37,"zacharie":38,"malachie":39,
+  "matthieu":40,"marc":41,"luc":42,"jean":43,"actes":44,"romains":45,"1 corinthiens":46,"2 corinthiens":47,
+  "galates":48,"ephesiens":49,"philippiens":50,"colossiens":51,"1 thessaloniciens":52,"2 thessaloniciens":53,
+  "1 timothee":54,"2 timothee":55,"tite":56,"philemon":57,"hebreux":58,"jacques":59,"1 pierre":60,"2 pierre":61,
+  "1 jean":62,"2 jean":63,"3 jean":64,"jude":65,"revelation":66,"apocalypse":66};
+
+function normalizeStr(s){
+  return s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
+}
+
+function parseVerseRef(str){
+  if(!str) return null;
+  var s=str.split(/[,;]/)[0];
+  var m=s.match(/^\s*([1-3])?\s*([\p{L}][\p{L}\s]*?)\s+(\d+)/u);
+  if(!m) return null;
+  var chapter=parseInt(m[3],10); if(!chapter) return null;
+  var key=(m[1] ? m[1]+' ' : '') + normalizeStr(m[2]).replace(/\s+/g,' ');
+  var num=BOOK_MAP[key];
+  if(!num){
+    var words=key.split(' ');
+    while(words.length && !num){ words.pop(); num=BOOK_MAP[words.join(' ')]; }
+  }
+  if(!num) return null;
+  return {book:num, chapter:chapter};
+}
+
+function discoverBibleKeySymbol(db){
+  var row=queryOne(db, 'SELECT KeySymbol AS k, MepsLanguage AS l FROM Location WHERE Type=0 AND BookNumber IS NOT NULL AND KeySymbol IS NOT NULL LIMIT 1');
+  if(row && row.k) return {key:row.k, lang:(row.l==null?0:row.l)};
+  return {key:'nwtsty', lang:0};
+}
+
+function findOrCreateBibleLocation(db, bibleInfo, book, chapter){
+  var row=queryOne(db, 'SELECT LocationId AS id FROM Location WHERE Type=0 AND KeySymbol=? AND BookNumber=? AND ChapterNumber=? AND Track IS NULL', [bibleInfo.key, book, chapter]);
   if(row && row.id != null) return row.id;
   var maxRow=queryOne(db, 'SELECT MAX(LocationId) AS m FROM Location');
   var newId=((maxRow && maxRow.m) || 0) + 1;
-  db.run('INSERT INTO Location (LocationId,BookNumber,ChapterNumber,DocumentId,Track,IssueTagNumber,KeySymbol,MepsLanguage,Type,Title,Specialty,Edition) VALUES (?,NULL,NULL,NULL,NULL,0,?,4,0,?,NULL,NULL)', [newId, 'nwtsty', title]);
+  db.run('INSERT INTO Location (LocationId,BookNumber,ChapterNumber,DocumentId,Track,IssueTagNumber,KeySymbol,MepsLanguage,Type,Title,Specialty,Edition) VALUES (?,?,?,NULL,NULL,0,?,?,0,NULL,NULL,NULL)', [newId, book, chapter, bibleInfo.key, bibleInfo.lang]);
   return newId;
 }
 
@@ -1167,7 +1203,7 @@ function exportJWLibrary(){
       var db=new SQL.Database(new Uint8Array(dbBuf));
 
       setS('Fusion des études…');
-      var locId=findOrCreateLocation(db, 'Application Étude Biblique');
+      var bibleInfo=discoverBibleKeySymbol(db);
 
       var existRow=db.exec('SELECT Title FROM Note WHERE Title IS NOT NULL');
       var existTitles={};
@@ -1180,7 +1216,7 @@ function exportJWLibrary(){
       var userMarkId=((maxUMRow && maxUMRow.m) || 0) + 1;
       var tagMapId=((maxTMRow && maxTMRow.m) || 0) + 1;
 
-      var CAT_COLOR={foi:1,famille:4,royaume:3,moral:5,etude:2,histoire:6,espoir:7};
+      var CAT_COLOR={foi:1,famille:4,royaume:3,moral:5,etude:2,histoire:6,espoir:1};
       var now=new Date().toISOString().replace('Z','+00:00');
       var added=0, skipped=0, failed=0;
 
@@ -1200,6 +1236,8 @@ function exportJWLibrary(){
           var catLabel=cat ? cat.label : 'Étude';
           var tagId=findOrCreateTag(db, catLabel);
           var colorIdx=CAT_COLOR[e.categorie] || 1;
+          var ref=parseVerseRef(e.verset) || {book:1, chapter:1};
+          var locId=findOrCreateBibleLocation(db, bibleInfo, ref.book, ref.chapter);
 
           db.run('INSERT INTO UserMark (UserMarkId,ColorIndex,LocationId,StyleIndex,UserMarkGuid,Version) VALUES (?,?,?,0,?,1)', [userMarkId, colorIdx, locId, uuid()]);
           db.run('INSERT INTO Note (NoteId,Guid,UserMarkId,LocationId,Title,Content,LastModified,Created,BlockType,BlockIdentifier) VALUES (?,?,?,?,?,?,?,?,0,NULL)', [noteId, uuid(), userMarkId, locId, e.titre, content, now, now]);
