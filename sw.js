@@ -1,4 +1,4 @@
-var CACHE_NAME = 'jw-shell-v1';
+var CACHE_NAME = 'jw-shell-v2';
 var SHELL_FILES = [
   './',
   './index.html',
@@ -36,6 +36,25 @@ self.addEventListener('fetch', function(event) {
   var isShellRequest = event.request.method === 'GET' && url.origin === self.location.origin;
   if (!isShellRequest) return; // laisse passer les appels réseau externes (WOL, Dropbox, Groq, Pollinations...) sans mise en cache
 
+  var isNavigation = event.request.mode === 'navigate' ||
+    (event.request.headers.get('accept') || '').indexOf('text/html') !== -1;
+
+  if (isNavigation) {
+    // Réseau en priorité pour la page elle-même : jamais bloqué sur une version périmée quand on est en ligne.
+    event.respondWith(
+      fetch(event.request).then(function(res) {
+        if (res && res.ok) {
+          caches.open(CACHE_NAME).then(function(cache) { cache.put(event.request, res.clone()); });
+        }
+        return res;
+      }).catch(function() {
+        return caches.match(event.request);
+      })
+    );
+    return;
+  }
+
+  // Fichiers statiques (icônes, manifeste) : cache d'abord, rafraîchi en arrière-plan.
   event.respondWith(
     caches.match(event.request).then(function(cached) {
       var network = fetch(event.request).then(function(res) {
