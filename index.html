@@ -1659,6 +1659,31 @@ if ('serviceWorker' in navigator) {
   if(weekSelect){ weekSelect.addEventListener("change", fillUrl); }
   fillUrl();
 
+  // ---- Récupération via proxy CORS, avec repli sur plusieurs proxies publics ----
+  var CORS_PROXIES = [
+    "https://api.allorigins.win/raw?url=",
+    "https://corsproxy.io/?url=",
+    "https://api.codetabs.com/v1/proxy?quest="
+  ];
+  async function fetchViaProxy(url, preferredProxy){
+    var list = CORS_PROXIES.slice();
+    if(preferredProxy){
+      list = list.filter(function(p){ return p !== preferredProxy; });
+      list.unshift(preferredProxy);
+    }
+    var lastErr = new Error("aucun proxy CORS disponible");
+    for(var i=0;i<list.length;i++){
+      try{
+        var fetchP = fetch(list[i] + encodeURIComponent(url));
+        var toP = new Promise(function(_,rej){ setTimeout(function(){ rej(new Error("timeout proxy")); },20000); });
+        var res = await Promise.race([fetchP,toP]);
+        if(res && res.ok){ return await res.text(); }
+        lastErr = new Error("HTTP " + (res ? res.status : "?"));
+      }catch(e){ lastErr = e; }
+    }
+    throw lastErr;
+  }
+
   // ---- Préparation automatique de la semaine en cours, au lancement de l'app ----
   function autoPrepareCurrentWeek(){
     var id = weekId(mondayOf(new Date()));
@@ -1669,22 +1694,16 @@ if ('serviceWorker' in navigator) {
     if(lastTry && (Date.now() - Number(lastTry)) < 6*3600000){ return; } // pas plus d'une tentative auto toutes les 6h
     lsSet("autoTry:" + id, String(Date.now()));
 
-    var proxy = lsGet("corsProxy") || "https://api.allorigins.win/raw?url=";
+    var proxy = lsGet("corsProxy") || "";
     var key = lsGet(SHARED_GROQ_KEY) || "";
     var url = sched.url;
     var isMeetings = url.indexOf("/meetings/") >= 0;
     setB("Préparation automatique de la semaine en cours…");
-    fetch(proxy + encodeURIComponent(url)).then(function(res){
-      if(!res || !res.ok){ throw new Error("proxy/reseau"); }
-      return res.text();
-    }).then(function(html1){
+    fetchViaProxy(url, proxy).then(function(html1){
       if(isMeetings){
         var prog = findProgramUrl(html1);
         if(prog){
-          return fetch(proxy + encodeURIComponent(prog)).then(function(r){
-            if(!r || !r.ok){ throw new Error("programme"); }
-            return r.text();
-          });
+          return fetchViaProxy(prog, proxy);
         }
       }
       return html1;
@@ -1722,18 +1741,12 @@ if ('serviceWorker' in navigator) {
       setB("Recuperation du programme...");
       bRun.disabled = true;
       var isMeetings = url.indexOf("/meetings/") >= 0;
-      fetch(proxy + encodeURIComponent(url)).then(function(res){
-        if(!res || !res.ok){ throw new Error("proxy/reseau"); }
-        return res.text();
-      }).then(function(html1){
+      fetchViaProxy(url, proxy).then(function(html1){
         if(isMeetings){
           var prog = findProgramUrl(html1);
           if(prog){
             setB("Ouverture du programme...");
-            return fetch(proxy + encodeURIComponent(prog)).then(function(r){
-              if(!r || !r.ok){ throw new Error("programme"); }
-              return r.text();
-            });
+            return fetchViaProxy(prog, proxy);
           }
         }
         return html1;
