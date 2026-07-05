@@ -1210,13 +1210,10 @@ function exportJWLibrary(){
       if(existRow.length){ existRow[0].values.forEach(function(r){ existTitles[r[0]]=true; }); }
 
       var maxNoteRow=queryOne(db, 'SELECT MAX(NoteId) AS m FROM Note');
-      var maxUMRow=queryOne(db, 'SELECT MAX(UserMarkId) AS m FROM UserMark');
       var maxTMRow=queryOne(db, 'SELECT MAX(TagMapId) AS m FROM TagMap');
       var noteId=((maxNoteRow && maxNoteRow.m) || 0) + 1;
-      var userMarkId=((maxUMRow && maxUMRow.m) || 0) + 1;
       var tagMapId=((maxTMRow && maxTMRow.m) || 0) + 1;
 
-      var CAT_COLOR={foi:1,famille:4,royaume:3,moral:5,etude:2,histoire:6,espoir:1};
       var now=new Date().toISOString().replace('Z','+00:00');
       var added=0, skipped=0, failed=0;
 
@@ -1235,15 +1232,13 @@ function exportJWLibrary(){
           var cat=CATS.find(function(c){ return c.id === e.categorie; });
           var catLabel=cat ? cat.label : 'Étude';
           var tagId=findOrCreateTag(db, catLabel);
-          var colorIdx=CAT_COLOR[e.categorie] || 1;
           var ref=parseVerseRef(e.verset) || {book:1, chapter:1};
           var locId=findOrCreateBibleLocation(db, bibleInfo, ref.book, ref.chapter);
 
-          db.run('INSERT INTO UserMark (UserMarkId,ColorIndex,LocationId,StyleIndex,UserMarkGuid,Version) VALUES (?,?,?,0,?,1)', [userMarkId, colorIdx, locId, uuid()]);
-          db.run('INSERT INTO Note (NoteId,Guid,UserMarkId,LocationId,Title,Content,LastModified,Created,BlockType,BlockIdentifier) VALUES (?,?,?,?,?,?,?,?,0,NULL)', [noteId, uuid(), userMarkId, locId, e.titre, content, now, now]);
+          db.run('INSERT INTO Note (NoteId,Guid,UserMarkId,LocationId,Title,Content,LastModified,Created,BlockType,BlockIdentifier) VALUES (?,?,NULL,?,?,?,?,?,0,NULL)', [noteId, uuid(), locId, e.titre, content, now, now]);
           db.run('INSERT INTO TagMap (TagMapId,PlaylistItemId,LocationId,NoteId,TagId,Position) VALUES (?,NULL,NULL,?,?,0)', [tagMapId, noteId, tagId]);
 
-          noteId++; userMarkId++; tagMapId++; added++;
+          noteId++; tagMapId++; added++;
         } catch(errNote) { failed++; }
       }
 
