@@ -1945,6 +1945,36 @@ if ('serviceWorker' in navigator) {
   }
   function stripFences(s){ return s.replace(/```json/gi,"").replace(/```/g,"").replace(/^\s+|\s+$/g,""); }
 
+  // La réponse du modèle est parfois tronquée en cours de génération (limite de
+  // longueur côté service gratuit), ce qui casse JSON.parse (« Unterminated string »).
+  // On retrouve alors le dernier objet complet dans "parts" et on referme le JSON
+  // à cet endroit, pour récupérer les parties déjà générées plutôt que tout perdre.
+  function parseWeekJSON(raw){
+    var text = stripFences(raw);
+    try{ return JSON.parse(text); }catch(e){}
+    var stack = [], inStr = false, esc = false, lastSafePos = -1;
+    for(var i=0;i<text.length;i++){
+      var c = text[i];
+      if(inStr){
+        if(esc){ esc=false; }
+        else if(c==="\\"){ esc=true; }
+        else if(c==='"'){ inStr=false; }
+        continue;
+      }
+      if(c==='"'){ inStr=true; continue; }
+      if(c==="{"||c==="["){ stack.push(c); continue; }
+      if(c==="}"||c==="]"){
+        stack.pop();
+        if(stack.length===2 && stack[0]==="{" && stack[1]==="["){ lastSafePos = i+1; }
+        continue;
+      }
+    }
+    if(lastSafePos>0){
+      try{ return JSON.parse(text.slice(0,lastSafePos) + "]}"); }catch(e2){}
+    }
+    throw new Error("JSON invalide (réponse tronquée)");
+  }
+
   // ---- Bouton de preparation autonome ----
   var bRun = document.getElementById("bRun");
   var bUrl = document.getElementById("bUrl");
@@ -2016,7 +2046,7 @@ if ('serviceWorker' in navigator) {
     }).then(function(html2){
       return callLLM(buildWeekPrompt(extractText(html2)));
     }).then(function(raw){
-      var data = JSON.parse(stripFences(raw));
+      var data = parseWeekJSON(raw);
       if(!data.dates){ data.dates = sched.dates; }
       renderWeek(id, data);
       saveWeek(id, data);
@@ -2066,7 +2096,7 @@ if ('serviceWorker' in navigator) {
         setB("Structuration (gratuite, sans cle)...");
         return callLLM(buildWeekPrompt(extractText(html2)));
       }).then(function(raw){
-        var data = JSON.parse(stripFences(raw));
+        var data = parseWeekJSON(raw);
         var sched = schedById(id);
         if(!data.dates && sched){ data.dates = sched.dates; }
         renderWeek(id, data);
