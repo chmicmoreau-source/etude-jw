@@ -277,6 +277,11 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
     <div class="hdr" style="justify-content:center"><span class="hdr-title">Sang & traitements</span></div>
     <div class="scroll">
       <div style="padding:14px">
+        <div class="card" style="background:#EFF6FF;border-color:#2B5EA7;margin-bottom:14px">
+          <div style="font-weight:700;color:#2B5EA7;font-size:13px;margin-bottom:6px">📖 Pourquoi la question du sang se pose</div>
+          <div style="font-size:12px;color:#444;line-height:1.6;margin-bottom:10px">Pour un chrétien, s'abstenir de sang n'est pas un choix médical mais une exigence biblique, confirmée aussi bien avant qu'après la Loi mosaïque, et pour les chrétiens des nations :</div>
+          <div id="blood-doctrine"></div>
+        </div>
         <div class="card" style="background:#FFF0F0;border-color:#C0392B;margin-bottom:14px">
           <div style="font-weight:700;color:#C0392B;font-size:13px;margin-bottom:6px">🔒 Mes décisions personnelles</div>
           <div style="font-size:12px;color:#444;line-height:1.6">Reste uniquement sur cet appareil (stockage local) — jamais synchronisé via Sync, jamais publié dans le code de l'application. Reprend la structure de la carte Instructions médicales (DPA) : pour chaque fraction ou procédé, indiquez votre décision.</div>
@@ -787,31 +792,37 @@ var SUGGS = [
    pas une donnée personnelle. Le CHOIX de chaque personne (accepte/à discuter/
    refuse) reste local à l'appareil, voir G.bloodChoices et setBloodChoice().
 ════════════════════════════════════════════════════════════════════════ */
+var BLOOD_DOCTRINE = [
+  {ref:'Genèse 9:4', text:'Cependant, vous ne devez pas manger la chair avec sa vie — son sang.'},
+  {ref:'Lévitique 17:10-14', text:'Si un homme du peuple d’Israël ou un étranger qui habite parmi vous mange n’importe quelle sorte de sang, à coup sûr je rejetterai celui qui mange le sang et je le retrancherai du milieu de son peuple. 11 Car la vie de la chair est dans le sang, et moi je l’ai donné pour vous sur l’autel, pour le rite de réconciliation, car c’est le sang qui permet le pardon des péchés par la vie qui est en lui. 12 C’est pourquoi j’ai dit aux Israélites : “Aucun de vous ne mangera du sang et aucun étranger qui habite parmi vous ne mangera du sang.” 13 Si un Israélite ou un étranger qui habite parmi vous prend à la chasse un animal ou un oiseau qui se mange, il devra en verser le sang et le couvrir de poussière. 14 Car la vie de toute sorte de chair est son sang, parce que la vie est en lui. Voilà pourquoi j’ai dit aux Israélites : “Vous ne devez manger le sang d’aucune sorte de chair, car la vie de toute sorte de chair est son sang. Celui qui le mangera sera retranché.”'},
+  {ref:'Actes 15:28, 29', text:'Car l’esprit saint et nous-mêmes avons jugé bon de ne pas vous ajouter d’autre fardeau que ces choses qui sont nécessaires : 29 vous abstenir de ce qui a été sacrifié aux idoles, du sang, de ce qui est étouffé et des actes sexuels immoraux. Si vous vous interdisez strictement ces choses, tout ira bien pour vous. Portez-vous bien !'},
+];
+
 var BLOOD_ITEMS = [
   {group:'Plasma', items:[
-    {key:'albumine', title:'Albumine', pct:'jusqu’à 4 % du plasma', desc:'Protéine extraite du plasma, aussi présente dans certains végétaux, le lait, les œufs et le lait maternel. Entre parfois dans la composition de restaurateurs du volume plasmatique (états de choc, brûlures graves) et de nombreux médicaments.'},
-    {key:'immunoglobulines', title:'Immunoglobulines', pct:'jusqu’à 3 % du plasma', desc:'Fractions de protéines pouvant entrer dans des médicaments contre des virus ou maladies (diphtérie, tétanos, hépatite virale, rage…), la prévention de maladies mettant en danger la vie d’un fœtus, et des antidotes contre le venin de serpents et d’araignées.'},
-    {key:'coagulation', title:'Facteurs de coagulation', pct:'moins de 1 % du plasma', desc:'Protéines favorisant la coagulation, données aux patients qui saignent facilement ; entrent dans des colles médicales pour refermer les plaies. Certains facteurs sont désormais préparés à partir de produits non sanguins.'},
+    {key:'albumine', title:'Albumine', pct:'jusqu’à 4 % du plasma', desc:'Protéine extraite du plasma, aussi présente dans certains végétaux, le lait, les œufs et le lait maternel. Entre parfois dans la composition de restaurateurs du volume plasmatique (états de choc, brûlures graves) et de nombreux médicaments.', technique:'Produite en laboratoire par fractionnement du plasma ou par génie génétique (albumine recombinante), puis administrée par perfusion intraveineuse pour restaurer le volume sanguin ou la pression oncotique.'},
+    {key:'immunoglobulines', title:'Immunoglobulines', pct:'jusqu’à 3 % du plasma', desc:'Fractions de protéines pouvant entrer dans des médicaments contre des virus ou maladies (diphtérie, tétanos, hépatite virale, rage…), la prévention de maladies mettant en danger la vie d’un fœtus, et des antidotes contre le venin de serpents et d’araignées.', technique:'Extraites du plasma par fractionnement puis purifiées ; administrées par voie intraveineuse ou intramusculaire, sous forme d’immunoglobulines spécifiques ou polyvalentes.'},
+    {key:'coagulation', title:'Facteurs de coagulation', pct:'moins de 1 % du plasma', desc:'Protéines favorisant la coagulation, données aux patients qui saignent facilement ; entrent dans des colles médicales pour refermer les plaies. Certains facteurs sont désormais préparés à partir de produits non sanguins.', technique:'Concentrés de facteurs purifiés (ou recombinants, non dérivés du sang) injectés par voie intraveineuse pour corriger un déficit de coagulation ou en urgence hémorragique.'},
   ]},
   {group:'Globules rouges', items:[
-    {key:'hemoglobine', title:'Hémoglobine', pct:'33 % des globules rouges', desc:'Protéine qui véhicule l’oxygène et le dioxyde de carbone. Des produits à base d’hémoglobine humaine ou animale sont parfois administrés en cas d’anémie aiguë ou d’hémorragie gravissime.'},
-    {key:'hemine', title:'Hémine', pct:'moins de 2 % des globules rouges', desc:'Inhibiteur d’enzymes dérivé de l’hémoglobine, utilisé pour traiter un groupe d’affections sanguines génétiques rares (porphyrie).'},
+    {key:'hemoglobine', title:'Hémoglobine', pct:'33 % des globules rouges', desc:'Protéine qui véhicule l’oxygène et le dioxyde de carbone. Des produits à base d’hémoglobine humaine ou animale sont parfois administrés en cas d’anémie aiguë ou d’hémorragie gravissime.', technique:'Solutions transporteuses d’oxygène à base d’hémoglobine purifiée et stabilisée chimiquement, administrées par perfusion lorsque le temps manque pour une autre solution.'},
+    {key:'hemine', title:'Hémine', pct:'moins de 2 % des globules rouges', desc:'Inhibiteur d’enzymes dérivé de l’hémoglobine, utilisé pour traiter un groupe d’affections sanguines génétiques rares (porphyrie).', technique:'Administrée par perfusion intraveineuse lente pour freiner la production excessive de porphyrines lors d’une crise de porphyrie aiguë.'},
   ]},
   {group:'Globules blancs', items:[
-    {key:'interferons', title:'Interférons', pct:'fraction infime des globules blancs', desc:'Protéines qui luttent contre les infections virales et le cancer. La plupart ne sont pas dérivés du sang, mais certains sont formés à partir de fractions de globules blancs humains.'},
+    {key:'interferons', title:'Interférons', pct:'fraction infime des globules blancs', desc:'Protéines qui luttent contre les infections virales et le cancer. La plupart ne sont pas dérivés du sang, mais certains sont formés à partir de fractions de globules blancs humains.', technique:'Produits aujourd’hui presque exclusivement par génie génétique (interférons recombinants) ; administrés par injection sous-cutanée ou intramusculaire.'},
   ]},
   {group:'Plaquettes', items:[
     {key:'plaquettes', title:'Plaquettes', pct:'', desc:'Jusqu’à présent, aucune fraction de plaquettes n’a été isolée pour un usage médical direct.', noChoice:true},
   ]},
   {group:'Procédés faisant appel à l’utilisation médicale de votre sang', items:[
-    {key:'recuperation', title:'Récupération du sang épanché', pct:'Réduction des pertes sanguines', desc:'Pendant une intervention, le sang épanché d’une blessure ou d’une cavité du corps est collecté, lavé ou filtré, puis réinjecté au patient, parfois en continu.'},
-    {key:'hemodilution', title:'Hémodilution', pct:'Réduction des pertes sanguines', desc:'Une partie du sang du patient est dérivée vers des poches et remplacée par un restaurateur non sanguin du volume plasmatique ; le sang dérivé est réinjecté pendant ou après l’intervention.'},
-    {key:'circulation', title:'Circulation extracorporelle', pct:'Maintien de la circulation sanguine', desc:'Le sang est dérivé vers un cœur-poumon artificiel pour être oxygéné, avant d’être réintroduit dans le corps.'},
-    {key:'dialyse', title:'Dialyse', pct:'Joue le rôle de l’organe déficient', desc:'Le sang circule dans une machine qui le filtre et le nettoie, avant d’être réinjecté au patient.'},
-    {key:'bloodpatch', title:'Blood patch (pansement sanguin) épidural', pct:'Arrêt de l’écoulement du liquide céphalo-rachidien', desc:'Une petite quantité du sang du patient est prélevée puis injectée dans la membrane entourant la moelle épinière, pour refermer une brèche rachidienne.'},
-    {key:'plasmapherese', title:'Plasmaphérèse', pct:'Traitement de certaines maladies', desc:'Le sang est prélevé et filtré pour en ôter le plasma, remplacé par un succédané, avant d’être réinjecté. (Substituer le plasma d’une autre personne serait inacceptable pour un chrétien.)'},
-    {key:'marquage', title:'Marquage à l’aide d’un traceur', pct:'Diagnostic et traitement de certaines maladies', desc:'Du sang est prélevé, mélangé avec un médicament, puis réinjecté au patient. La durée hors du corps peut varier.'},
-    {key:'gel', title:'Gel plaquettaire autologue', pct:'Fermeture des plaies, réduction des saignements', desc:'Le sang du patient est concentré en une solution riche en plaquettes et en globules blancs, appliquée sur des plaies chirurgicales ou autres.'},
+    {key:'recuperation', title:'Récupération du sang épanché', pct:'Réduction des pertes sanguines', desc:'Pendant une intervention, le sang épanché d’une blessure ou d’une cavité du corps est collecté, lavé ou filtré, puis réinjecté au patient, parfois en continu.', technique:'Un dispositif d’aspiration recueille le sang perdu pendant l’opération, le filtre et le lave par centrifugation, puis le réinjecte — en circuit fermé et continu si le chirurgien l’accepte.'},
+    {key:'hemodilution', title:'Hémodilution', pct:'Réduction des pertes sanguines', desc:'Une partie du sang du patient est dérivée vers des poches et remplacée par un restaurateur non sanguin du volume plasmatique ; le sang dérivé est réinjecté pendant ou après l’intervention.', technique:'Juste avant l’intervention, une partie du sang est prélevée dans des poches reliées en circuit fermé continu au patient, puis restituée en fin d’intervention.'},
+    {key:'circulation', title:'Circulation extracorporelle', pct:'Maintien de la circulation sanguine', desc:'Le sang est dérivé vers un cœur-poumon artificiel pour être oxygéné, avant d’être réintroduit dans le corps.', technique:'Utilisée en chirurgie cardiaque : une pompe et un oxygénateur prennent en charge la circulation et l’oxygénation du sang pendant que le cœur est arrêté, en circuit fermé continu.'},
+    {key:'dialyse', title:'Dialyse', pct:'Joue le rôle de l’organe déficient', desc:'Le sang circule dans une machine qui le filtre et le nettoie, avant d’être réinjecté au patient.', technique:'Le sang passe dans un dialyseur (rein artificiel) à travers une membrane semi-perméable qui élimine les déchets et l’excès de liquide, en circuit fermé continu.'},
+    {key:'bloodpatch', title:'Blood patch (pansement sanguin) épidural', pct:'Arrêt de l’écoulement du liquide céphalo-rachidien', desc:'Une petite quantité du sang du patient est prélevée puis injectée dans la membrane entourant la moelle épinière, pour refermer une brèche rachidienne.', technique:'Quelques millilitres de sang, prélevés en circuit fermé continu, sont injectés dans l’espace épidural pour former un caillot qui colmate la brèche de la dure-mère.'},
+    {key:'plasmapherese', title:'Plasmaphérèse', pct:'Traitement de certaines maladies', desc:'Le sang est prélevé et filtré pour en ôter le plasma, remplacé par un succédané, avant d’être réinjecté. (Substituer le plasma d’une autre personne serait inacceptable pour un chrétien.)', technique:'Le sang passe dans un séparateur qui isole le plasma par centrifugation ou filtration ; celui-ci est remplacé par un succédané avant réinjection, en circuit fermé continu.'},
+    {key:'marquage', title:'Marquage à l’aide d’un traceur', pct:'Diagnostic et traitement de certaines maladies', desc:'Du sang est prélevé, mélangé avec un médicament, puis réinjecté au patient. La durée hors du corps peut varier.', technique:'Un échantillon de sang est mélangé à un produit radioactif ou marqueur, puis réinjecté pour suivre son parcours dans l’organisme (ex. scintigraphie).'},
+    {key:'gel', title:'Gel plaquettaire autologue', pct:'Fermeture des plaies, réduction des saignements', desc:'Le sang du patient est concentré en une solution riche en plaquettes et en globules blancs, appliquée sur des plaies chirurgicales ou autres.', technique:'Le sang du patient est centrifugé pour concentrer plaquettes et globules blancs, puis activé pour former un gel appliqué localement sur la plaie.'},
   ]},
 ];
 var BLOOD_LINKS = [
@@ -983,6 +994,10 @@ function renderBloodItem(item){
     + (item.pct?'<span style="font-size:10px;color:#7A8396;white-space:nowrap">' + item.pct + '</span>':'')
     + '</div>'
     + '<div style="font-size:12px;color:#555;line-height:1.55;margin-top:5px">' + item.desc + '</div>'
+    + (item.technique
+        ? '<div style="font-size:11px;color:#8E44AD;font-weight:700;margin-top:8px">⚙ Technique médicale</div>'
+          + '<div style="font-size:12px;color:#555;line-height:1.55;margin-top:2px">' + item.technique + '</div>'
+        : '')
     + choiceRow
     + '</div>';
 }
@@ -991,6 +1006,14 @@ function renderSang() {
   if(ta) ta.value=G.bloodNotes;
   var st=document.getElementById('blood-saved');
   if(st) st.textContent=G.bloodSavedAt ? ('✓ Enregistré à ' + G.bloodSavedAt + ' — reste sur cet appareil uniquement') : '';
+
+  var doc=document.getElementById('blood-doctrine');
+  if(doc){
+    doc.innerHTML=BLOOD_DOCTRINE.map(function(v){
+      return '<div style="margin-bottom:10px"><span style="font-weight:700;color:#1A2B4A;font-size:12.5px">' + v.ref + '</span>'
+        + '<div style="font-size:12.5px;color:#444;line-height:1.6;font-style:italic;margin-top:2px">« ' + v.text + ' »</div></div>';
+    }).join('');
+  }
 
   var items=document.getElementById('blood-items');
   if(items){
