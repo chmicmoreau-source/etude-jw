@@ -680,8 +680,8 @@ Produis ces sections :
             <h1>Étude de la Tour de Garde</h1>
             <details class="builder" open>
               <summary>➕ Préparer l'étude de la semaine</summary>
-              <p class="builder-help">Ouvre l'article d'étude de la semaine sur wol.jw.org (Bibliothèque → La Tour de Garde — édition d'étude), copie son lien ci-dessous, ou colle directement le texte de l'article.</p>
-              <input id="tgUrl" type="url" placeholder="Lien wol.jw.org de l'article d'étude">
+              <p class="builder-help">Le lien de la semaine en cours se remplit tout seul ci-dessous : l'app y retrouve l'article Tour de Garde correspondant automatiquement. Modifie-le seulement pour une autre semaine.</p>
+              <input id="tgUrl" type="url" placeholder="Lien wol.jw.org de la semaine (rempli automatiquement)">
               <a id="tgOpenLink" href="https://wol.jw.org/fr/wol/library/r30/lp-f/toutes-les-publications/la-tour-de-garde-etude" target="_blank" rel="noopener" style="display:inline-block;font-size:13px;color:var(--gold);font-weight:600;margin:2px 0 8px;text-decoration:none">Ouvrir la bibliothèque Tour de Garde →</a>
               <input id="tgProxy" type="text" value="" placeholder="Proxy CORS personnel (optionnel — laisse vide pour utiliser les proxys par défaut)">
               <p class="builder-help">Si la récupération automatique échoue : ouvre le lien ci-dessus, sélectionne tout le texte de l'article, copie-le et colle-le ci-dessous — la génération se fera directement à partir de ce texte, sans passer par un proxy.</p>
@@ -1957,55 +1957,71 @@ if ('serviceWorker' in navigator) {
     }
   }
 
-  // ---- Prompt de structuration ----
-  // Demander les 7 parties de la reunion en un seul appel produit une reponse
-  // trop longue pour le service gratuit, qui la coupe en cours de route
-  // (« Unterminated string in JSON »). On genere donc chaque section separement :
-  // chaque reponse est courte, donc beaucoup moins susceptible d'etre tronquee,
-  // et une troncature eventuelle sur une section n'affecte plus les autres.
-  var SECTION_INSTRUCTIONS = {
-    joyaux: "Concentre-toi UNIQUEMENT sur la section « Joyaux de la Parole de Dieu » du programme : l'expose, les perles spirituelles, et la lecture de la Bible.",
-    ministere: "Concentre-toi UNIQUEMENT sur la section « Applique-toi au ministere » du programme : chaque devoir attribue (conversation, entretien, discours, etc.) tel que liste dans le programme.",
-    vie: "Concentre-toi UNIQUEMENT sur la section « Vie chretienne » du programme : les besoins de l'assemblee locale et l'etude biblique de l'assemblee."
-  };
-  function buildSectionPrompt(programText, section){
-    var needsMeta = section === "joyaux";
-    var format = needsMeta
-      ? "{\n  \"dates\": \"(plage de dates de la semaine)\",\n  \"reading\": \"(lecture de la Bible de la semaine)\",\n  \"parts\": [\n    { \"section\": \"" + section + "\", \"title\": \"(titre)\", \"meta\": \"(duree et reference)\", \"content\": \"(preparation en markdown : titres ##, listes -, gras **)\" }\n  ]\n}"
-      : "{\n  \"parts\": [\n    { \"section\": \"" + section + "\", \"title\": \"(titre)\", \"meta\": \"(duree et reference)\", \"content\": \"(preparation en markdown : titres ##, listes -, gras **)\" }\n  ]\n}";
+  // ---- Prompts de structuration puis de developpement ----
+  // Demander les 7 parties de la reunion en un seul appel (ou meme regroupees
+  // par section) produit soit une reponse trop longue et tronquee, soit un
+  // developpement superficiel car le budget de tokens est partage entre
+  // plusieurs parties. On separe donc en deux etapes : un premier appel leger
+  // identifie uniquement la liste des parties (rapide, peu de risque de
+  // troncature), puis un appel dedie par partie genere son developpement
+  // complet (versets cites in extenso selon la TMN, methode LEIA) avec tout
+  // le budget de tokens pour lui seul.
+  function buildStructurePrompt(programText){
     return [
       "Voici le texte brut du programme d'une reunion Vie et ministere chretiens des Temoins de Jehovah, copie depuis wol.jw.org. Ignore les menus et le bruit de navigation ; concentre-toi sur le programme de la semaine.",
       "",
-      SECTION_INSTRUCTIONS[section],
-      "",
-      "Produis une preparation dense, strictement fondee sur la doctrine et les publications des Temoins de Jehovah (jw.org, wol.jw.org, Etude perspicace, Rends pleinement temoignage, Tour de Garde, Traduction du monde nouveau).",
-      "Regles : emploie Jehovah, assemblee, esprit saint ; aucune doctrine non-TJ. Pour chaque verset cite, donne la reference ET son texte selon la TMN. Applique la methode LEIA. Degage les qualites de Jehovah et des applications. N'invente jamais un texte de verset ni une reference ; en cas de doute, signale-le.",
+      "Identifie UNIQUEMENT la structure de la semaine (n'ecris PAS encore de preparation detaillee) : les dates de la semaine, la lecture de la Bible de la semaine, et la liste ORDONNEE de TOUTES les parties du programme (Joyaux de la Parole de Dieu, Applique-toi au ministere, Vie chretienne), avec pour chacune sa section, son titre exact et sa duree/reference telles qu'imprimees.",
       "",
       "Reponds UNIQUEMENT par un objet JSON valide, sans texte ni balises autour, au format exact :",
-      format,
+      "{\n  \"dates\": \"(plage de dates de la semaine)\",\n  \"reading\": \"(lecture de la Bible de la semaine)\",\n  \"parts\": [\n    { \"section\": \"joyaux|ministere|vie\", \"title\": \"(titre exact)\", \"meta\": \"(duree et reference)\" }\n  ]\n}",
       "",
       "TEXTE DU PROGRAMME :",
       programText
     ].join("\n");
   }
-  async function generateWeekData(programText){
+  function buildPartContentPrompt(programText, part){
+    return [
+      "Voici le texte brut du programme d'une reunion Vie et ministere chretiens des Temoins de Jehovah, copie depuis wol.jw.org (pour contexte uniquement).",
+      "",
+      "Prepare en PROFONDEUR la partie suivante UNIQUEMENT, sans traiter les autres parties du programme : « " + part.title + " » (" + (part.meta || "") + ", section " + part.section + ").",
+      "",
+      "Produis une preparation dense et developpee, strictement fondee sur la doctrine et les publications des Temoins de Jehovah (jw.org, wol.jw.org, Etude perspicace des Ecritures, Rends pleinement temoignage, La Tour de Garde, Traduction du monde nouveau). Structure ta reponse en markdown (## pour les titres de points, ** pour le gras, - pour les listes) selon ce plan : une courte introduction qui pose le contexte et la question a se poser ; puis 2 a 4 points developpes (## 1. ..., ## 2. ..., etc.) ; pour chaque point, cite et commente le ou les versets lies, en donnant TOUJOURS la reference ET le texte complet du verset selon la TMN (jamais seulement la reference) ; termine chaque point par une phrase commencant par **Qualite de Jehovah :** et une phrase commencant par **Application :**. N'invente jamais un texte de verset ni une reference ; si tu n'es pas certain d'un texte exact, ecris-le quand meme du mieux possible et signale le doute entre parentheses plutot que de l'omettre.",
+      "",
+      "Vise un developpement substantiel (plusieurs paragraphes par point), pas un simple resume de quelques lignes.",
+      "",
+      "Reponds UNIQUEMENT par le texte de la preparation en markdown (pas de JSON), sans phrase d'introduction ni de conclusion hors sujet autour.",
+      "",
+      "TEXTE DU PROGRAMME (contexte) :",
+      programText
+    ].join("\n");
+  }
+  async function generateWeekData(programText, onProgress){
     if(!programText || programText.length < 200){
       throw new Error("programme recupere trop court ou vide (" + (programText ? programText.length : 0) + " car.) — essaie le texte colle");
     }
-    var order = ["joyaux","ministere","vie"];
-    var merged = {dates:"", reading:"", parts:[]};
-    var failures = [];
-    for(var i=0;i<order.length;i++){
-      var sec = order[i];
-      try{
-        var raw = await callLLM(buildSectionPrompt(programText, sec));
-        var d = parseWeekJSON(raw);
-        if(sec === "joyaux"){ merged.dates = d.dates || ""; merged.reading = d.reading || ""; }
-        if(d.parts && d.parts.length){ merged.parts = merged.parts.concat(d.parts); }
-        else { failures.push(sec + ": reponse sans partie"); console.warn("generateWeekData[" + sec + "] reponse brute:", raw); }
-      }catch(e){ failures.push(sec + ": " + (e && e.message ? e.message : "erreur")); }
+    var struct;
+    try{
+      var rawStruct = await callLLM(buildStructurePrompt(programText));
+      struct = parseWeekJSON(rawStruct);
+    }catch(e){
+      throw new Error("structure de la semaine introuvable — " + (e && e.message ? e.message : "erreur"));
     }
-    if(!merged.parts.length){ throw new Error("aucune partie generee — " + failures.join(" | ")); }
+    if(!struct.parts || !struct.parts.length){
+      throw new Error("aucune partie identifiee dans le programme");
+    }
+    var merged = {dates: struct.dates || "", reading: struct.reading || "", parts:[]};
+    var failures = [];
+    for(var i=0;i<struct.parts.length;i++){
+      var part = struct.parts[i];
+      if(onProgress){ onProgress(i+1, struct.parts.length, part.title || ""); }
+      try{
+        var raw = await callLLM(buildPartContentPrompt(programText, part));
+        merged.parts.push({section: part.section, title: part.title, meta: part.meta, content: stripFences(raw)});
+      }catch(e){
+        failures.push((part.title || ("partie " + (i+1))) + ": " + (e && e.message ? e.message : "erreur"));
+        merged.parts.push({section: part.section, title: part.title, meta: part.meta, content: "_Generation echouee pour cette partie — reessaie plus tard._"});
+      }
+    }
     merged.failures = failures;
     return merged;
   }
@@ -2118,7 +2134,9 @@ if ('serviceWorker' in navigator) {
       }
       return html1;
     }).then(function(html2){
-      return generateWeekData(extractText(html2));
+      return generateWeekData(extractText(html2), function(i,n,title){
+        setB("Génération de la partie " + i + "/" + n + (title ? (" — " + title) : "") + "…");
+      });
     }).then(function(data){
       if(!data.dates){ data.dates = sched.dates; }
       renderWeek(id, data);
@@ -2135,6 +2153,15 @@ if ('serviceWorker' in navigator) {
   function findProgramUrl(html){
     var m = String(html).match(/\/fr\/wol\/d\/r30\/lp-f\/\d+/);
     return m ? ("https://wol.jw.org" + m[0]) : null;
+  }
+
+  // La page hebdomadaire wol.jw.org/.../meetings/... liste aussi l'article
+  // d'etude de La Tour de Garde de la semaine, sous une entree de classe
+  // "pub-w" (a distinguer de "pub-mwb", le cahier Vie et ministere) — verifie
+  // 2026-07 sur une page reelle.
+  function findTGUrl(html){
+    var m = String(html).match(/class="[^"]*\bpub-w\b[^"]*"[\s\S]{0,400}?href="(\/fr\/wol\/d\/r30\/lp-f\/\d+)"/);
+    return m ? ("https://wol.jw.org" + m[1]) : null;
   }
 
   if(bRun){
@@ -2167,7 +2194,9 @@ if ('serviceWorker' in navigator) {
       }
       htmlChain.then(function(html2){
         setB("Structuration (gratuite, sans cle)...");
-        return generateWeekData(extractText(html2));
+        return generateWeekData(extractText(html2), function(i,n,title){
+          setB("Génération de la partie " + i + "/" + n + (title ? (" — " + title) : "") + "…");
+        });
       }).then(function(data){
         var sched = schedById(id);
         if(!data.dates && sched){ data.dates = sched.dates; }
@@ -2205,54 +2234,68 @@ if ('serviceWorker' in navigator) {
     });
   }
 
-  var TG_CHUNK_INSTRUCTIONS = {
-    first: "Voici la PREMIÈRE moitié du texte de l'article. Traite uniquement les paragraphes présents dans cet extrait (ne devine pas la suite).",
-    second: "Voici la SECONDE moitié du texte de l'article (avec un léger recouvrement avec la première). Traite uniquement les paragraphes présents dans cet extrait qui n'ont pas déjà été traités (ignore le début si déjà couvert)."
-  };
-  function buildTGPrompt(chunkText, half){
-    var includeMeta = half === "first";
-    var format = includeMeta
-      ? "{\n  \"title\": \"(titre de l'article)\",\n  \"dates\": \"(semaine d'étude, si indiquée)\",\n  \"songOpen\": \"(cantique d'ouverture, si indiqué)\",\n  \"songClose\": \"(cantique de conclusion, si indiqué)\",\n  \"keyText\": { \"ref\": \"(référence du texte de base)\", \"text\": \"(texte selon la TMN)\" },\n  \"points\": [\n    { \"num\": \"(numéro(s) de paragraphe, ex. 1-2)\", \"question\": \"(question imprimée telle quelle)\", \"summary\": \"(réponse synthétique fondée sur le paragraphe)\", \"verseRef\": \"(référence si un verset est cité, sinon vide)\", \"verseText\": \"(texte du verset selon la TMN, sinon vide)\" }\n  ]\n}"
-      : "{\n  \"points\": [\n    { \"num\": \"(numéro(s) de paragraphe, ex. 8-9)\", \"question\": \"(question imprimée telle quelle)\", \"summary\": \"(réponse synthétique fondée sur le paragraphe)\", \"verseRef\": \"(référence si un verset est cité, sinon vide)\", \"verseText\": \"(texte du verset selon la TMN, sinon vide)\" }\n  ]\n}";
+  // Meme principe que la reunion de semaine : un premier appel leger identifie
+  // uniquement la liste des questions imprimees (rapide, peu de risque de
+  // troncature), puis un appel dedie par question genere sa reponse
+  // developpee avec le texte complet des versets cites, chacun avec tout le
+  // budget de tokens pour lui seul plutot que partage entre plusieurs
+  // paragraphes.
+  function buildTGStructurePrompt(articleText){
     return [
-      "Voici un extrait du texte brut de l'article d'étude de La Tour de Garde des Témoins de Jéhovah, copié depuis wol.jw.org. Ignore les menus et le bruit de navigation.",
+      "Voici le texte brut de l'article d'étude de La Tour de Garde des Témoins de Jéhovah, copié depuis wol.jw.org. Ignore les menus et le bruit de navigation.",
       "",
-      TG_CHUNK_INSTRUCTIONS[half],
-      "",
-      "Pour chaque paragraphe ou groupe de paragraphes portant une question imprimée, restitue la question EXACTEMENT comme imprimée, puis une réponse synthétique fondée strictement sur le contenu du paragraphe et la doctrine des Témoins de Jéhovah (jw.org, wol.jw.org, Traduction du monde nouveau). Pour chaque verset cité dans un paragraphe traité, donne sa référence ET son texte complet selon la TMN — jamais seulement la référence. N'invente jamais un texte de verset ; en cas de doute, laisse verseText vide.",
+      "Identifie UNIQUEMENT la structure de l'article (n'écris PAS encore de réponse) : le titre, la semaine d'étude si indiquée, les cantiques d'ouverture/conclusion si indiqués, le texte de base (référence et texte complet selon la TMN), et la liste ORDONNÉE de TOUTES les questions imprimées avec leur(s) numéro(s) de paragraphe et la question EXACTEMENT telle qu'imprimée.",
       "",
       "Reponds UNIQUEMENT par un objet JSON valide, sans texte ni balises autour, au format exact :",
-      format,
+      "{\n  \"title\": \"(titre de l'article)\",\n  \"dates\": \"(semaine d'étude, si indiquée)\",\n  \"songOpen\": \"(cantique d'ouverture, si indiqué)\",\n  \"songClose\": \"(cantique de conclusion, si indiqué)\",\n  \"keyText\": { \"ref\": \"(référence du texte de base)\", \"text\": \"(texte complet selon la TMN)\" },\n  \"points\": [\n    { \"num\": \"(numéro(s) de paragraphe, ex. 1-2)\", \"question\": \"(question imprimée telle quelle)\" }\n  ]\n}",
       "",
       "TEXTE DE L'ARTICLE :",
-      chunkText
+      articleText
     ].join("\n");
   }
-  async function generateTGData(articleText){
+  function buildTGPointPrompt(articleText, point){
+    return [
+      "Voici le texte brut de l'article d'étude de La Tour de Garde des Témoins de Jéhovah (pour contexte uniquement).",
+      "",
+      "Traite UNIQUEMENT le(s) paragraphe(s) " + (point.num || "") + ", dont la question imprimée est : « " + (point.question || "") + " »",
+      "",
+      "Rédige une réponse synthétique mais développée (plusieurs phrases, pas juste une ligne), fondée strictement sur le contenu du ou des paragraphes correspondants et la doctrine des Témoins de Jéhovah (jw.org, wol.jw.org, Traduction du monde nouveau). Si ce ou ces paragraphes citent un ou plusieurs versets, indique pour chacun sa référence ET son texte complet selon la TMN — jamais seulement la référence — et explique brièvement son lien avec la question. N'invente jamais un texte de verset ; si tu n'es pas certain, écris-le quand même du mieux possible et signale le doute entre parenthèses.",
+      "",
+      "Reponds UNIQUEMENT par un objet JSON valide, sans texte ni balises autour, au format exact :",
+      "{\n  \"summary\": \"(réponse développée)\",\n  \"verseRef\": \"(référence si un verset est cité, sinon vide)\",\n  \"verseText\": \"(texte complet du verset selon la TMN, sinon vide)\"\n}",
+      "",
+      "TEXTE DE L'ARTICLE (contexte) :",
+      articleText
+    ].join("\n");
+  }
+  async function generateTGData(articleText, onProgress){
     if(!articleText || articleText.length < 200){
       throw new Error("article recupere trop court ou vide (" + (articleText ? articleText.length : 0) + " car.) — essaie le texte colle");
     }
-    var mid = Math.floor(articleText.length / 2);
-    var chunks = [
-      { text: articleText.slice(0, mid + 400), half: "first" },
-      { text: articleText.slice(Math.max(0, mid - 400)), half: "second" }
-    ];
-    var merged = { title:"", dates:"", songOpen:"", songClose:"", keyText:null, points:[] };
-    var failures = [];
-    for(var i=0;i<chunks.length;i++){
-      try{
-        var raw = await callLLM(buildTGPrompt(chunks[i].text, chunks[i].half));
-        var d = parseWeekJSON(raw);
-        if(chunks[i].half === "first"){
-          merged.title = d.title || ""; merged.dates = d.dates || "";
-          merged.songOpen = d.songOpen || ""; merged.songClose = d.songClose || "";
-          merged.keyText = d.keyText || null;
-        }
-        if(d.points && d.points.length){ merged.points = merged.points.concat(d.points); }
-        else { failures.push(chunks[i].half + ": reponse sans paragraphe"); console.warn("generateTGData[" + chunks[i].half + "] reponse brute:", raw); }
-      }catch(e){ failures.push(chunks[i].half + ": " + (e && e.message ? e.message : "erreur")); }
+    var struct;
+    try{
+      var rawStruct = await callLLM(buildTGStructurePrompt(articleText));
+      struct = parseWeekJSON(rawStruct);
+    }catch(e){
+      throw new Error("structure de l'article introuvable — " + (e && e.message ? e.message : "erreur"));
     }
-    if(!merged.points.length){ throw new Error("aucun paragraphe genere — " + failures.join(" | ")); }
+    if(!struct.points || !struct.points.length){
+      throw new Error("aucune question identifiée dans l'article");
+    }
+    var merged = { title: struct.title || "", dates: struct.dates || "", songOpen: struct.songOpen || "", songClose: struct.songClose || "", keyText: struct.keyText || null, points: [] };
+    var failures = [];
+    for(var i=0;i<struct.points.length;i++){
+      var pt = struct.points[i];
+      if(onProgress){ onProgress(i+1, struct.points.length, pt.num || ""); }
+      try{
+        var raw = await callLLM(buildTGPointPrompt(articleText, pt));
+        var d = parseWeekJSON(raw);
+        merged.points.push({ num: pt.num, question: pt.question, summary: d.summary || "", verseRef: d.verseRef || "", verseText: d.verseText || "" });
+      }catch(e){
+        failures.push("§" + (pt.num || (i+1)) + ": " + (e && e.message ? e.message : "erreur"));
+        merged.points.push({ num: pt.num, question: pt.question, summary: "_Génération échouée pour ce paragraphe — réessaie plus tard._", verseRef: "", verseText: "" });
+      }
+    }
     merged.failures = failures;
     return merged;
   }
@@ -2280,7 +2323,10 @@ if ('serviceWorker' in navigator) {
     el.innerHTML = html;
   }
 
-  function saveTG(data){ lsSet("tgStudy", JSON.stringify(data)); }
+  // Un seul id de semaine est retenu (l'etude conservee est toujours la plus
+  // recente generee), pour savoir si l'etude affichee correspond deja a la
+  // semaine en cours et eviter de la regenerer inutilement.
+  function saveTG(data, id){ lsSet("tgStudy", JSON.stringify(data)); if(id){ lsSet("tgId", id); } }
   function restoreTG(){
     var raw = lsGet("tgStudy");
     if(!raw){ return; }
@@ -2290,11 +2336,24 @@ if ('serviceWorker' in navigator) {
 
   var tgRun = document.getElementById("tgRun");
   var tgUrl = document.getElementById("tgUrl");
+  var tgOpenLink = document.getElementById("tgOpenLink");
   var tgProxy = document.getElementById("tgProxy");
   var tgText = document.getElementById("tgText");
   var tgStatus = document.getElementById("tgStatus");
   function setTG(m){ if(tgStatus){ tgStatus.textContent = m; } }
   var savedTgProxy = lsGet("corsProxy"); if(savedTgProxy && tgProxy){ tgProxy.value = savedTgProxy; }
+
+  // La page hebdomadaire de reunion liste aussi l'article Tour de Garde de la
+  // semaine (voir findTGUrl) : on pre-remplit donc le lien avec la meme page
+  // que la reunion, plutot que de laisser l'utilisateur chercher l'article
+  // manuellement dans la bibliotheque.
+  function fillTgUrl(){
+    if(!tgUrl){ return; }
+    var url = wolUrl(mondayOf(new Date()));
+    tgUrl.value = url;
+    if(tgOpenLink){ tgOpenLink.href = url; }
+  }
+  fillTgUrl();
 
   if(tgRun){
     tgRun.addEventListener("click", function(){
@@ -2309,21 +2368,61 @@ if ('serviceWorker' in navigator) {
         setTG("Texte collé détecté — pas besoin de proxy.");
         htmlChain = Promise.resolve(pasted);
       } else {
-        setTG("Recuperation de l'article...");
-        htmlChain = fetchViaProxy(url, proxy);
+        setTG("Recuperation de la page de la semaine...");
+        htmlChain = fetchViaProxy(url, proxy).then(function(html1){
+          var art = findTGUrl(html1);
+          if(art){
+            setTG("Ouverture de l'article Tour de Garde...");
+            return fetchViaProxy(art, proxy);
+          }
+          return html1;
+        });
       }
+      var tgId = weekId(mondayOf(new Date()));
       htmlChain.then(function(html2){
         setTG("Structuration (gratuite, sans cle)...");
-        return generateTGData(extractText(html2));
+        return generateTGData(extractText(html2), function(i,n){
+          setTG("Génération de la question " + i + "/" + n + "…");
+        });
       }).then(function(data){
         renderTG(data);
-        saveTG(data);
+        saveTG(data, tgId);
         setTG("Étude générée et enregistrée. Pense à vérifier les versets sur wol.jw.org." + (data.failures && data.failures.length ? " (incomplet : " + data.failures.join(" | ") + ")" : ""));
       }).catch(function(e){
         setTG("Echec : reessaie (service gratuit parfois occupe) ou change de proxy CORS. (" + (e && e.message ? e.message : "erreur") + ")");
       }).then(function(){ tgRun.disabled = false; });
     });
   }
+
+  // ---- Préparation automatique de l'étude Tour de Garde en cours, au lancement de l'app ----
+  function autoPrepareCurrentTG(){
+    var id = weekId(mondayOf(new Date()));
+    if(lsGet("tgId") === id){ return; } // déjà préparée pour cette semaine
+    var lastTry = lsGet("autoTryTG:" + id);
+    if(lastTry && (Date.now() - Number(lastTry)) < 6*3600000){ return; } // pas plus d'une tentative auto toutes les 6h
+    lsSet("autoTryTG:" + id, String(Date.now()));
+
+    var proxy = lsGet("corsProxy") || "";
+    var url = wolUrl(mondayOf(new Date()));
+    setTG("Préparation automatique de l'étude de la semaine…");
+    fetchViaProxy(url, proxy).then(function(html1){
+      var art = findTGUrl(html1);
+      if(!art){ throw new Error("article Tour de Garde introuvable pour cette semaine"); }
+      return fetchViaProxy(art, proxy);
+    }).then(function(html2){
+      return generateTGData(extractText(html2), function(i,n){
+        setTG("Génération de la question " + i + "/" + n + "…");
+      });
+    }).then(function(data){
+      renderTG(data);
+      saveTG(data, id);
+      setTG("Étude générée automatiquement — pense à vérifier les versets sur wol.jw.org." + (data.failures && data.failures.length ? " (incomplet : " + data.failures.join(" | ") + ")" : ""));
+      if(typeof toast === "function"){ toast("✓ Étude Tour de Garde de la semaine préparée automatiquement"); }
+    }).catch(function(e){
+      setTG("Préparation automatique impossible (" + (e && e.message ? e.message : "erreur") + "). Utilise « Récupérer et générer » ci-dessus.");
+    });
+  }
+  autoPrepareCurrentTG();
 
 })();
 </script>
