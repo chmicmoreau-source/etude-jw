@@ -1728,6 +1728,17 @@ if ('serviceWorker' in navigator) {
     });
   });
 }
+
+// Demande à Android/Chrome de traiter le stockage de l'app comme "persistant"
+// plutôt que "best-effort" : sans ça, sous pression de stockage (peu d'espace
+// libre, app peu utilisée), le système peut effacer localStorage (études,
+// semaines de réunion, étude Tour de Garde) au moment où on s'y attend le
+// moins, en général après une fermeture de l'app — signalé par l'utilisateur
+// 2026-07. persist() ne garantit rien à 100% (n'empêche pas un "effacer les
+// données" manuel) mais réduit fortement le risque d'éviction automatique.
+if (navigator.storage && navigator.storage.persist) {
+  navigator.storage.persist().catch(function(){});
+}
 </script>
 
 <script>
