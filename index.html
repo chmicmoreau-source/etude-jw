@@ -1800,12 +1800,17 @@ if ('serviceWorker' in navigator) {
   // ---- Génération IA (Pollinations, gratuit, sans clé) ----
   // gen.pollinations.ai/openai et gen.pollinations.ai/text/... sont dépréciés
   // (404 / 401 côté serveur, vérifié 2026-07) : seul text.pollinations.ai fonctionne.
+  // Le modèle utilisé (gpt-oss-20b) "réfléchit" avant de répondre ; sur des prompts qui
+  // l'incitent à beaucoup délibérer (ex. consignes strictes sur l'exactitude des versets),
+  // il peut épuiser tout son budget de tokens par défaut en raisonnement interne et ne
+  // jamais produire de "content" (finish_reason: "length", réponse vide) — vérifié 2026-07.
+  // reasoning_effort réduit et max_tokens plus large évitent ce blocage.
   async function callPollinationsR(prompt){
     try{
       var fetchP = fetch("https://text.pollinations.ai/openai",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({model:"openai", messages:[{role:"user",content:prompt}]})
+        body: JSON.stringify({model:"openai", messages:[{role:"user",content:prompt}], max_tokens:4000, reasoning_effort:"low"})
       });
       var toP = new Promise(function(_,rej){ setTimeout(function(){ rej(new Error("timeout")); },90000); });
       var res = await Promise.race([fetchP,toP]);
