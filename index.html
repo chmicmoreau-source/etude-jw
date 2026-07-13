@@ -1984,8 +1984,12 @@ if ('serviceWorker' in navigator) {
     ].join("\n");
   }
   async function generateWeekData(programText){
+    if(!programText || programText.length < 200){
+      throw new Error("programme recupere trop court ou vide (" + (programText ? programText.length : 0) + " car.) — essaie le texte colle");
+    }
     var order = ["joyaux","ministere","vie"];
     var merged = {dates:"", reading:"", parts:[]};
+    var failures = [];
     for(var i=0;i<order.length;i++){
       var sec = order[i];
       try{
@@ -1993,9 +1997,10 @@ if ('serviceWorker' in navigator) {
         var d = parseWeekJSON(raw);
         if(sec === "joyaux"){ merged.dates = d.dates || ""; merged.reading = d.reading || ""; }
         if(d.parts && d.parts.length){ merged.parts = merged.parts.concat(d.parts); }
-      }catch(e){ /* section suivante — on garde ce qui a deja fonctionne */ }
+        else { failures.push(sec + ": reponse sans partie"); console.warn("generateWeekData[" + sec + "] reponse brute:", raw); }
+      }catch(e){ failures.push(sec + ": " + (e && e.message ? e.message : "erreur")); }
     }
-    if(!merged.parts.length){ throw new Error("aucune partie generee"); }
+    if(!merged.parts.length){ throw new Error("aucune partie generee — " + failures.join(" | ")); }
     return merged;
   }
 
@@ -2218,12 +2223,16 @@ if ('serviceWorker' in navigator) {
     ].join("\n");
   }
   async function generateTGData(articleText){
+    if(!articleText || articleText.length < 200){
+      throw new Error("article recupere trop court ou vide (" + (articleText ? articleText.length : 0) + " car.) — essaie le texte colle");
+    }
     var mid = Math.floor(articleText.length / 2);
     var chunks = [
       { text: articleText.slice(0, mid + 400), half: "first" },
       { text: articleText.slice(Math.max(0, mid - 400)), half: "second" }
     ];
     var merged = { title:"", dates:"", songOpen:"", songClose:"", keyText:null, points:[] };
+    var failures = [];
     for(var i=0;i<chunks.length;i++){
       try{
         var raw = await callLLM(buildTGPrompt(chunks[i].text, chunks[i].half));
@@ -2234,9 +2243,10 @@ if ('serviceWorker' in navigator) {
           merged.keyText = d.keyText || null;
         }
         if(d.points && d.points.length){ merged.points = merged.points.concat(d.points); }
-      }catch(e){ /* moitie suivante — on garde ce qui a deja fonctionne */ }
+        else { failures.push(chunks[i].half + ": reponse sans paragraphe"); console.warn("generateTGData[" + chunks[i].half + "] reponse brute:", raw); }
+      }catch(e){ failures.push(chunks[i].half + ": " + (e && e.message ? e.message : "erreur")); }
     }
-    if(!merged.points.length){ throw new Error("aucun paragraphe genere"); }
+    if(!merged.points.length){ throw new Error("aucun paragraphe genere — " + failures.join(" | ")); }
     return merged;
   }
 
