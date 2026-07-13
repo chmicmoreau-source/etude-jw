@@ -2006,6 +2006,7 @@ if ('serviceWorker' in navigator) {
       }catch(e){ failures.push(sec + ": " + (e && e.message ? e.message : "erreur")); }
     }
     if(!merged.parts.length){ throw new Error("aucune partie generee — " + failures.join(" | ")); }
+    merged.failures = failures;
     return merged;
   }
 
@@ -2123,7 +2124,7 @@ if ('serviceWorker' in navigator) {
       renderWeek(id, data);
       saveWeek(id, data);
       if(weekSelect && weekSelect.value === id){ showWeek(id); }
-      setB("Semaine générée automatiquement — pense à vérifier les versets sur wol.jw.org.");
+      setB("Semaine générée automatiquement — pense à vérifier les versets sur wol.jw.org." + (data.failures && data.failures.length ? " (incomplet : " + data.failures.join(" | ") + ")" : ""));
       if(typeof toast === "function"){ toast("✓ Réunion de la semaine préparée automatiquement"); }
     }).catch(function(e){
       setB("Préparation automatique impossible (" + (e && e.message ? e.message : "erreur") + "). Utilise « Récupérer et générer » ci-dessus.");
@@ -2173,7 +2174,7 @@ if ('serviceWorker' in navigator) {
         renderWeek(id, data);
         saveWeek(id, data);
         showWeek(id);
-        setB("Semaine generee et enregistree. Pense a verifier les versets sur wol.jw.org.");
+        setB("Semaine generee et enregistree. Pense a verifier les versets sur wol.jw.org." + (data.failures && data.failures.length ? " (incomplet : " + data.failures.join(" | ") + ")" : ""));
       }).catch(function(e){
         setB("Echec : reessaie (service gratuit parfois occupe) ou change de proxy CORS. (" + (e && e.message ? e.message : "erreur") + ")");
       }).then(function(){ bRun.disabled = false; });
@@ -2252,6 +2253,7 @@ if ('serviceWorker' in navigator) {
       }catch(e){ failures.push(chunks[i].half + ": " + (e && e.message ? e.message : "erreur")); }
     }
     if(!merged.points.length){ throw new Error("aucun paragraphe genere — " + failures.join(" | ")); }
+    merged.failures = failures;
     return merged;
   }
 
@@ -2316,7 +2318,7 @@ if ('serviceWorker' in navigator) {
       }).then(function(data){
         renderTG(data);
         saveTG(data);
-        setTG("Étude générée et enregistrée. Pense à vérifier les versets sur wol.jw.org.");
+        setTG("Étude générée et enregistrée. Pense à vérifier les versets sur wol.jw.org." + (data.failures && data.failures.length ? " (incomplet : " + data.failures.join(" | ") + ")" : ""));
       }).catch(function(e){
         setTG("Echec : reessaie (service gratuit parfois occupe) ou change de proxy CORS. (" + (e && e.message ? e.message : "erreur") + ")");
       }).then(function(){ tgRun.disabled = false; });
