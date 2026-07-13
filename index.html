@@ -1914,26 +1914,50 @@ if ('serviceWorker' in navigator) {
   }
 
   // ---- Prompt de structuration ----
-  function buildWeekPrompt(programText){
+  // Demander les 7 parties de la reunion en un seul appel produit une reponse
+  // trop longue pour le service gratuit, qui la coupe en cours de route
+  // (« Unterminated string in JSON »). On genere donc chaque section separement :
+  // chaque reponse est courte, donc beaucoup moins susceptible d'etre tronquee,
+  // et une troncature eventuelle sur une section n'affecte plus les autres.
+  var SECTION_INSTRUCTIONS = {
+    joyaux: "Concentre-toi UNIQUEMENT sur la section « Joyaux de la Parole de Dieu » du programme : l'expose, les perles spirituelles, et la lecture de la Bible.",
+    ministere: "Concentre-toi UNIQUEMENT sur la section « Applique-toi au ministere » du programme : chaque devoir attribue (conversation, entretien, discours, etc.) tel que liste dans le programme.",
+    vie: "Concentre-toi UNIQUEMENT sur la section « Vie chretienne » du programme : les besoins de l'assemblee locale et l'etude biblique de l'assemblee."
+  };
+  function buildSectionPrompt(programText, section){
+    var needsMeta = section === "joyaux";
+    var format = needsMeta
+      ? "{\n  \"dates\": \"(plage de dates de la semaine)\",\n  \"reading\": \"(lecture de la Bible de la semaine)\",\n  \"parts\": [\n    { \"section\": \"" + section + "\", \"title\": \"(titre)\", \"meta\": \"(duree et reference)\", \"content\": \"(preparation en markdown : titres ##, listes -, gras **)\" }\n  ]\n}"
+      : "{\n  \"parts\": [\n    { \"section\": \"" + section + "\", \"title\": \"(titre)\", \"meta\": \"(duree et reference)\", \"content\": \"(preparation en markdown : titres ##, listes -, gras **)\" }\n  ]\n}";
     return [
       "Voici le texte brut du programme d'une reunion Vie et ministere chretiens des Temoins de Jehovah, copie depuis wol.jw.org. Ignore les menus et le bruit de navigation ; concentre-toi sur le programme de la semaine.",
+      "",
+      SECTION_INSTRUCTIONS[section],
       "",
       "Produis une preparation dense, strictement fondee sur la doctrine et les publications des Temoins de Jehovah (jw.org, wol.jw.org, Etude perspicace, Rends pleinement temoignage, Tour de Garde, Traduction du monde nouveau).",
       "Regles : emploie Jehovah, assemblee, esprit saint ; aucune doctrine non-TJ. Pour chaque verset cite, donne la reference ET son texte selon la TMN. Applique la methode LEIA. Degage les qualites de Jehovah et des applications. N'invente jamais un texte de verset ni une reference ; en cas de doute, signale-le.",
       "",
       "Reponds UNIQUEMENT par un objet JSON valide, sans texte ni balises autour, au format exact :",
-      "{",
-      "  \"dates\": \"(plage de dates de la semaine)\",",
-      "  \"reading\": \"(lecture de la Bible de la semaine)\",",
-      "  \"parts\": [",
-      "    { \"section\": \"joyaux|ministere|vie\", \"title\": \"(titre)\", \"meta\": \"(duree et reference)\", \"content\": \"(preparation en markdown : titres ##, listes -, gras **)\" }",
-      "  ]",
-      "}",
-      "Inclure toutes les parties : Joyaux (expose, perles spirituelles, lecture de la Bible), Applique-toi au ministere (chaque devoir), Vie chretienne (besoins de l'assemblee, etude biblique de l'assemblee).",
+      format,
       "",
       "TEXTE DU PROGRAMME :",
       programText
     ].join("\n");
+  }
+  async function generateWeekData(programText){
+    var order = ["joyaux","ministere","vie"];
+    var merged = {dates:"", reading:"", parts:[]};
+    for(var i=0;i<order.length;i++){
+      var sec = order[i];
+      try{
+        var raw = await callLLM(buildSectionPrompt(programText, sec));
+        var d = parseWeekJSON(raw);
+        if(sec === "joyaux"){ merged.dates = d.dates || ""; merged.reading = d.reading || ""; }
+        if(d.parts && d.parts.length){ merged.parts = merged.parts.concat(d.parts); }
+      }catch(e){ /* section suivante — on garde ce qui a deja fonctionne */ }
+    }
+    if(!merged.parts.length){ throw new Error("aucune partie generee"); }
+    return merged;
   }
 
   function extractText(html){
@@ -2044,9 +2068,8 @@ if ('serviceWorker' in navigator) {
       }
       return html1;
     }).then(function(html2){
-      return callLLM(buildWeekPrompt(extractText(html2)));
-    }).then(function(raw){
-      var data = parseWeekJSON(raw);
+      return generateWeekData(extractText(html2));
+    }).then(function(data){
       if(!data.dates){ data.dates = sched.dates; }
       renderWeek(id, data);
       saveWeek(id, data);
@@ -2094,9 +2117,8 @@ if ('serviceWorker' in navigator) {
       }
       htmlChain.then(function(html2){
         setB("Structuration (gratuite, sans cle)...");
-        return callLLM(buildWeekPrompt(extractText(html2)));
-      }).then(function(raw){
-        var data = parseWeekJSON(raw);
+        return generateWeekData(extractText(html2));
+      }).then(function(data){
         var sched = schedById(id);
         if(!data.dates && sched){ data.dates = sched.dates; }
         renderWeek(id, data);
