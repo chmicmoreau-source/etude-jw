@@ -120,6 +120,9 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
 #s-reunion .note{font-size:13.5px;color:var(--muted);background:var(--surface-2);border:1px dashed var(--line);border-radius:11px;padding:12px 14px;margin:16px 0 0}
 #s-reunion .empty{text-align:center;color:var(--muted);padding:40px 16px}
 #s-reunion .empty .big{font-family:"Spectral",serif;font-size:20px;color:var(--ink);margin:0 0 6px}
+#s-reunion .modeToggle{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+#s-reunion .modeBtn{font-family:inherit;font-size:13px;font-weight:600;padding:9px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer}
+#s-reunion .modeBtn.active{background:var(--gold);border-color:var(--gold);color:#2b2210}
 #s-reunion .weeknav{display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
 #s-reunion .weeknav label{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--muted)}
 #s-reunion .weeknav select{font-family:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);max-width:100%}
@@ -317,9 +320,15 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
 
   <!-- RÉUNION -->
   <div id="s-reunion" class="screen">
-    <div class="hdr" style="justify-content:center"><span class="hdr-title">Réunion de semaine</span></div>
+    <div class="hdr" style="justify-content:center"><span class="hdr-title" id="reunion-hdr-title">Réunion de semaine</span></div>
     <div class="scroll">
       <div class="wrap">
+        <div class="modeToggle">
+          <button id="modeWeekBtn" class="modeBtn active" type="button">🗓️ Réunion de semaine</button>
+          <button id="modeTGBtn" class="modeBtn" type="button">📖 Étude Tour de Garde</button>
+        </div>
+
+        <div id="viewWeek">
         <header>
           <p class="eyebrow">Vie et ministère chrétiens</p>
           <h1>Préparation de la réunion</h1>
@@ -669,6 +678,36 @@ Produis ces sections :
           <p>Aide à l'étude personnelle, fondée sur le Cahier <em>Vie et ministère chrétiens</em> (mwb26 mai p. 15), les <em>Instructions pour la réunion Vie chrétienne et ministère</em> (S-38) et la Bibliothèque en ligne Watchtower (wol.jw.org). Versets selon la Traduction du monde nouveau.</p>
           <p>Durée totale de la réunion, cantiques et prières compris : 1 h 45.</p>
         </footer>
+        </div>
+
+        <div id="viewTG" style="display:none">
+          <header>
+            <p class="eyebrow">Étude de l'assemblée</p>
+            <h1>Étude de la Tour de Garde</h1>
+            <details class="builder" open>
+              <summary>➕ Préparer l'étude de la semaine</summary>
+              <p class="builder-help">Ouvre l'article d'étude de la semaine sur wol.jw.org (Bibliothèque → La Tour de Garde — édition d'étude), copie son lien ci-dessous, ou colle directement le texte de l'article.</p>
+              <input id="tgUrl" type="url" placeholder="Lien wol.jw.org de l'article d'étude">
+              <a id="tgOpenLink" href="https://wol.jw.org/fr/wol/library/r30/lp-f/toutes-les-publications/la-tour-de-garde-etude" target="_blank" rel="noopener" style="display:inline-block;font-size:13px;color:var(--gold);font-weight:600;margin:2px 0 8px;text-decoration:none">Ouvrir la bibliothèque Tour de Garde →</a>
+              <input id="tgProxy" type="text" value="https://api.allorigins.win/raw?url=" placeholder="Proxy CORS">
+              <p class="builder-help">Si la récupération automatique échoue : ouvre le lien ci-dessus, sélectionne tout le texte de l'article, copie-le et colle-le ci-dessous — la génération se fera directement à partir de ce texte, sans passer par un proxy.</p>
+              <textarea id="tgText" rows="4" placeholder="Colle ici le texte de l'article copié depuis wol.jw.org (facultatif — remplace la récupération automatique si rempli)"></textarea>
+              <div class="brow"><button id="tgRun">Récupérer et générer</button></div>
+              <div class="bstatus" id="tgStatus"></div>
+            </details>
+          </header>
+
+          <div id="tgArticle">
+            <div class="empty">
+              <p class="big">Aucune étude préparée</p>
+              <p>Colle le lien ou le texte de l'article de la Tour de Garde ci-dessus pour générer sa préparation.</p>
+            </div>
+          </div>
+
+          <footer>
+            <p>Aide à l'étude personnelle, fondée sur l'article d'étude de <em>La Tour de Garde</em> (édition d'étude) et la Bibliothèque en ligne Watchtower (wol.jw.org). Versets selon la Traduction du monde nouveau. Ne remplace pas la lecture de l'article et du Cahier officiels.</p>
+          </footer>
+        </div>
 
       </div>
     </div>
@@ -2128,6 +2167,144 @@ if ('serviceWorker' in navigator) {
       }).catch(function(e){
         setB("Echec : reessaie (service gratuit parfois occupe) ou change de proxy CORS. (" + (e && e.message ? e.message : "erreur") + ")");
       }).then(function(){ bRun.disabled = false; });
+    });
+  }
+
+  /* ══ ÉTUDE DE LA TOUR DE GARDE ═══════════════════════════════════════════
+     Même logique que la préparation de réunion (proxy CORS + repli copier-
+     coller, génération Pollinations découpée pour éviter les troncatures),
+     appliquée à l'article d'étude hebdomadaire au lieu du programme de
+     réunion. Une seule étude est conservée localement (la plus récente).
+  ════════════════════════════════════════════════════════════════════════ */
+  var modeWeekBtn = document.getElementById("modeWeekBtn");
+  var modeTGBtn = document.getElementById("modeTGBtn");
+  var viewWeek = document.getElementById("viewWeek");
+  var viewTG = document.getElementById("viewTG");
+  if(modeWeekBtn && modeTGBtn && viewWeek && viewTG){
+    var reunionHdrTitle = document.getElementById("reunion-hdr-title");
+    modeWeekBtn.addEventListener("click", function(){
+      viewWeek.style.display = ""; viewTG.style.display = "none";
+      modeWeekBtn.classList.add("active"); modeTGBtn.classList.remove("active");
+      if(reunionHdrTitle){ reunionHdrTitle.textContent = "Réunion de semaine"; }
+    });
+    modeTGBtn.addEventListener("click", function(){
+      viewWeek.style.display = "none"; viewTG.style.display = "";
+      modeTGBtn.classList.add("active"); modeWeekBtn.classList.remove("active");
+      if(reunionHdrTitle){ reunionHdrTitle.textContent = "Étude Tour de Garde"; }
+    });
+  }
+
+  var TG_CHUNK_INSTRUCTIONS = {
+    first: "Voici la PREMIÈRE moitié du texte de l'article. Traite uniquement les paragraphes présents dans cet extrait (ne devine pas la suite).",
+    second: "Voici la SECONDE moitié du texte de l'article (avec un léger recouvrement avec la première). Traite uniquement les paragraphes présents dans cet extrait qui n'ont pas déjà été traités (ignore le début si déjà couvert)."
+  };
+  function buildTGPrompt(chunkText, half){
+    var includeMeta = half === "first";
+    var format = includeMeta
+      ? "{\n  \"title\": \"(titre de l'article)\",\n  \"dates\": \"(semaine d'étude, si indiquée)\",\n  \"songOpen\": \"(cantique d'ouverture, si indiqué)\",\n  \"songClose\": \"(cantique de conclusion, si indiqué)\",\n  \"keyText\": { \"ref\": \"(référence du texte de base)\", \"text\": \"(texte selon la TMN)\" },\n  \"points\": [\n    { \"num\": \"(numéro(s) de paragraphe, ex. 1-2)\", \"question\": \"(question imprimée telle quelle)\", \"summary\": \"(réponse synthétique fondée sur le paragraphe)\", \"verseRef\": \"(référence si un verset est cité, sinon vide)\", \"verseText\": \"(texte du verset selon la TMN, sinon vide)\" }\n  ]\n}"
+      : "{\n  \"points\": [\n    { \"num\": \"(numéro(s) de paragraphe, ex. 8-9)\", \"question\": \"(question imprimée telle quelle)\", \"summary\": \"(réponse synthétique fondée sur le paragraphe)\", \"verseRef\": \"(référence si un verset est cité, sinon vide)\", \"verseText\": \"(texte du verset selon la TMN, sinon vide)\" }\n  ]\n}";
+    return [
+      "Voici un extrait du texte brut de l'article d'étude de La Tour de Garde des Témoins de Jéhovah, copié depuis wol.jw.org. Ignore les menus et le bruit de navigation.",
+      "",
+      TG_CHUNK_INSTRUCTIONS[half],
+      "",
+      "Pour chaque paragraphe ou groupe de paragraphes portant une question imprimée, restitue la question EXACTEMENT comme imprimée, puis une réponse synthétique fondée strictement sur le contenu du paragraphe et la doctrine des Témoins de Jéhovah (jw.org, wol.jw.org, Traduction du monde nouveau). Pour chaque verset cité dans un paragraphe traité, donne sa référence ET son texte complet selon la TMN — jamais seulement la référence. N'invente jamais un texte de verset ; en cas de doute, laisse verseText vide.",
+      "",
+      "Reponds UNIQUEMENT par un objet JSON valide, sans texte ni balises autour, au format exact :",
+      format,
+      "",
+      "TEXTE DE L'ARTICLE :",
+      chunkText
+    ].join("\n");
+  }
+  async function generateTGData(articleText){
+    var mid = Math.floor(articleText.length / 2);
+    var chunks = [
+      { text: articleText.slice(0, mid + 400), half: "first" },
+      { text: articleText.slice(Math.max(0, mid - 400)), half: "second" }
+    ];
+    var merged = { title:"", dates:"", songOpen:"", songClose:"", keyText:null, points:[] };
+    for(var i=0;i<chunks.length;i++){
+      try{
+        var raw = await callLLM(buildTGPrompt(chunks[i].text, chunks[i].half));
+        var d = parseWeekJSON(raw);
+        if(chunks[i].half === "first"){
+          merged.title = d.title || ""; merged.dates = d.dates || "";
+          merged.songOpen = d.songOpen || ""; merged.songClose = d.songClose || "";
+          merged.keyText = d.keyText || null;
+        }
+        if(d.points && d.points.length){ merged.points = merged.points.concat(d.points); }
+      }catch(e){ /* moitie suivante — on garde ce qui a deja fonctionne */ }
+    }
+    if(!merged.points.length){ throw new Error("aucun paragraphe genere"); }
+    return merged;
+  }
+
+  function renderTG(data){
+    var el = document.getElementById("tgArticle"); if(!el){ return; }
+    var html = "<p class=\"eyebrow wk-dates\">" + esc(data.dates || "") + "</p>"
+      + "<h2 class=\"wk-title\">" + esc(data.title || "Étude de la Tour de Garde") + "</h2>";
+    if(data.keyText && data.keyText.ref){
+      html += "<p class=\"verse\">« " + esc(data.keyText.text || "") + " » — " + esc(data.keyText.ref) + "</p>";
+    }
+    if(data.songOpen){ html += "<p class=\"pill\">Cantique d'ouverture : " + esc(data.songOpen) + "</p>"; }
+    html += "<main style=\"margin-top:22px\">";
+    for(var i=0;i<data.points.length;i++){
+      var p = data.points[i];
+      html += "<div class=\"card\" style=\"--accent:var(--vie);--soft:var(--vie-soft);margin-bottom:16px\">"
+        + "<p class=\"tag\">Paragraphe" + (String(p.num||"").indexOf("-")>=0?"s ":" ") + esc(p.num || "?") + "</p>"
+        + "<h3 style=\"margin-top:0\">" + esc(p.question || "") + "</h3>"
+        + "<p>" + esc(p.summary || "") + "</p>"
+        + (p.verseRef ? "<div class=\"takeaway\"><strong>" + esc(p.verseRef) + " :</strong> « " + esc(p.verseText || "") + " »</div>" : "")
+        + "</div>";
+    }
+    html += "</main>";
+    if(data.songClose){ html += "<p class=\"pill\">Cantique de conclusion : " + esc(data.songClose) + "</p>"; }
+    el.innerHTML = html;
+  }
+
+  function saveTG(data){ lsSet("tgStudy", JSON.stringify(data)); }
+  function restoreTG(){
+    var raw = lsGet("tgStudy");
+    if(!raw){ return; }
+    try{ renderTG(JSON.parse(raw)); }catch(e){}
+  }
+  restoreTG();
+
+  var tgRun = document.getElementById("tgRun");
+  var tgUrl = document.getElementById("tgUrl");
+  var tgProxy = document.getElementById("tgProxy");
+  var tgText = document.getElementById("tgText");
+  var tgStatus = document.getElementById("tgStatus");
+  function setTG(m){ if(tgStatus){ tgStatus.textContent = m; } }
+  var savedTgProxy = lsGet("corsProxy"); if(savedTgProxy && tgProxy){ tgProxy.value = savedTgProxy; }
+
+  if(tgRun){
+    tgRun.addEventListener("click", function(){
+      var url = tgUrl ? trim(tgUrl.value) : "";
+      var pasted = tgText ? trim(tgText.value) : "";
+      var proxy = tgProxy ? trim(tgProxy.value) : "";
+      if(!url && !pasted){ setTG("Colle le lien wol.jw.org de l'article, ou colle directement son texte ci-dessous."); return; }
+      lsSet("corsProxy", proxy);
+      tgRun.disabled = true;
+      var htmlChain;
+      if(pasted){
+        setTG("Texte collé détecté — pas besoin de proxy.");
+        htmlChain = Promise.resolve(pasted);
+      } else {
+        setTG("Recuperation de l'article...");
+        htmlChain = fetchViaProxy(url, proxy);
+      }
+      htmlChain.then(function(html2){
+        setTG("Structuration (gratuite, sans cle)...");
+        return generateTGData(extractText(html2));
+      }).then(function(data){
+        renderTG(data);
+        saveTG(data);
+        setTG("Étude générée et enregistrée. Pense à vérifier les versets sur wol.jw.org.");
+      }).catch(function(e){
+        setTG("Echec : reessaie (service gratuit parfois occupe) ou change de proxy CORS. (" + (e && e.message ? e.message : "erreur") + ")");
+      }).then(function(){ tgRun.disabled = false; });
     });
   }
 
