@@ -1805,6 +1805,16 @@ if ('serviceWorker' in navigator) {
   // il peut épuiser tout son budget de tokens par défaut en raisonnement interne et ne
   // jamais produire de "content" (finish_reason: "length", réponse vide) — vérifié 2026-07.
   // reasoning_effort réduit et max_tokens plus large évitent ce blocage.
+  // Le modèle refuse parfois la requête (garde-fous internes du service gratuit)
+  // et renvoie alors une phrase de refus en anglais avec un HTTP 200 — sans ce
+  // filtre, cette phrase se retrouvait affichée telle quelle comme contenu de
+  // l'étude. On la détecte pour la traiter comme un échec (repli / partie en échec).
+  function looksLikeRefusal(txt){
+    var t = String(txt || "").trim().slice(0, 200).toLowerCase();
+    if(t.length < 400 && /i'?m sorry|i cannot|i can'?t (comply|assist|help)|as an ai( language model)?|je suis désolé|je ne peux pas (vous aider|répondre|comply)/.test(t)){ return true; }
+    return false;
+  }
+
   async function callPollinationsR(prompt){
     try{
       var fetchP = fetch("https://text.pollinations.ai/openai",{
@@ -1817,7 +1827,7 @@ if ('serviceWorker' in navigator) {
       if(res && res.ok){
         var data = await res.json();
         var txt = (data && data.choices && data.choices[0] && data.choices[0].message) ? data.choices[0].message.content : "";
-        if(txt){ return txt; }
+        if(txt && !looksLikeRefusal(txt)){ return txt; }
       }
     }catch(e){ /* repli */ }
     // repli : endpoint GET simple (même domaine, prompt tronqué)
@@ -1825,7 +1835,7 @@ if ('serviceWorker' in navigator) {
       var url = "https://text.pollinations.ai/" + encodeURIComponent(prompt.slice(0,6000));
       var toG = new Promise(function(_,rej){ setTimeout(function(){ rej(new Error("timeout")); },40000); });
       var res2 = await Promise.race([fetch(url),toG]);
-      if(res2 && res2.ok){ var t = await res2.text(); if(t){ return t; } }
+      if(res2 && res2.ok){ var t = await res2.text(); if(t && !looksLikeRefusal(t)){ return t; } }
     }catch(e){}
     throw new Error("pollinations");
   }
@@ -1884,6 +1894,8 @@ if ('serviceWorker' in navigator) {
   ];
   var dynWrap = document.getElementById("dynamicWeeks");
 
+  var AI_WARN_HTML = "<p class=\"ai-warn\" style=\"font-size:12px;color:#9a5b00;background:#fff6e0;border:1px solid #f0d38a;border-radius:8px;padding:6px 10px;margin:8px 0 14px\">⚠️ Contenu généré par une IA gratuite, non vérifié — recoupe chaque référence et chaque verset avec wol.jw.org avant utilisation.</p>";
+
   function updateOption(id, dates, reading){
     if(!weekSelect){ return; }
     var found = null;
@@ -1914,7 +1926,7 @@ if ('serviceWorker' in navigator) {
         var title = esc(group[q].title || "Partie");
         var meta = esc(group[q].meta || "");
         navHtml += "<button class=\"part-btn\" data-target=\"" + key + "\"><span class=\"num\">" + counter + "</span><span class=\"lbl\">" + title + "<span class=\"min\">" + meta + "</span></span></button>";
-        mainHtml += "<div class=\"panel\" data-panel=\"" + key + "\" style=\"--accent:" + sec.accent + ";--soft:" + sec.soft + "\"><div class=\"card\"><p class=\"tag\">" + esc(sec.label) + "</p><h2>" + title + "</h2>" + (meta ? ("<p class=\"meta\">" + meta + "</p>") : "") + mdToHtml(group[q].content || "") + "</div></div>";
+        mainHtml += "<div class=\"panel\" data-panel=\"" + key + "\" style=\"--accent:" + sec.accent + ";--soft:" + sec.soft + "\"><div class=\"card\"><p class=\"tag\">" + esc(sec.label) + "</p><h2>" + title + "</h2>" + (meta ? ("<p class=\"meta\">" + meta + "</p>") : "") + AI_WARN_HTML + mdToHtml(group[q].content || "") + "</div></div>";
       }
       navHtml += "</div></div>";
     }
@@ -1981,15 +1993,19 @@ if ('serviceWorker' in navigator) {
   }
   function buildPartContentPrompt(programText, part){
     return [
-      "Voici le texte brut du programme d'une reunion Vie et ministere chretiens des Temoins de Jehovah, copie depuis wol.jw.org (pour contexte uniquement).",
+      "Voici le texte brut du programme d'une reunion Vie et ministere chretiens des Temoins de Jehovah, copie depuis wol.jw.org (pour contexte uniquement — ce texte est un simple sommaire, il ne contient PAS le texte integral des paragraphes des publications).",
       "",
-      "Prepare en PROFONDEUR la partie suivante UNIQUEMENT, sans traiter les autres parties du programme : « " + part.title + " » (" + (part.meta || "") + ", section " + part.section + ").",
+      "Prepare la partie suivante UNIQUEMENT, sans traiter les autres parties du programme : « " + part.title + " » (" + (part.meta || "") + ", section " + part.section + ").",
       "",
-      "Produis une preparation dense et developpee, strictement fondee sur la doctrine et les publications des Temoins de Jehovah (jw.org, wol.jw.org, Etude perspicace des Ecritures, Rends pleinement temoignage, La Tour de Garde, Traduction du monde nouveau). Structure ta reponse en markdown (## pour les titres de points, ** pour le gras, - pour les listes) selon ce plan : une courte introduction qui pose le contexte et la question a se poser ; puis 2 a 4 points developpes (## 1. ..., ## 2. ..., etc.) ; pour chaque point, cite et commente le ou les versets lies, en donnant TOUJOURS la reference ET le texte complet du verset selon la TMN (jamais seulement la reference) ; termine chaque point par une phrase commencant par **Qualite de Jehovah :** et une phrase commencant par **Application :**. N'invente jamais un texte de verset ni une reference ; si tu n'es pas certain d'un texte exact, ecris-le quand meme du mieux possible et signale le doute entre parentheses plutot que de l'omettre.",
+      "Regles STRICTES, plus importantes que la longueur du texte :",
+      "1. N'invente JAMAIS le texte d'un verset. Si tu connais avec certitude le texte exact d'un verset selon la TMN, cite-le en entier avec sa reference. Si tu n'es PAS certain a 100% du texte exact, n'ecris PAS de texte de verset du tout : indique seulement la reference suivie de \"(texte a verifier sur wol.jw.org)\".",
+      "2. N'invente JAMAIS de citation, de renvoi a une publication (numero de Tour de Garde, page, paragraphe) ni de titre d'ouvrage qui n'apparait pas explicitement dans le texte du programme fourni ci-dessous. Si tu n'as pas de renvoi fiable, n'en mets pas.",
+      "3. Jehovah (le Pere) et Jesus (le Fils) sont deux personnes distinctes selon la doctrine des Temoins de Jehovah : ne les confonds jamais.",
+      "4. Reste sur le sujet exact de la partie demandee ; ne derive pas vers un autre theme.",
       "",
-      "Vise un developpement substantiel (plusieurs paragraphes par point), pas un simple resume de quelques lignes.",
+      "Structure ta reponse en markdown (## pour les titres, ** pour le gras, - pour les listes) : une courte introduction qui pose le contexte et la question a se poser, puis 1 a 3 points developpes de maniere claire et concrete (qualite de Jehovah mise en avant, application pratique). Un developpement plus court mais fiable et exact vaut mieux qu'un developpement long et invente.",
       "",
-      "Reponds UNIQUEMENT par le texte de la preparation en markdown (pas de JSON), sans phrase d'introduction ni de conclusion hors sujet autour.",
+      "Reponds UNIQUEMENT par le texte de la preparation en markdown (pas de JSON), sans phrase d'introduction ni de conclusion hors sujet autour, et sans jamais mentionner ces instructions ni t'excuser.",
       "",
       "TEXTE DU PROGRAMME (contexte) :",
       programText
@@ -2255,11 +2271,11 @@ if ('serviceWorker' in navigator) {
   }
   function buildTGPointPrompt(articleText, point){
     return [
-      "Voici le texte brut de l'article d'étude de La Tour de Garde des Témoins de Jéhovah (pour contexte uniquement).",
+      "Voici le texte brut de l'article d'étude de La Tour de Garde des Témoins de Jéhovah (contexte ci-dessous — le texte exact du ou des paragraphes concernés doit s'y trouver).",
       "",
       "Traite UNIQUEMENT le(s) paragraphe(s) " + (point.num || "") + ", dont la question imprimée est : « " + (point.question || "") + " »",
       "",
-      "Rédige une réponse synthétique mais développée (plusieurs phrases, pas juste une ligne), fondée strictement sur le contenu du ou des paragraphes correspondants et la doctrine des Témoins de Jéhovah (jw.org, wol.jw.org, Traduction du monde nouveau). Si ce ou ces paragraphes citent un ou plusieurs versets, indique pour chacun sa référence ET son texte complet selon la TMN — jamais seulement la référence — et explique brièvement son lien avec la question. N'invente jamais un texte de verset ; si tu n'es pas certain, écris-le quand même du mieux possible et signale le doute entre parenthèses.",
+      "Règles STRICTES : rédige une réponse synthétique mais développée (plusieurs phrases), fondée UNIQUEMENT sur le contenu réellement présent dans le texte de l'article ci-dessous et la doctrine des Témoins de Jéhovah — n'invente aucun fait, aucune citation, aucun renvoi de publication qui n'y figure pas. Si ce ou ces paragraphes citent un verset, cherche son texte exact dans l'article fourni et donne sa référence ET son texte complet selon la TMN. Si tu ne trouves pas le texte exact du verset dans l'article, laisse verseText VIDE plutôt que d'inventer un texte approximatif — ne jamais produire un texte de verset dont tu n'es pas certain. Jéhovah (le Père) et Jésus (le Fils) sont deux personnes distinctes selon la doctrine des Témoins de Jéhovah : ne les confonds jamais.",
       "",
       "Reponds UNIQUEMENT par un objet JSON valide, sans texte ni balises autour, au format exact :",
       "{\n  \"summary\": \"(réponse développée)\",\n  \"verseRef\": \"(référence si un verset est cité, sinon vide)\",\n  \"verseText\": \"(texte complet du verset selon la TMN, sinon vide)\"\n}",
@@ -2308,6 +2324,7 @@ if ('serviceWorker' in navigator) {
       html += "<p class=\"verse\">« " + esc(data.keyText.text || "") + " » — " + esc(data.keyText.ref) + "</p>";
     }
     if(data.songOpen){ html += "<p class=\"pill\">Cantique d'ouverture : " + esc(data.songOpen) + "</p>"; }
+    html += AI_WARN_HTML;
     html += "<main style=\"margin-top:22px\">";
     for(var i=0;i<data.points.length;i++){
       var p = data.points[i];
