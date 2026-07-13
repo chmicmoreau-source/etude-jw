@@ -1766,27 +1766,28 @@ if ('serviceWorker' in navigator) {
   for(var w=0; w<weeks.length; w++){ wireWeek(weeks[w]); }
 
   // ---- Génération IA (Pollinations, gratuit, sans clé) ----
+  // gen.pollinations.ai/openai et gen.pollinations.ai/text/... sont dépréciés
+  // (404 / 401 côté serveur, vérifié 2026-07) : seul text.pollinations.ai fonctionne.
   async function callPollinationsR(prompt){
-    var endpoints = ["https://gen.pollinations.ai/openai","https://text.pollinations.ai/openai"];
-    for(var i=0;i<endpoints.length;i++){
-      try{
-        var fetchP = fetch(endpoints[i],{
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
-          body: JSON.stringify({model:"openai", messages:[{role:"user",content:prompt}]})
-        });
-        var toP = new Promise(function(_,rej){ setTimeout(function(){ rej(new Error("timeout")); },90000); });
-        var res = await Promise.race([fetchP,toP]);
-        if(!res || !res.ok){ continue; }
+    try{
+      var fetchP = fetch("https://text.pollinations.ai/openai",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({model:"openai", messages:[{role:"user",content:prompt}]})
+      });
+      var toP = new Promise(function(_,rej){ setTimeout(function(){ rej(new Error("timeout")); },90000); });
+      var res = await Promise.race([fetchP,toP]);
+      if(res && res.ok){
         var data = await res.json();
         var txt = (data && data.choices && data.choices[0] && data.choices[0].message) ? data.choices[0].message.content : "";
         if(txt){ return txt; }
-      }catch(e){ /* endpoint suivant */ }
-    }
-    // repli : endpoint GET simple (prompt tronqué)
+      }
+    }catch(e){ /* repli */ }
+    // repli : endpoint GET simple (même domaine, prompt tronqué)
     try{
-      var url = "https://gen.pollinations.ai/text/" + encodeURIComponent(prompt.slice(0,3500));
-      var res2 = await fetch(url);
+      var url = "https://text.pollinations.ai/" + encodeURIComponent(prompt.slice(0,6000));
+      var toG = new Promise(function(_,rej){ setTimeout(function(){ rej(new Error("timeout")); },40000); });
+      var res2 = await Promise.race([fetch(url),toG]);
       if(res2 && res2.ok){ var t = await res2.text(); if(t){ return t; } }
     }catch(e){}
     throw new Error("pollinations");
