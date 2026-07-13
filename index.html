@@ -1969,6 +1969,129 @@ if ('serviceWorker' in navigator) {
     }
   }
 
+  // ---- Récupération du texte réel des versets depuis wol.jw.org ----
+  // Le modèle IA gratuit invente parfois un texte de verset approximatif ou
+  // totalement faux (constaté 2026-07). Plutôt que de lui faire confiance, on
+  // lui demande uniquement des REFÉRENCES (au format [[Référence]] dans le
+  // markdown, ou un champ verseRef pour la Tour de Garde), et l'app va
+  // chercher elle-même le texte exact sur wol.jw.org (page de la TMN,
+  // wol.jw.org/fr/wol/b/r30/lp-f/nwtsty/{livre}/{chapitre}), où chaque verset
+  // est un <span id="v{livre}-{chapitre}-{verset}-1">. Le proxy par défaut
+  // (r.jina.ai) convertit la page en markdown (liens "[16](url)texte..."),
+  // les autres proxys renvoient le HTML brut : les deux formats sont gérés.
+  var VERSE_CACHE = {};
+  function parseFullVerseRef(str){
+    if(!str){ return null; }
+    var s = String(str).split(/[;]/)[0];
+    var m = s.match(/^\s*([1-3])?\s*([\p{L}][\p{L}\séèàâîôûäëïöüçÉÈÀÂÎÔÛÄËÏÖÜÇ]*?)\s+(\d+)\s*[:.]\s*(\d+)(?:\s*[-–]\s*(\d+))?/u);
+    if(!m){ return null; }
+    var chapter = parseInt(m[3],10);
+    var v1 = parseInt(m[4],10);
+    var v2 = m[5] ? parseInt(m[5],10) : v1;
+    if(!chapter || !v1){ return null; }
+    var key = (m[1] ? m[1]+" " : "") + normalizeStr(m[2]).replace(/\s+/g," ");
+    var num = BOOK_MAP[key];
+    if(!num){
+      var words = key.split(" ");
+      while(words.length && !num){ words.pop(); num = BOOK_MAP[words.join(" ")]; }
+    }
+    if(!num){ return null; }
+    var verses = [];
+    for(var v=v1; v<=v2 && verses.length<20; v++){ verses.push(v); }
+    return {book:num, chapter:chapter, verses:verses};
+  }
+  function extractVerseFromHtml(html, book, chapter, verse){
+    try{
+      var doc = new DOMParser().parseFromString(html, "text/html");
+      var span = doc.getElementById("v" + book + "-" + chapter + "-" + verse + "-1");
+      if(!span){ return ""; }
+      var clone = span.cloneNode(true);
+      var links = clone.querySelectorAll("a");
+      for(var i=links.length-1;i>=0;i--){ links[i].parentNode.removeChild(links[i]); }
+      return clone.textContent.replace(/\s+/g," ").trim();
+    }catch(e){ return ""; }
+  }
+  // Le proxy par défaut (r.jina.ai) convertit la page en markdown : chaque
+  // verset devient "[N](url)texte...", mais ce même motif "[N](" réapparaît
+  // ailleurs sur la page (renvois d'étude, index de publications, liste de
+  // navigation "aller au verset N") — chercher le premier "[N](" dans toute
+  // la page attrape souvent un faux positif sans rapport avec le texte réel
+  // (vérifié 2026-07 sur une page réelle). On limite donc la recherche au
+  // texte qui suit la liste de navigation "#v=livre:chapitre:verset)" (qui
+  // précède toujours le texte réel), et on coupe avant les éléments d'UI qui
+  // suivent le texte (case à cocher "Renvois", "Taille du texte", etc.).
+  // Le verset 1 n'a pas son propre marqueur : le premier chiffre affiché est
+  // celui du chapitre, en gras ("[**N**](url)").
+  function trimVerseFooterJunk(t){
+    var stopWords = ["- [x]", "- [ ]", "Renvois (", "Taille du texte", "Différentes versions", "Compléments d’information", "Publications françaises"];
+    var cut = t.length;
+    for(var i=0;i<stopWords.length;i++){
+      var idx = t.indexOf(stopWords[i]);
+      if(idx >= 0 && idx < cut){ cut = idx; }
+    }
+    return t.slice(0, cut).replace(/[*\s]+$/,"").trim();
+  }
+  function extractVerseFromMd(md, book, chapter, verse){
+    try{
+      var anchorPattern = new RegExp("#v=" + book + ":" + chapter + ":\\d+\\)", "g");
+      var lastEnd = -1, am;
+      while((am = anchorPattern.exec(md))){ lastEnd = am.index + am[0].length; }
+      var body = lastEnd >= 0 ? md.slice(lastEnd) : md;
+      var re = (verse === 1)
+        ? new RegExp("\\[\\*\\*\\d+\\*\\*\\]\\([^)]*\\)([\\s\\S]*?)(?=\\[2\\]\\(|$)")
+        : new RegExp("\\[" + verse + "\\]\\([^)]*\\)([\\s\\S]*?)(?=\\[\\d+\\]\\(|$)");
+      var m = body.match(re);
+      if(!m){ return ""; }
+      var t = m[1].replace(/\[[+*]\]\([^)]*\)/g,"").replace(/\s+/g," ").trim();
+      return trimVerseFooterJunk(t);
+    }catch(e){ return ""; }
+  }
+  async function fetchVerseText(refStr){
+    var parsed = parseFullVerseRef(refStr);
+    if(!parsed){ return null; }
+    var cacheKey = parsed.book + "-" + parsed.chapter + "-" + parsed.verses.join(",");
+    if(Object.prototype.hasOwnProperty.call(VERSE_CACHE, cacheKey)){ return VERSE_CACHE[cacheKey]; }
+    var url = "https://wol.jw.org/fr/wol/b/r30/lp-f/nwtsty/" + parsed.book + "/" + parsed.chapter;
+    var proxy = lsGet("corsProxy") || "";
+    var raw;
+    try{ raw = await fetchViaProxy(url, proxy); }catch(e){ VERSE_CACHE[cacheKey] = null; return null; }
+    var parts = [];
+    var multi = parsed.verses.length > 1;
+    for(var i=0;i<parsed.verses.length;i++){
+      var v = parsed.verses[i];
+      var t = extractVerseFromHtml(raw, parsed.book, parsed.chapter, v) || extractVerseFromMd(raw, parsed.book, parsed.chapter, v);
+      // Les versets de parole rapportée (ex. Jean 3:16) contiennent déjà leurs
+      // propres guillemets français dans le texte de la TMN — on les retire
+      // ici pour éviter un « « double » » quand l'app ajoute les siens à l'affichage.
+      if(t){ t = t.replace(/^[«"“]\s*/,"").replace(/\s*[»"”]$/,""); }
+      if(t){ parts.push(multi ? (v + " " + t) : t); }
+    }
+    var result = parts.length ? parts.join(" ") : null;
+    VERSE_CACHE[cacheKey] = result;
+    return result;
+  }
+  // Remplace chaque marqueur [[Référence]] laissé par l'IA dans le markdown
+  // par le texte réel du verset récupéré sur wol.jw.org (jamais par le texte
+  // que l'IA aurait pu écrire elle-même).
+  async function resolveVersePlaceholders(text){
+    if(!text){ return text; }
+    var re = /\[\[([^\]]{2,60})\]\]/g;
+    var refs = []; var m;
+    while((m = re.exec(text))){ if(refs.indexOf(m[1]) < 0){ refs.push(m[1]); } }
+    var out = text;
+    for(var i=0;i<refs.length;i++){
+      var ref = refs[i];
+      var verseText = null;
+      try{ verseText = await fetchVerseText(ref); }catch(e){}
+      var replacement = verseText
+        ? ("« " + verseText + " » (" + ref + ", TMN)")
+        : (ref + " (texte du verset non trouvé automatiquement — vérifie sur wol.jw.org)");
+      var pattern = new RegExp("\\[\\[" + ref.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\]\\]", "g");
+      out = out.replace(pattern, replacement);
+    }
+    return out;
+  }
+
   // ---- Prompts de structuration puis de developpement ----
   // Demander les 7 parties de la reunion en un seul appel (ou meme regroupees
   // par section) produit soit une reponse trop longue et tronquee, soit un
@@ -1998,12 +2121,12 @@ if ('serviceWorker' in navigator) {
       "Prepare la partie suivante UNIQUEMENT, sans traiter les autres parties du programme : « " + part.title + " » (" + (part.meta || "") + ", section " + part.section + ").",
       "",
       "Regles STRICTES, plus importantes que la longueur du texte :",
-      "1. N'invente JAMAIS le texte d'un verset. Si tu connais avec certitude le texte exact d'un verset selon la TMN, cite-le en entier avec sa reference. Si tu n'es PAS certain a 100% du texte exact, n'ecris PAS de texte de verset du tout : indique seulement la reference suivie de \"(texte a verifier sur wol.jw.org)\".",
-      "2. N'invente JAMAIS de citation, de renvoi a une publication (numero de Tour de Garde, page, paragraphe) ni de titre d'ouvrage qui n'apparait pas explicitement dans le texte du programme fourni ci-dessous. Si tu n'as pas de renvoi fiable, n'en mets pas.",
+      "1. N'ECRIS JAMAIS toi-meme le texte d'un verset. Quand tu veux citer un verset, ecris UNIQUEMENT un marqueur au format exact [[Reference]] (exemple : [[Jean 3:16]] ou [[1 Corinthiens 2:16]]) — une application separee ira chercher le texte exact sur wol.jw.org et remplacera ce marqueur automatiquement. N'ecris jamais de guillemets ni de texte a la place : seulement le marqueur [[...]].",
+      "2. N'invente JAMAIS de citation, de renvoi a une publication (numero de Tour de Garde, page, paragraphe) ni de titre d'ouvrage qui n'apparait pas explicitement dans le texte du programme fourni ci-dessous. Si une reference de verset apparait explicitement dans ce texte du programme, utilise-la en priorite dans ton marqueur [[...]] plutot que d'en choisir une autre de memoire.",
       "3. Jehovah (le Pere) et Jesus (le Fils) sont deux personnes distinctes selon la doctrine des Temoins de Jehovah : ne les confonds jamais.",
       "4. Reste sur le sujet exact de la partie demandee ; ne derive pas vers un autre theme.",
       "",
-      "Structure ta reponse en markdown (## pour les titres, ** pour le gras, - pour les listes) : une courte introduction qui pose le contexte et la question a se poser, puis 1 a 3 points developpes de maniere claire et concrete (qualite de Jehovah mise en avant, application pratique). Un developpement plus court mais fiable et exact vaut mieux qu'un developpement long et invente.",
+      "Structure ta reponse en markdown (## pour les titres, ** pour le gras, - pour les listes) : une courte introduction qui pose le contexte et la question a se poser, puis 1 a 3 points developpes de maniere claire et concrete, chacun avec au moins un marqueur [[Reference]], une qualite de Jehovah mise en avant, et une application pratique.",
       "",
       "Reponds UNIQUEMENT par le texte de la preparation en markdown (pas de JSON), sans phrase d'introduction ni de conclusion hors sujet autour, et sans jamais mentionner ces instructions ni t'excuser.",
       "",
@@ -2032,7 +2155,8 @@ if ('serviceWorker' in navigator) {
       if(onProgress){ onProgress(i+1, struct.parts.length, part.title || ""); }
       try{
         var raw = await callLLM(buildPartContentPrompt(programText, part));
-        merged.parts.push({section: part.section, title: part.title, meta: part.meta, content: stripFences(raw)});
+        var content = await resolveVersePlaceholders(stripFences(raw));
+        merged.parts.push({section: part.section, title: part.title, meta: part.meta, content: content});
       }catch(e){
         failures.push((part.title || ("partie " + (i+1))) + ": " + (e && e.message ? e.message : "erreur"));
         merged.parts.push({section: part.section, title: part.title, meta: part.meta, content: "_Generation echouee pour cette partie — reessaie plus tard._"});
@@ -2176,8 +2300,16 @@ if ('serviceWorker' in navigator) {
   // "pub-w" (a distinguer de "pub-mwb", le cahier Vie et ministere) — verifie
   // 2026-07 sur une page reelle.
   function findTGUrl(html){
-    var m = String(html).match(/class="[^"]*\bpub-w\b[^"]*"[\s\S]{0,400}?href="(\/fr\/wol\/d\/r30\/lp-f\/\d+)"/);
-    return m ? ("https://wol.jw.org" + m[1]) : null;
+    var s = String(html);
+    // Proxys renvoyant le HTML brut (allorigins, corsproxy, codetabs) :
+    // l'entrée "pub-w" (à distinguer de "pub-mwb", le cahier).
+    var m = s.match(/class="[^"]*\bpub-w\b[^"]*"[\s\S]{0,400}?href="(\/fr\/wol\/d\/r30\/lp-f\/\d+)"/);
+    if(m){ return "https://wol.jw.org" + m[1]; }
+    // r.jina.ai (proxy par défaut) convertit la page en markdown : plus de
+    // classes CSS, mais le titre "Étude de La Tour de Garde" précède
+    // toujours le lien markdown vers l'article — vérifié 2026-07.
+    var m2 = s.match(/tour de garde[\s\S]{0,400}?\((https:\/\/wol\.jw\.org\/fr\/wol\/d\/r30\/lp-f\/\d+)\)/i);
+    return m2 ? m2[1] : null;
   }
 
   if(bRun){
@@ -2260,10 +2392,10 @@ if ('serviceWorker' in navigator) {
     return [
       "Voici le texte brut de l'article d'étude de La Tour de Garde des Témoins de Jéhovah, copié depuis wol.jw.org. Ignore les menus et le bruit de navigation.",
       "",
-      "Identifie UNIQUEMENT la structure de l'article (n'écris PAS encore de réponse) : le titre, la semaine d'étude si indiquée, les cantiques d'ouverture/conclusion si indiqués, le texte de base (référence et texte complet selon la TMN), et la liste ORDONNÉE de TOUTES les questions imprimées avec leur(s) numéro(s) de paragraphe et la question EXACTEMENT telle qu'imprimée.",
+      "Identifie UNIQUEMENT la structure de l'article (n'écris PAS encore de réponse) : le titre, la semaine d'étude si indiquée, les cantiques d'ouverture/conclusion si indiqués, la référence du texte de base (PAS son texte — une référence seule, ex. \"Jean 3:16\"), et la liste ORDONNÉE de TOUTES les questions imprimées avec leur(s) numéro(s) de paragraphe et la question EXACTEMENT telle qu'imprimée. N'écris jamais toi-même le texte d'un verset : une référence seule suffit, une autre étape ira chercher le texte exact.",
       "",
       "Reponds UNIQUEMENT par un objet JSON valide, sans texte ni balises autour, au format exact :",
-      "{\n  \"title\": \"(titre de l'article)\",\n  \"dates\": \"(semaine d'étude, si indiquée)\",\n  \"songOpen\": \"(cantique d'ouverture, si indiqué)\",\n  \"songClose\": \"(cantique de conclusion, si indiqué)\",\n  \"keyText\": { \"ref\": \"(référence du texte de base)\", \"text\": \"(texte complet selon la TMN)\" },\n  \"points\": [\n    { \"num\": \"(numéro(s) de paragraphe, ex. 1-2)\", \"question\": \"(question imprimée telle quelle)\" }\n  ]\n}",
+      "{\n  \"title\": \"(titre de l'article)\",\n  \"dates\": \"(semaine d'étude, si indiquée)\",\n  \"songOpen\": \"(cantique d'ouverture, si indiqué)\",\n  \"songClose\": \"(cantique de conclusion, si indiqué)\",\n  \"keyText\": { \"ref\": \"(référence du texte de base uniquement, sans son texte)\" },\n  \"points\": [\n    { \"num\": \"(numéro(s) de paragraphe, ex. 1-2)\", \"question\": \"(question imprimée telle quelle)\" }\n  ]\n}",
       "",
       "TEXTE DE L'ARTICLE :",
       articleText
@@ -2275,10 +2407,10 @@ if ('serviceWorker' in navigator) {
       "",
       "Traite UNIQUEMENT le(s) paragraphe(s) " + (point.num || "") + ", dont la question imprimée est : « " + (point.question || "") + " »",
       "",
-      "Règles STRICTES : rédige une réponse synthétique mais développée (plusieurs phrases), fondée UNIQUEMENT sur le contenu réellement présent dans le texte de l'article ci-dessous et la doctrine des Témoins de Jéhovah — n'invente aucun fait, aucune citation, aucun renvoi de publication qui n'y figure pas. Si ce ou ces paragraphes citent un verset, cherche son texte exact dans l'article fourni et donne sa référence ET son texte complet selon la TMN. Si tu ne trouves pas le texte exact du verset dans l'article, laisse verseText VIDE plutôt que d'inventer un texte approximatif — ne jamais produire un texte de verset dont tu n'es pas certain. Jéhovah (le Père) et Jésus (le Fils) sont deux personnes distinctes selon la doctrine des Témoins de Jéhovah : ne les confonds jamais.",
+      "Règles STRICTES : rédige une réponse synthétique mais développée (plusieurs phrases), fondée UNIQUEMENT sur le contenu réellement présent dans le texte de l'article ci-dessous et la doctrine des Témoins de Jéhovah — n'invente aucun fait, aucune citation, aucun renvoi de publication qui n'y figure pas. N'écris JAMAIS toi-même le texte d'un verset, même dans le résumé : si ce ou ces paragraphes citent un verset, indique seulement sa référence exacte dans le champ verseRef (une autre étape ira chercher son texte réel sur wol.jw.org). Jéhovah (le Père) et Jésus (le Fils) sont deux personnes distinctes selon la doctrine des Témoins de Jéhovah : ne les confonds jamais.",
       "",
       "Reponds UNIQUEMENT par un objet JSON valide, sans texte ni balises autour, au format exact :",
-      "{\n  \"summary\": \"(réponse développée)\",\n  \"verseRef\": \"(référence si un verset est cité, sinon vide)\",\n  \"verseText\": \"(texte complet du verset selon la TMN, sinon vide)\"\n}",
+      "{\n  \"summary\": \"(réponse développée, sans citer le texte d'un verset mot pour mot)\",\n  \"verseRef\": \"(référence si un verset est cité, sinon vide)\"\n}",
       "",
       "TEXTE DE L'ARTICLE (contexte) :",
       articleText
@@ -2298,15 +2430,26 @@ if ('serviceWorker' in navigator) {
     if(!struct.points || !struct.points.length){
       throw new Error("aucune question identifiée dans l'article");
     }
-    var merged = { title: struct.title || "", dates: struct.dates || "", songOpen: struct.songOpen || "", songClose: struct.songClose || "", keyText: struct.keyText || null, points: [] };
+    var merged = { title: struct.title || "", dates: struct.dates || "", songOpen: struct.songOpen || "", songClose: struct.songClose || "", keyText: null, points: [] };
     var failures = [];
+    if(struct.keyText && struct.keyText.ref){
+      var kt;
+      try{ kt = await fetchVerseText(struct.keyText.ref); }catch(e){ kt = null; }
+      merged.keyText = { ref: struct.keyText.ref, text: kt || "(texte non trouvé automatiquement — vérifie " + struct.keyText.ref + " sur wol.jw.org)" };
+    }
     for(var i=0;i<struct.points.length;i++){
       var pt = struct.points[i];
       if(onProgress){ onProgress(i+1, struct.points.length, pt.num || ""); }
       try{
         var raw = await callLLM(buildTGPointPrompt(articleText, pt));
         var d = parseWeekJSON(raw);
-        merged.points.push({ num: pt.num, question: pt.question, summary: d.summary || "", verseRef: d.verseRef || "", verseText: d.verseText || "" });
+        var verseText = "";
+        if(d.verseRef){
+          var vt = null;
+          try{ vt = await fetchVerseText(d.verseRef); }catch(e2){}
+          verseText = vt || "(texte non trouvé automatiquement — vérifie " + d.verseRef + " sur wol.jw.org)";
+        }
+        merged.points.push({ num: pt.num, question: pt.question, summary: d.summary || "", verseRef: d.verseRef || "", verseText: verseText });
       }catch(e){
         failures.push("§" + (pt.num || (i+1)) + ": " + (e && e.message ? e.message : "erreur"));
         merged.points.push({ num: pt.num, question: pt.question, summary: "_Génération échouée pour ce paragraphe — réessaie plus tard._", verseRef: "", verseText: "" });
