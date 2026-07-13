@@ -335,7 +335,7 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
             <p class="builder-help">Sélectionne d'abord la semaine dans le menu ci-dessus : le lien wol.jw.org se remplit tout seul. Le site récupère le programme et le structure gratuitement, sans clé, puis enregistre la semaine sur cet appareil.</p>
             <input id="bUrl" type="url" placeholder="Lien wol.jw.org du programme de la semaine">
             <a id="bOpenLink" href="#" target="_blank" rel="noopener" style="display:inline-block;font-size:13px;color:var(--gold);font-weight:600;margin:2px 0 8px;text-decoration:none">Ouvrir ce lien dans un nouvel onglet →</a>
-            <input id="bProxy" type="text" value="https://api.allorigins.win/raw?url=" placeholder="Proxy CORS">
+            <input id="bProxy" type="text" value="" placeholder="Proxy CORS personnel (optionnel — laisse vide pour utiliser les proxys par défaut)">
             <p class="builder-help">Si la récupération automatique échoue (proxy indisponible) : ouvre le lien ci-dessus dans un nouvel onglet, sélectionne tout le texte du programme, copie-le et colle-le ci-dessous — la génération se fera directement à partir de ce texte, sans passer par un proxy.</p>
             <textarea id="bText" rows="4" placeholder="Colle ici le texte du programme copié depuis wol.jw.org (facultatif — remplace la récupération automatique si rempli)"></textarea>
             <div class="brow"><button id="bRun">Récupérer et générer</button></div>
@@ -683,7 +683,7 @@ Produis ces sections :
               <p class="builder-help">Ouvre l'article d'étude de la semaine sur wol.jw.org (Bibliothèque → La Tour de Garde — édition d'étude), copie son lien ci-dessous, ou colle directement le texte de l'article.</p>
               <input id="tgUrl" type="url" placeholder="Lien wol.jw.org de l'article d'étude">
               <a id="tgOpenLink" href="https://wol.jw.org/fr/wol/library/r30/lp-f/toutes-les-publications/la-tour-de-garde-etude" target="_blank" rel="noopener" style="display:inline-block;font-size:13px;color:var(--gold);font-weight:600;margin:2px 0 8px;text-decoration:none">Ouvrir la bibliothèque Tour de Garde →</a>
-              <input id="tgProxy" type="text" value="https://api.allorigins.win/raw?url=" placeholder="Proxy CORS">
+              <input id="tgProxy" type="text" value="" placeholder="Proxy CORS personnel (optionnel — laisse vide pour utiliser les proxys par défaut)">
               <p class="builder-help">Si la récupération automatique échoue : ouvre le lien ci-dessus, sélectionne tout le texte de l'article, copie-le et colle-le ci-dessous — la génération se fera directement à partir de ce texte, sans passer par un proxy.</p>
               <textarea id="tgText" rows="4" placeholder="Colle ici le texte de l'article copié depuis wol.jw.org (facultatif — remplace la récupération automatique si rempli)"></textarea>
               <div class="brow"><button id="tgRun">Récupérer et générer</button></div>
@@ -1928,6 +1928,13 @@ if ('serviceWorker' in navigator) {
 
   // ---- Persistance (localStorage, si disponible) ----
   function lsGet(k){ try{ return window.localStorage.getItem(k); }catch(e){ return null; } }
+  // api.allorigins.win a servi de proxy CORS pré-rempli par défaut jusqu'ici, mais renvoie
+  // désormais des timeouts (408) côté serveur — vérifié 2026-07. On efface cette valeur si
+  // elle a été enregistrée telle quelle (ancien défaut, pas un choix délibéré de l'utilisateur),
+  // pour laisser l'ordre déjà correct de CORS_PROXIES (r.jina.ai en premier) reprendre la main.
+  if(lsGet("corsProxy") === "https://api.allorigins.win/raw?url="){
+    try{ window.localStorage.setItem("corsProxy", ""); }catch(e){}
+  }
   function lsSet(k,v){ try{ window.localStorage.setItem(k,v); }catch(e){} }
   function saveWeek(id, data){
     lsSet("wk:" + id, JSON.stringify(data));
