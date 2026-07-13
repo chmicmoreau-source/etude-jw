@@ -1407,11 +1407,68 @@ function findOrCreateTag(db, name){
   return newId;
 }
 
+// Le module Réunion (IIFE séparée, voir CLAUDE.md) écrit ses semaines et son
+// étude Tour de Garde dans localStorage sous des clés "wk:*"/"tgStudy" ; on
+// les relit directement ici plutôt que d'exposer quoi que ce soit depuis
+// cette IIFE, pour rester cohérent avec son isolation.
+function mdToPlainText(md){
+  return String(md || '')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/^[-*]\s+/gm, '• ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+function gatherReunionExportItems(){
+  var items=[];
+  try{
+    var ids=JSON.parse(localStorage.getItem('wkIds') || '[]');
+    for(var i=0;i<ids.length;i++){
+      var raw=localStorage.getItem('wk:' + ids[i]);
+      if(!raw) continue;
+      var data=JSON.parse(raw);
+      var parts=data.parts || [];
+      for(var p=0;p<parts.length;p++){
+        var part=parts[p];
+        if(!part.content) continue;
+        var refMatch=String(part.content).match(/\(([^(),]+),\s*TMN\)/);
+        items.push({
+          titre: (part.title || 'Partie') + ' — ' + (data.dates || ids[i]),
+          content: mdToPlainText(part.content),
+          tagLabel: 'Réunion',
+          refHint: (refMatch && refMatch[1]) || data.reading || ''
+        });
+      }
+    }
+  }catch(e){}
+  try{
+    var tgRaw=localStorage.getItem('tgStudy');
+    if(tgRaw){
+      var tg=JSON.parse(tgRaw);
+      var points=tg.points || [];
+      for(var q=0;q<points.length;q++){
+        var pt=points[q];
+        if(!pt.summary) continue;
+        var content=pt.summary;
+        if(pt.verseRef && pt.verseText){ content += '\n\n' + pt.verseRef + ' : « ' + pt.verseText + ' »'; }
+        items.push({
+          titre: '§' + (pt.num || (q+1)) + ' — ' + (pt.question || tg.title || 'Tour de Garde'),
+          content: mdToPlainText(content),
+          tagLabel: 'Tour de Garde',
+          refHint: pt.verseRef || (tg.keyText && tg.keyText.ref) || ''
+        });
+      }
+    }
+  }catch(e){}
+  return items;
+}
+
 function exportJWLibrary(){
   var status=document.getElementById('export-status');
   var setS=function(msg){ if(status) status.textContent=msg; };
   var etudes=G.history.filter(function(h){ return h.resume; });
-  if(!etudes.length){ setS('Aucune étude générée à exporter pour le moment.'); return; }
+  var reunionItems=gatherReunionExportItems();
+  if(!etudes.length && !reunionItems.length){ setS('Aucune étude ou partie de réunion générée à exporter pour le moment.'); return; }
 
   setS('Sélectionnez votre sauvegarde .jwlibrary…');
   var input=document.createElement('input');
@@ -1470,6 +1527,21 @@ function exportJWLibrary(){
         } catch(errNote) { failed++; }
       }
 
+      for(var j=0;j<reunionItems.length;j++){
+        var it=reunionItems[j];
+        if(existTitles[it.titre]){ skipped++; continue; }
+        try {
+          var tagIdR=findOrCreateTag(db, it.tagLabel);
+          var refR=parseVerseRef(it.refHint) || {book:1, chapter:1};
+          var locIdR=findOrCreateBibleLocation(db, bibleInfo, refR.book, refR.chapter);
+
+          db.run('INSERT INTO Note (NoteId,Guid,UserMarkId,LocationId,Title,Content,LastModified,Created,BlockType,BlockIdentifier) VALUES (?,?,NULL,?,?,?,?,?,0,NULL)', [noteId, uuid(), locIdR, it.titre, it.content, now, now]);
+          db.run('INSERT INTO TagMap (TagMapId,PlaylistItemId,LocationId,NoteId,TagId,Position) VALUES (?,NULL,NULL,?,?,0)', [tagMapId, noteId, tagIdR]);
+
+          noteId++; tagMapId++; added++;
+        } catch(errNoteR) { failed++; }
+      }
+
       setS('Création du fichier fusionné…');
       var dbBytes=db.export(); db.close();
       var dateStr=new Date().toISOString().slice(0,10);
@@ -1486,7 +1558,7 @@ function exportJWLibrary(){
       var a=document.createElement('a'); a.href=url; a.download=fname; a.click();
       URL.revokeObjectURL(url);
 
-      var msg='✓ ' + added + ' étude(s) ajoutée(s)' + (skipped ? ', ' + skipped + ' déjà présente(s)' : '') + (failed ? ', ' + failed + ' échec(s)' : '') + '.';
+      var msg='✓ ' + added + ' note(s) ajoutée(s)' + (skipped ? ', ' + skipped + ' déjà présente(s)' : '') + (failed ? ', ' + failed + ' échec(s)' : '') + '.';
       setS(msg + ' Restaure ce fichier dans JW Library.');
       toast(msg);
     } catch(err) {
@@ -1543,7 +1615,7 @@ function renderSync() {
     + (G.lastJWL?'✓ Dernier import : '+G.lastJWL:'')
     + '</div>'
     + '<div style="height:14px"></div>'
-    + '<div style="font-size:12px;color:#555;line-height:1.6;margin-bottom:10px">Ajoute vos études générées dans l\'app à une sauvegarde JW Library existante, pour les retrouver comme notes dans JW Library lui-même.</div>'
+    + '<div style="font-size:12px;color:#555;line-height:1.6;margin-bottom:10px">Ajoute vos études générées, vos parties de réunion préparées et votre étude Tour de Garde à une sauvegarde JW Library existante, pour les retrouver comme notes dans JW Library lui-même.</div>'
     + '<button class="btn" style="background:#8E44AD;margin-bottom:0" onclick="exportJWLibrary()">📖 Exporter vers JW Library</button>'
     + '<div id="export-status" style="font-size:11px;color:#7A8396;margin-top:6px;text-align:center"></div>'
     + '</div>';
