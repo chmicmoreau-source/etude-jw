@@ -724,6 +724,19 @@ var SK = 'jw_dbx_v1';
 var GIST_FILENAME = 'etude-biblique-jw-sync.json';
 
 /* ══ UTIL RÉSEAU ═════════════════════════════════════════════════════════ */
+// Le modèle IA écrit parfois un échappement invalide dans le JSON (ex. "\-" au
+// lieu de "-", pour imiter du markdown) : \\X n'est valide en JSON que pour
+// X dans " \ / b f n r t u — tout autre cas fait échouer JSON.parse
+// immédiatement ("Bad escaped character"), même quand le reste du JSON est
+// par ailleurs correct. On retire ces antislashs superflus avant de retenter.
+function fixBadJsonEscapes(s) {
+  return String(s).replace(/\\(?!["\\/bfnrtu])/g, '');
+}
+function parseJsonLoose(s) {
+  try { return JSON.parse(s); } catch (e) {}
+  return JSON.parse(fixBadJsonEscapes(s));
+}
+
 function withTimeout(promise, ms) {
   return Promise.race([
     promise,
@@ -1286,7 +1299,7 @@ async function runStudy(entry) {
       + "\nMéthode (comme La Tour de Garde) : nomme le doute réaliste que le verset soulève avec un précédent biblique ; réponds-y par un second verset-clé (le mécanisme doctrinal) ; termine par une application concrète qui boucle sur l'image du verset de départ.\n"
       + "\nRéponds uniquement avec ce JSON, sans texte autour : {\"resume\":\"2-3 phrases : le verset et la tension qu'il soulève\",\"points\":[{\"titre\":\"Le doute légitime\",\"texte\":\"\",\"reference\":\"précédent biblique\"},{\"titre\":\"La réponse doctrinale\",\"texte\":\"\",\"reference\":\"second verset-clé\"},{\"titre\":\"Application concrète\",\"texte\":\"\",\"reference\":\"retour à l'image de départ\"}],\"questions\":[\"\",\"\"],\"ressource\":\"publication wol.jw.org\"}";
     var txt = await generateStudyText(prompt);
-    var parsed=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    var parsed=parseJsonLoose(txt.replace(/```json|```/g,'').trim());
     Object.assign(entry,parsed);
     G.history=[entry].concat(G.history.filter(function(h){return h.titre!==entry.titre;})).slice(0,100);
     saveH();
@@ -2382,6 +2395,10 @@ if (navigator.storage && navigator.storage.persist) {
   function parseWeekJSON(raw){
     var text = stripFences(raw);
     try{ return JSON.parse(text); }catch(e){}
+    // Echappements invalides (ex. "\-") : les retirer avant de tenter la
+    // reparation du JSON tronque ci-dessous — voir fixBadJsonEscapes.
+    try{ return JSON.parse(fixBadJsonEscapes(text)); }catch(e){}
+    text = fixBadJsonEscapes(text);
     var stack = [], inStr = false, esc = false, lastSafePos = -1;
     for(var i=0;i<text.length;i++){
       var c = text[i];
