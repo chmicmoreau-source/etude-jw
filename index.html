@@ -2347,7 +2347,14 @@ if (navigator.storage && navigator.storage.persist) {
       programText
     ].join("\n");
   }
-  async function generateWeekData(programText, onProgress){
+  // onProgress(i, n, title) : juste l'affichage d'un statut texte.
+  // onPartDone(partialMerged) : appele apres CHAQUE partie (succes ou echec)
+  // avec l'etat complet accumule jusque-la, pour permettre a l'appelant de
+  // sauvegarder progressivement — sinon un F5/fermeture pendant les
+  // plusieurs minutes que peut prendre la generation complete (8-10 parties
+  // sequentielles) perd tout le travail deja fait, rien n'etant ecrit avant
+  // la toute fin — signale par l'utilisateur 2026-07.
+  async function generateWeekData(programText, onProgress, onPartDone){
     if(!programText || programText.length < 200){
       throw new Error("programme recupere trop court ou vide (" + (programText ? programText.length : 0) + " car.) — essaie le texte colle");
     }
@@ -2374,6 +2381,7 @@ if (navigator.storage && navigator.storage.persist) {
         failures.push((part.title || ("partie " + (i+1))) + ": " + (e && e.message ? e.message : "erreur"));
         merged.parts.push({section: part.section, title: part.title, meta: part.meta, content: "_Generation echouee pour cette partie — reessaie plus tard._"});
       }
+      if(onPartDone){ merged.failures = failures; onPartDone(merged); }
     }
     merged.failures = failures;
     return merged;
@@ -2493,6 +2501,13 @@ if (navigator.storage && navigator.storage.persist) {
     }).then(function(html2){
       return generateWeekData(extractText(html2), function(i,n,title){
         setB("Génération de la partie " + i + "/" + n + (title ? (" — " + title) : "") + "…");
+      }, function(partial){
+        // Sauvegarde apres chaque partie : un F5/fermeture pendant les
+        // quelques minutes que prend la generation complete ne perd alors
+        // que ce qui n'est pas encore genere, jamais tout le travail deja fait.
+        if(!partial.dates){ partial.dates = sched.dates; }
+        renderWeek(id, partial);
+        saveWeek(id, partial);
       });
     }).then(function(data){
       if(!data.dates){ data.dates = sched.dates; }
@@ -2561,6 +2576,14 @@ if (navigator.storage && navigator.storage.persist) {
         setB("Structuration (gratuite, sans cle)...");
         return generateWeekData(extractText(html2), function(i,n,title){
           setB("Génération de la partie " + i + "/" + n + (title ? (" — " + title) : "") + "…");
+        }, function(partial){
+          // Sauvegarde apres chaque partie (voir commentaire equivalent dans
+          // autoPrepareCurrentWeek) : un F5 en cours de generation ne perd
+          // plus que ce qui n'est pas encore genere.
+          var sched2 = schedById(id);
+          if(!partial.dates && sched2){ partial.dates = sched2.dates; }
+          renderWeek(id, partial);
+          saveWeek(id, partial);
         });
       }).then(function(data){
         var sched = schedById(id);
@@ -2633,7 +2656,7 @@ if (navigator.storage && navigator.storage.persist) {
       articleText
     ].join("\n");
   }
-  async function generateTGData(articleText, onProgress){
+  async function generateTGData(articleText, onProgress, onPartDone){
     if(!articleText || articleText.length < 200){
       throw new Error("article recupere trop court ou vide (" + (articleText ? articleText.length : 0) + " car.) — essaie le texte colle");
     }
@@ -2671,6 +2694,7 @@ if (navigator.storage && navigator.storage.persist) {
         failures.push("§" + (pt.num || (i+1)) + ": " + (e && e.message ? e.message : "erreur"));
         merged.points.push({ num: pt.num, question: pt.question, summary: "_Génération échouée pour ce paragraphe — réessaie plus tard._", verseRef: "", verseText: "" });
       }
+      if(onPartDone){ merged.failures = failures; onPartDone(merged); }
     }
     merged.failures = failures;
     return merged;
@@ -2764,6 +2788,12 @@ if (navigator.storage && navigator.storage.persist) {
         setTG("Structuration (gratuite, sans cle)...");
         return generateTGData(extractText(html2), function(i,n){
           setTG("Génération de la question " + i + "/" + n + "…");
+        }, function(partial){
+          // Sauvegarde apres chaque question (meme raison que pour la
+          // reunion : ne pas perdre tout le travail deja fait si l'appli
+          // est fermee/rechargee avant la toute fin de la generation).
+          renderTG(partial);
+          saveTG(partial, tgId);
         });
       }).then(function(data){
         renderTG(data);
@@ -2793,6 +2823,9 @@ if (navigator.storage && navigator.storage.persist) {
     }).then(function(html2){
       return generateTGData(extractText(html2), function(i,n){
         setTG("Génération de la question " + i + "/" + n + "…");
+      }, function(partial){
+        renderTG(partial);
+        saveTG(partial, id);
       });
     }).then(function(data){
       renderTG(data);
