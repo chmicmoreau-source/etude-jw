@@ -1516,20 +1516,29 @@ function gatherReunionExportItems(){
     }
   }catch(e){}
   try{
+    // Une seule note regroupant tous les paragraphes de l'etude — plutot
+    // qu'une note par paragraphe comme precedemment (trop eclate pour un
+    // usage normal dans JW Library, demande explicitement par l'utilisateur
+    // 2026-07).
     var tgRaw=localStorage.getItem('tgStudy');
     if(tgRaw){
       var tg=JSON.parse(tgRaw);
       var points=tg.points || [];
+      var sections=[];
+      if(tg.keyText && tg.keyText.ref){ sections.push('Texte clé : ' + tg.keyText.ref + ' : « ' + (tg.keyText.text || '') + ' »'); }
       for(var q=0;q<points.length;q++){
         var pt=points[q];
         if(!pt.summary) continue;
-        var content=pt.summary;
-        if(pt.verseRef && pt.verseText){ content += '\n\n' + pt.verseRef + ' : « ' + pt.verseText + ' »'; }
+        var block='§' + (pt.num || (q+1)) + ' — ' + (pt.question || '') + '\n' + pt.summary;
+        if(pt.verseRef && pt.verseText){ block += '\n' + pt.verseRef + ' : « ' + pt.verseText + ' »'; }
+        sections.push(block);
+      }
+      if(sections.length){
         items.push({
-          titre: '§' + (pt.num || (q+1)) + ' — ' + (pt.question || tg.title || 'Tour de Garde'),
-          content: mdToPlainText(content),
+          titre: (tg.title || 'Tour de Garde') + (tg.dates ? (' — ' + tg.dates) : ''),
+          content: mdToPlainText(sections.join('\n\n')),
           tagLabel: 'Tour de Garde',
-          refHint: pt.verseRef || (tg.keyText && tg.keyText.ref) || ''
+          refHint: (tg.keyText && tg.keyText.ref) || (points[0] && points[0].verseRef) || ''
         });
       }
     }
@@ -1724,10 +1733,20 @@ function diagnoseJWLibrary(){
         }
       }catch(e){ out.push('erreur : ' + e.message); }
       out.push('=== Compte de lignes ===');
-      ['Note','Tag','TagMap','Location','UserMark','LastModified'].forEach(function(t){
+      ['Note','Tag','TagMap','Location','UserMark','LastModified','InputField'].forEach(function(t){
         try{ out.push(t + ' : ' + queryOne(db, 'SELECT COUNT(*) AS n FROM ' + t).n); }
         catch(e){ out.push(t + ' : erreur (' + e.message + ')'); }
       });
+      out.push('');
+      out.push('=== InputField (avec la Location associée) — pour comprendre le format de TextTag ===');
+      try{
+        var resIF=db.exec('SELECT f.LocationId, f.TextTag, f.Value, l.DocumentId, l.KeySymbol, l.MepsLanguage, l.Type, l.Track, l.BookNumber, l.ChapterNumber FROM InputField f LEFT JOIN Location l ON l.LocationId = f.LocationId');
+        if(resIF.length){
+          resIF[0].values.forEach(function(row){
+            out.push('LocationId=' + row[0] + ' TextTag=' + JSON.stringify(row[1]) + ' Value=' + JSON.stringify(row[2]) + ' | Location: DocumentId=' + row[3] + ' KeySymbol=' + row[4] + ' MepsLanguage=' + row[5] + ' Type=' + row[6] + ' Track=' + row[7] + ' BookNumber=' + row[8] + ' ChapterNumber=' + row[9]);
+          });
+        } else { out.push('(aucune ligne)'); }
+      }catch(e){ out.push('erreur : ' + e.message); }
       db.close();
       setD(out.join('\n'));
     }catch(err){
