@@ -1442,6 +1442,25 @@ function findOrCreateBibleLocation(db, bibleInfo, book, chapter){
   return newId;
 }
 
+// TagMap a une contrainte UNIQUE(TagId, Position) sur la vraie base JW
+// Library — chaque ligne TagMap pour un meme TagId doit avoir une Position
+// distincte. Un meme tag ("Réunion", "Tour de Garde", ou une catégorie
+// d'étude) etant reutilise pour plusieurs notes, un Position=0 code en dur
+// pour toutes les lignes violait cette contrainte des la 2e note du meme
+// tag, faisant echouer silencieusement (capture par le try/catch) la grande
+// majorite des notes — constate 2026-07 via le schema reel de l'utilisateur.
+function nextTagPosition(db, posCache, tagId){
+  var next;
+  if(posCache[tagId] === undefined){
+    var row = queryOne(db, 'SELECT MAX(Position) AS m FROM TagMap WHERE TagId=?', [tagId]);
+    next = (row && row.m != null) ? row.m + 1 : 0;
+  } else {
+    next = posCache[tagId] + 1;
+  }
+  posCache[tagId] = next;
+  return next;
+}
+
 function findOrCreateTag(db, name){
   var row=queryOne(db, 'SELECT TagId AS id FROM Tag WHERE Name = ?', [name]);
   if(row && row.id != null) return row.id;
@@ -1564,6 +1583,7 @@ function exportJWLibrary(){
 
       var now=new Date().toISOString().replace('Z','+00:00');
       var added=0, skipped=0, failed=0, firstErrorMsg='';
+      var tagPosCache={};
 
       for(var i=0;i<etudes.length;i++){
         var e=etudes[i];
@@ -1584,7 +1604,7 @@ function exportJWLibrary(){
           var locId=findOrCreateBibleLocation(db, bibleInfo, ref.book, ref.chapter);
 
           db.run('INSERT INTO Note (NoteId,Guid,UserMarkId,LocationId,Title,Content,LastModified,Created,BlockType,BlockIdentifier) VALUES (?,?,NULL,?,?,?,?,?,0,NULL)', [noteId, uuid(), locId, e.titre, content, now, now]);
-          db.run('INSERT INTO TagMap (TagMapId,PlaylistItemId,LocationId,NoteId,TagId,Position) VALUES (?,NULL,NULL,?,?,0)', [tagMapId, noteId, tagId]);
+          db.run('INSERT INTO TagMap (TagMapId,PlaylistItemId,LocationId,NoteId,TagId,Position) VALUES (?,NULL,NULL,?,?,?)', [tagMapId, noteId, tagId, nextTagPosition(db, tagPosCache, tagId)]);
 
           noteId++; tagMapId++; added++;
         } catch(errNote) {
@@ -1603,7 +1623,7 @@ function exportJWLibrary(){
           var locIdR=findOrCreateBibleLocation(db, bibleInfo, refR.book, refR.chapter);
 
           db.run('INSERT INTO Note (NoteId,Guid,UserMarkId,LocationId,Title,Content,LastModified,Created,BlockType,BlockIdentifier) VALUES (?,?,NULL,?,?,?,?,?,0,NULL)', [noteId, uuid(), locIdR, it.titre, it.content, now, now]);
-          db.run('INSERT INTO TagMap (TagMapId,PlaylistItemId,LocationId,NoteId,TagId,Position) VALUES (?,NULL,NULL,?,?,0)', [tagMapId, noteId, tagIdR]);
+          db.run('INSERT INTO TagMap (TagMapId,PlaylistItemId,LocationId,NoteId,TagId,Position) VALUES (?,NULL,NULL,?,?,?)', [tagMapId, noteId, tagIdR, nextTagPosition(db, tagPosCache, tagIdR)]);
 
           noteId++; tagMapId++; added++;
         } catch(errNoteR) {
