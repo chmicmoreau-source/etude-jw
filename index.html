@@ -1663,6 +1663,60 @@ function exportJWLibrary(){
   input.click();
 }
 
+// Diagnostic en lecture seule : aucune modification du fichier, aucun
+// contenu de note affiché — uniquement la structure technique (tables,
+// index, triggers, schemaVersion) pour comprendre pourquoi l'export vers
+// JW Library peut échouer silencieusement à s'afficher malgré un fichier
+// restauré avec succès (plusieurs hypothèses déjà testées sans succès,
+// 2026-07 : Tag.Type, schemaVersion/hash du manifest, table LastModified).
+function diagnoseJWLibrary(){
+  var ta=document.getElementById('jwl-diag');
+  var setD=function(txt){ if(ta){ ta.style.height='260px'; ta.style.padding='8px'; ta.style.border='1px solid #ccc'; ta.value=txt; ta.focus(); ta.select(); } };
+  var input=document.createElement('input');
+  input.type='file'; input.accept='.jwlibrary';
+  input.onchange=async function(ev){
+    var file=ev.target.files[0]; if(!file) return;
+    setD('Lecture…');
+    try{
+      if(!window.JSZip) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+      if(!window.initSqlJs) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js');
+      var buf=await file.arrayBuffer();
+      var zip=await window.JSZip.loadAsync(buf);
+      var manifestFile=zip.file('manifest.json');
+      var manifestTxt=manifestFile ? await manifestFile.async('string') : '(absent)';
+      var dbFile=zip.file('userData.db'); if(!dbFile) throw new Error('userData.db introuvable');
+      var dbBuf=await dbFile.async('arraybuffer');
+      var SQL=await window.initSqlJs({locateFile:function(f){return 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/'+f;}});
+      var db=new SQL.Database(new Uint8Array(dbBuf));
+
+      var out=[];
+      out.push('=== manifest.json ===');
+      out.push(manifestTxt);
+      out.push('');
+      out.push('=== PRAGMA user_version ===');
+      try{ out.push(String(queryOne(db, 'PRAGMA user_version').user_version)); }catch(e){ out.push('erreur : ' + e.message); }
+      out.push('');
+      out.push('=== Tables/index/triggers (sqlite_master) ===');
+      try{
+        var res=db.exec("SELECT type, name, sql FROM sqlite_master WHERE sql IS NOT NULL ORDER BY type, name");
+        if(res.length){
+          res[0].values.forEach(function(row){ out.push('-- ' + row[0] + ' ' + row[1] + ' --'); out.push(row[2]); out.push(''); });
+        }
+      }catch(e){ out.push('erreur : ' + e.message); }
+      out.push('=== Compte de lignes ===');
+      ['Note','Tag','TagMap','Location','UserMark','LastModified'].forEach(function(t){
+        try{ out.push(t + ' : ' + queryOne(db, 'SELECT COUNT(*) AS n FROM ' + t).n); }
+        catch(e){ out.push(t + ' : erreur (' + e.message + ')'); }
+      });
+      db.close();
+      setD(out.join('\n'));
+    }catch(err){
+      setD('Erreur : ' + err.message);
+    }
+  };
+  input.click();
+}
+
 /* ══ RENDU SYNC ══════════════════════════════════════════════════════════ */
 async function connectGitHub() {
   var inp=document.getElementById('gh-token-input');
@@ -1736,6 +1790,10 @@ function renderSync() {
     + '<div style="font-size:12px;color:#555;line-height:1.6;margin-bottom:10px">Ajoute vos études générées, vos parties de réunion préparées et votre étude Tour de Garde à une sauvegarde JW Library existante, pour les retrouver comme notes dans JW Library lui-même.</div>'
     + '<button class="btn" style="background:#8E44AD;margin-bottom:0" onclick="exportJWLibrary()">📖 Exporter vers JW Library</button>'
     + '<div id="export-status" style="font-size:11px;color:#7A8396;margin-top:6px;text-align:center"></div>'
+    + '<div style="height:10px"></div>'
+    + '<button class="btn" style="background:#555;margin-bottom:0" onclick="diagnoseJWLibrary()">🔍 Diagnostiquer ma sauvegarde JW Library</button>'
+    + '<div style="font-size:11px;color:#7A8396;margin-top:4px">Lit ta sauvegarde .jwlibrary et affiche sa structure technique (aucun contenu de note) — à copier-coller si l\'export ne fonctionne pas.</div>'
+    + '<textarea id="jwl-diag" readonly style="width:100%;box-sizing:border-box;margin-top:8px;font-family:monospace;font-size:10px;height:0;padding:0;border:none"></textarea>'
     + '</div>';
 
   if(G.ghUser) {
