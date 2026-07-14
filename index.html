@@ -1598,10 +1598,34 @@ function disconnectGitHub() {
   updateUI(); renderSync();
 }
 
+// Diagnostic ajouté 2026-07 suite à un cas de sauvegarde silencieusement
+// échouée (quota localStorage dépassé, message de succès pourtant affiché).
+// Permet à l'utilisateur de voir si l'espace de stockage du site approche
+// une limite qui causerait ce genre de perte de données au ferme-réouvre.
+function localStorageUsageKB(){
+  var total=0;
+  try{
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      total += k.length + (localStorage.getItem(k)||'').length;
+    }
+  }catch(e){}
+  return Math.round(total/1024);
+}
+
 function renderSync() {
   var el=document.getElementById('sync-content'); if(!el) return;
 
-  var jwCard='<div style="font-weight:700;color:#1A2B4A;font-size:15px;margin-bottom:12px">📋 Notes JW Library (' + G.jwNotes.length + ')</div>'
+  var usageKB=localStorageUsageKB();
+  var usageWarn=usageKB > 4000;
+  var storageInfo='<div style="font-size:11px;color:' + (usageWarn?'#B23A3A':'#7A8396') + ';text-align:center;margin-bottom:14px">'
+    + (usageWarn ? '⚠️ ' : '')
+    + 'Stockage local utilisé : ' + usageKB + ' Ko'
+    + (usageWarn ? ' — proche de la limite du navigateur, une sauvegarde peut échouer silencieusement. Supprime d\'anciennes notes JW ou études.' : '')
+    + '</div>';
+
+  var jwCard=storageInfo
+    + '<div style="font-weight:700;color:#1A2B4A;font-size:15px;margin-bottom:12px">📋 Notes JW Library (' + G.jwNotes.length + ')</div>'
     + '<div class="card" style="margin-bottom:14px">'
     + '<div style="font-size:12px;color:#555;line-height:1.8;margin-bottom:12px">'
     + '<strong>1.</strong> Dans JW Library → <strong>Paramètres → Sauvegarder</strong><br>'
@@ -2035,12 +2059,21 @@ if (navigator.storage && navigator.storage.persist) {
   if(lsGet("corsProxy") === "https://api.allorigins.win/raw?url="){
     try{ window.localStorage.setItem("corsProxy", ""); }catch(e){}
   }
-  function lsSet(k,v){ try{ window.localStorage.setItem(k,v); }catch(e){} }
+  // lsSet avalait silencieusement toute erreur d'écriture (quota localStorage
+  // dépassé, par ex.) : l'app affichait alors "généré et enregistré" alors
+  // que rien n'avait été écrit, et la donnée disparaissait à la prochaine
+  // ouverture — signalé par l'utilisateur 2026-07. On retourne maintenant le
+  // succès réel pour que les appelants puissent le vérifier et prévenir.
+  function lsSet(k,v){
+    try{ window.localStorage.setItem(k,v); return true; }
+    catch(e){ console.warn("Échec d'écriture localStorage pour \"" + k + "\" :", e && e.message); return false; }
+  }
   function saveWeek(id, data){
-    lsSet("wk:" + id, JSON.stringify(data));
+    var ok = lsSet("wk:" + id, JSON.stringify(data));
     var ids = [];
     try{ ids = JSON.parse(lsGet("wkIds") || "[]"); }catch(e){ ids = []; }
-    if(ids.indexOf(id) < 0){ ids.push(id); lsSet("wkIds", JSON.stringify(ids)); }
+    if(ids.indexOf(id) < 0){ ids.push(id); ok = lsSet("wkIds", JSON.stringify(ids)) && ok; }
+    return ok;
   }
   function restoreWeeks(){
     var ids = [];
@@ -2363,9 +2396,9 @@ if (navigator.storage && navigator.storage.persist) {
     }).then(function(data){
       if(!data.dates){ data.dates = sched.dates; }
       renderWeek(id, data);
-      saveWeek(id, data);
+      var savedOk = saveWeek(id, data);
       if(weekSelect && weekSelect.value === id){ showWeek(id); }
-      setB("Semaine générée automatiquement — pense à vérifier les versets sur wol.jw.org." + (data.failures && data.failures.length ? " (incomplet : " + data.failures.join(" | ") + ")" : ""));
+      setB((savedOk ? "Semaine générée automatiquement — pense à vérifier les versets sur wol.jw.org." : "⚠️ Semaine générée mais PAS enregistrée (stockage plein ?). Libère de l'espace ou vide le cache, sinon elle disparaîtra à la fermeture de l'app.") + (data.failures && data.failures.length ? " (incomplet : " + data.failures.join(" | ") + ")" : ""));
       if(typeof toast === "function"){ toast("✓ Réunion de la semaine préparée automatiquement"); }
     }).catch(function(e){
       setB("Préparation automatique impossible (" + (e && e.message ? e.message : "erreur") + "). Utilise « Récupérer et générer » ci-dessus.");
@@ -2432,9 +2465,9 @@ if (navigator.storage && navigator.storage.persist) {
         var sched = schedById(id);
         if(!data.dates && sched){ data.dates = sched.dates; }
         renderWeek(id, data);
-        saveWeek(id, data);
+        var savedOk2 = saveWeek(id, data);
         showWeek(id);
-        setB("Semaine generee et enregistree. Pense a verifier les versets sur wol.jw.org." + (data.failures && data.failures.length ? " (incomplet : " + data.failures.join(" | ") + ")" : ""));
+        setB((savedOk2 ? "Semaine generee et enregistree. Pense a verifier les versets sur wol.jw.org." : "⚠️ Semaine générée mais PAS enregistrée (stockage plein ?). Libère de l'espace ou vide le cache, sinon elle disparaîtra à la fermeture de l'app.") + (data.failures && data.failures.length ? " (incomplet : " + data.failures.join(" | ") + ")" : ""));
       }).catch(function(e){
         setB("Echec : reessaie (service gratuit parfois occupe) ou change de proxy CORS. (" + (e && e.message ? e.message : "erreur") + ")");
       }).then(function(){ bRun.disabled = false; });
@@ -2569,7 +2602,11 @@ if (navigator.storage && navigator.storage.persist) {
   // Un seul id de semaine est retenu (l'etude conservee est toujours la plus
   // recente generee), pour savoir si l'etude affichee correspond deja a la
   // semaine en cours et eviter de la regenerer inutilement.
-  function saveTG(data, id){ lsSet("tgStudy", JSON.stringify(data)); if(id){ lsSet("tgId", id); } }
+  function saveTG(data, id){
+    var ok = lsSet("tgStudy", JSON.stringify(data));
+    if(id){ ok = lsSet("tgId", id) && ok; }
+    return ok;
+  }
   function restoreTG(){
     var raw = lsGet("tgStudy");
     if(!raw){ return; }
@@ -2629,8 +2666,8 @@ if (navigator.storage && navigator.storage.persist) {
         });
       }).then(function(data){
         renderTG(data);
-        saveTG(data, tgId);
-        setTG("Étude générée et enregistrée. Pense à vérifier les versets sur wol.jw.org." + (data.failures && data.failures.length ? " (incomplet : " + data.failures.join(" | ") + ")" : ""));
+        var tgSavedOk = saveTG(data, tgId);
+        setTG((tgSavedOk ? "Étude générée et enregistrée. Pense à vérifier les versets sur wol.jw.org." : "⚠️ Étude générée mais PAS enregistrée (stockage plein ?). Libère de l'espace ou vide le cache, sinon elle disparaîtra à la fermeture de l'app.") + (data.failures && data.failures.length ? " (incomplet : " + data.failures.join(" | ") + ")" : ""));
       }).catch(function(e){
         setTG("Echec : reessaie (service gratuit parfois occupe) ou change de proxy CORS. (" + (e && e.message ? e.message : "erreur") + ")");
       }).then(function(){ tgRun.disabled = false; });
@@ -2658,8 +2695,8 @@ if (navigator.storage && navigator.storage.persist) {
       });
     }).then(function(data){
       renderTG(data);
-      saveTG(data, id);
-      setTG("Étude générée automatiquement — pense à vérifier les versets sur wol.jw.org." + (data.failures && data.failures.length ? " (incomplet : " + data.failures.join(" | ") + ")" : ""));
+      var tgSavedOk2 = saveTG(data, id);
+      setTG((tgSavedOk2 ? "Étude générée automatiquement — pense à vérifier les versets sur wol.jw.org." : "⚠️ Étude générée mais PAS enregistrée (stockage plein ?). Libère de l'espace ou vide le cache, sinon elle disparaîtra à la fermeture de l'app.") + (data.failures && data.failures.length ? " (incomplet : " + data.failures.join(" | ") + ")" : ""));
       if(typeof toast === "function"){ toast("✓ Étude Tour de Garde de la semaine préparée automatiquement"); }
     }).catch(function(e){
       setTG("Préparation automatique impossible (" + (e && e.message ? e.message : "erreur") + "). Utilise « Récupérer et générer » ci-dessus.");
