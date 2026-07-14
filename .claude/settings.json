@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node check-articles.js)",
+      "Bash(node -e ' *)",
+      "Bash(node drive-sang2.js)",
+      "Bash(pkill -f \"http.server 8836\")",
+      "Bash(git commit -m ' *)",
+      "Bash(curl -s -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\)\" --max-time 20 \"https://wol.jw.org/fr/wol/b/r30/lp-f/nwtsty/1/9\" -o \"C:/Users/chmic/AppData/Local/Temp/claude/gen9.html\")",
+      "Bash(curl -s -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\)\" --max-time 20 \"https://wol.jw.org/fr/wol/b/r30/lp-f/nwtsty/3/17\" -o \"C:/Users/chmic/AppData/Local/Temp/claude/lev17.html\")",
+      "Bash(curl -s -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\)\" --max-time 20 \"https://wol.jw.org/fr/wol/b/r30/lp-f/nwtsty/44/15\" -o \"C:/Users/chmic/AppData/Local/Temp/claude/act15.html\")",
+      "Bash(node extract-verses.js)",
+      "Bash(node drive-sang3.js)",
+      "Bash(sed -i \"s/8837/8838/;s/sang-tab3.png/sang-tab4.png/\" drive-sang3.js)",
+      "Bash(pkill -f \"http.server 8838\")"
+    ]
+  }
+}

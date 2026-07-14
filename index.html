@@ -1411,8 +1411,14 @@ function findOrCreateTag(db, name){
   var maxRow=queryOne(db, 'SELECT MAX(TagId) AS m FROM Tag');
   var newId=((maxRow && maxRow.m) || 0) + 1;
   var cols=tableColumns(db, 'Tag');
-  if(cols.indexOf('TagType') >= 0){
-    db.run('INSERT INTO Tag (TagId,TagType,Name) VALUES (?,?,?)', [newId, 1, name]);
+  // Le nom de la colonne de type de tag a changé entre versions du schéma
+  // JW Library : "TagType" dans notre fixture de test, mais "Type" (NOT
+  // NULL, sans défaut) sur une vraie sauvegarde récente — constaté 2026-07
+  // via "NOT NULL constraint failed: Tag.Type", l'ancien code omettait
+  // purement et simplement cette colonne quand elle s'appelait "Type".
+  var typeCol = cols.indexOf('TagType') >= 0 ? 'TagType' : (cols.indexOf('Type') >= 0 ? 'Type' : null);
+  if(typeCol){
+    db.run('INSERT INTO Tag (TagId,' + typeCol + ',Name) VALUES (?,?,?)', [newId, 1, name]);
   } else {
     db.run('INSERT INTO Tag (TagId,Name) VALUES (?,?)', [newId, name]);
   }
@@ -2266,6 +2272,7 @@ if (navigator.storage && navigator.storage.persist) {
       "4. Reste sur le sujet exact de la partie demandee ; ne derive pas vers un autre theme.",
       "5. La qualite de Jehovah mise en avant doit etre une vraie qualite reconnaissable (amour, justice, sagesse, puissance, patience, misericorde, fidelite, humilite, etc.), exprimee en une phrase complete et grammaticalement correcte — jamais un mot isole ou invente.",
       "6. Pour le gras utilise UNIQUEMENT ** (double asterisque) ; n'utilise JAMAIS un simple * isole (ni pour l'italique, ni pour toute autre mise en forme).",
+      "7. Si cette partie renvoie a un ouvrage ou une publication precise avec des pages/paragraphes/histoires precis (ex. « lfb histoires 98-99 », un feuillet, un livre d'etude de l'assemblee), cherche cette reference EXACTE dans le texte du programme ci-dessous et fonde tout ton developpement dessus en la citant (titre exact + pages/paragraphes). Si tu ne trouves AUCUNE reference precise pour cette partie dans le texte du programme fourni, n'invente PAS un developpement generique a la place : ecris une seule phrase le signalant clairement, par exemple « Reference precise introuvable dans le programme recupere pour cette partie — consulte directement wol.jw.org. »",
       "",
       "Structure ta reponse en markdown (## pour les titres, ** pour le gras, - pour les listes) : une courte introduction qui pose le contexte et la question a se poser, puis 1 a 3 points developpes de maniere claire et concrete, en francais correct et coherent, chacun avec au moins un marqueur [[Reference]], une phrase commencant par **Qualité de Jéhovah :** et une phrase commencant par **Application :**.",
       "",
