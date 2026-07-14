@@ -1245,7 +1245,27 @@ function renderDet(entry, result) {
 function study(id){var item=SUGGS.find(function(s){return s.id===id;});if(!item)return;runStudy({id:Date.now(),titre:item.titre,categorie:item.cat,verset:item.v,date:new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}),resume:null,points:null,questions:null,ressource:null});}
 function studyCustom(q){runStudy({id:Date.now(),titre:q,categorie:'foi',verset:'',date:new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}),resume:null,points:null,questions:null,ressource:null});}
 
+// Le modèle gratuit (gpt-oss, "réfléchit" avant de répondre) peut épuiser
+// tout son budget de tokens en raisonnement interne sur des prompts qui
+// l'incitent à délibérer (comme celui-ci, avec ses contraintes doctrinales
+// strictes) et ne jamais produire de contenu — vu et corrigé pour le module
+// Réunion 2026-07 (voir callPollinationsR), jamais appliqué ici jusqu'ici,
+// d'où "Impossible de générer" sur certains sujets. Même correctif ici :
+// endpoint POST /openai avec reasoning_effort réduit et budget de tokens
+// plus large, repli sur l'ancien endpoint GET simple si ça échoue quand même.
 async function generateStudyText(prompt) {
+  try {
+    var res = await withTimeout(fetch('https://text.pollinations.ai/openai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'openai', messages: [{ role: 'user', content: prompt }], max_tokens: 3000, reasoning_effort: 'low' })
+    }), 90000);
+    if (res && res.ok) {
+      var data = await res.json();
+      var txt = (data && data.choices && data.choices[0] && data.choices[0].message) ? data.choices[0].message.content : '';
+      if (txt) { return txt; }
+    }
+  } catch (e) { /* repli */ }
   var r = await withTimeout(fetch('https://text.pollinations.ai/' + encodeURIComponent(prompt)), 20000);
   if(!r.ok) throw new Error('HTTP '+r.status);
   return r.text();
