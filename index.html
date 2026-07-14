@@ -1613,6 +1613,17 @@ function exportJWLibrary(){
         }
       }
 
+      // JW Library tient a jour une table LastModified (une seule ligne) pour
+      // savoir que le fichier contient des changements a recharger — sans
+      // cette mise a jour, l'app peut continuer d'afficher son etat deja en
+      // memoire et ignorer les notes ajoutees, meme presentes dans le
+      // fichier. Meme format que l'appli officielle (JWLMerge) :
+      // strftime('%Y-%m-%dT%H:%M:%SZ','now'), UTC, sans millisecondes.
+      try{
+        var lmStamp = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
+        db.run('UPDATE LastModified SET LastModified = ?', [lmStamp]);
+      }catch(eLM){ console.warn('Échec mise à jour LastModified :', eLM); }
+
       setS('Création du fichier fusionné…');
       var dbBytes=db.export(); db.close();
       var dateStr=new Date().toISOString().slice(0,10);
