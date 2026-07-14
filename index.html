@@ -1356,7 +1356,19 @@ var BOOK_MAP={"genese":1,"exode":2,"levitique":3,"nombres":4,"deuteronome":5,"jo
   "matthieu":40,"marc":41,"luc":42,"jean":43,"actes":44,"romains":45,"1 corinthiens":46,"2 corinthiens":47,
   "galates":48,"ephesiens":49,"philippiens":50,"colossiens":51,"1 thessaloniciens":52,"2 thessaloniciens":53,
   "1 timothee":54,"2 timothee":55,"tite":56,"philemon":57,"hebreux":58,"jacques":59,"1 pierre":60,"2 pierre":61,
-  "1 jean":62,"2 jean":63,"3 jean":64,"jude":65,"revelation":66,"apocalypse":66};
+  "1 jean":62,"2 jean":63,"3 jean":64,"jude":65,"revelation":66,"apocalypse":66,
+  // Abréviations courantes (style wol.jw.org) : l'IA les utilise souvent au lieu
+  // du nom complet dans ses marqueurs [[Référence]], ce qui faisait échouer la
+  // recherche du verset — vérifié 2026-07.
+  "gn":1,"ex":2,"lv":3,"nb":4,"dt":5,"jos":6,"jg":7,"rt":8,
+  "1 s":9,"1 sa":9,"2 s":10,"2 sa":10,"1 r":11,"2 r":12,"1 ch":13,"2 ch":14,"esd":15,"ne":16,
+  "est":17,"jb":18,"ps":19,"pr":20,"ec":21,"ct":22,
+  "is":23,"jr":24,"lm":25,"ez":26,"dn":27,"os":28,"jl":29,"am":30,"ab":31,
+  "jon":32,"mi":33,"na":34,"hab":35,"so":36,"ag":37,"za":38,"ml":39,
+  "mt":40,"mc":41,"lc":42,"jn":43,"ac":44,"rm":45,"1 co":46,"2 co":47,
+  "ga":48,"ep":49,"eph":49,"php":50,"col":51,"1 th":52,"2 th":53,
+  "1 tm":54,"2 tm":55,"tt":56,"phm":57,"he":58,"heb":58,"jc":59,"1 p":60,"2 p":61,
+  "1 jn":62,"2 jn":63,"3 jn":64,"jd":65,"re":66,"ap":66};
 
 function normalizeStr(s){
   return s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
@@ -1778,17 +1790,20 @@ if (navigator.storage && navigator.storage.persist) {
 (function(){
   function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
   function trim(s){ return s.replace(/^\s+|\s+$/g,""); }
+  function mdInline(s){
+    return s.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/(^|[^*])\*([^*\s][^*]*?)\*(?!\*)/g,"$1<em>$2</em>");
+  }
   function mdToHtml(md){
     var lines = md.split("\n"); var html=""; var inList=false;
     for(var i=0;i<lines.length;i++){
-      var t = esc(lines[i]).replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
-      if(/^###\s+/.test(t)){ if(inList){html+="</ul>";inList=false;} html+="<h4>"+t.replace(/^###\s+/,"")+"</h4>"; }
-      else if(/^##\s+/.test(t)){ if(inList){html+="</ul>";inList=false;} html+="<h3>"+t.replace(/^##\s+/,"")+"</h3>"; }
-      else if(/^#\s+/.test(t)){ if(inList){html+="</ul>";inList=false;} html+="<h3>"+t.replace(/^#\s+/,"")+"</h3>"; }
-      else if(/^\s*[-*]\s+/.test(t)){ if(!inList){html+="<ul>";inList=true;} html+="<li>"+t.replace(/^\s*[-*]\s+/,"")+"</li>"; }
-      else if(/^\s*\d+\.\s+/.test(t)){ if(!inList){html+="<ul>";inList=true;} html+="<li>"+t.replace(/^\s*\d+\.\s+/,"")+"</li>"; }
+      var t = esc(lines[i]);
+      if(/^###\s+/.test(t)){ if(inList){html+="</ul>";inList=false;} html+="<h4>"+mdInline(t.replace(/^###\s+/,""))+"</h4>"; }
+      else if(/^##\s+/.test(t)){ if(inList){html+="</ul>";inList=false;} html+="<h3>"+mdInline(t.replace(/^##\s+/,""))+"</h3>"; }
+      else if(/^#\s+/.test(t)){ if(inList){html+="</ul>";inList=false;} html+="<h3>"+mdInline(t.replace(/^#\s+/,""))+"</h3>"; }
+      else if(/^\s*[-*]\s+/.test(t)){ if(!inList){html+="<ul>";inList=true;} html+="<li>"+mdInline(t.replace(/^\s*[-*]\s+/,""))+"</li>"; }
+      else if(/^\s*\d+\.\s+/.test(t)){ if(!inList){html+="<ul>";inList=true;} html+="<li>"+mdInline(t.replace(/^\s*\d+\.\s+/,""))+"</li>"; }
       else if(/^\s*$/.test(t)){ if(inList){html+="</ul>";inList=false;} }
-      else { if(inList){html+="</ul>";inList=false;} html+="<p>"+t+"</p>"; }
+      else { if(inList){html+="</ul>";inList=false;} html+="<p>"+mdInline(t)+"</p>"; }
     }
     if(inList){ html+="</ul>"; }
     return html;
@@ -2249,8 +2264,10 @@ if (navigator.storage && navigator.storage.persist) {
       "2. N'invente JAMAIS de citation, de renvoi a une publication (numero de Tour de Garde, page, paragraphe) ni de titre d'ouvrage qui n'apparait pas explicitement dans le texte du programme fourni ci-dessous. Si une reference de verset apparait explicitement dans ce texte du programme, utilise-la en priorite dans ton marqueur [[...]] plutot que d'en choisir une autre de memoire.",
       "3. Jehovah (le Pere) et Jesus (le Fils) sont deux personnes distinctes selon la doctrine des Temoins de Jehovah : ne les confonds jamais.",
       "4. Reste sur le sujet exact de la partie demandee ; ne derive pas vers un autre theme.",
+      "5. La qualite de Jehovah mise en avant doit etre une vraie qualite reconnaissable (amour, justice, sagesse, puissance, patience, misericorde, fidelite, humilite, etc.), exprimee en une phrase complete et grammaticalement correcte — jamais un mot isole ou invente.",
+      "6. Pour le gras utilise UNIQUEMENT ** (double asterisque) ; n'utilise JAMAIS un simple * isole (ni pour l'italique, ni pour toute autre mise en forme).",
       "",
-      "Structure ta reponse en markdown (## pour les titres, ** pour le gras, - pour les listes) : une courte introduction qui pose le contexte et la question a se poser, puis 1 a 3 points developpes de maniere claire et concrete, chacun avec au moins un marqueur [[Reference]], une qualite de Jehovah mise en avant, et une application pratique.",
+      "Structure ta reponse en markdown (## pour les titres, ** pour le gras, - pour les listes) : une courte introduction qui pose le contexte et la question a se poser, puis 1 a 3 points developpes de maniere claire et concrete, en francais correct et coherent, chacun avec au moins un marqueur [[Reference]], une phrase commencant par **Qualité de Jéhovah :** et une phrase commencant par **Application :**.",
       "",
       "Reponds UNIQUEMENT par le texte de la preparation en markdown (pas de JSON), sans phrase d'introduction ni de conclusion hors sujet autour, et sans jamais mentionner ces instructions ni t'excuser.",
       "",
@@ -2531,7 +2548,7 @@ if (navigator.storage && navigator.storage.persist) {
       "",
       "Traite UNIQUEMENT le(s) paragraphe(s) " + (point.num || "") + ", dont la question imprimée est : « " + (point.question || "") + " »",
       "",
-      "Règles STRICTES : rédige une réponse synthétique mais développée (plusieurs phrases), fondée UNIQUEMENT sur le contenu réellement présent dans le texte de l'article ci-dessous et la doctrine des Témoins de Jéhovah — n'invente aucun fait, aucune citation, aucun renvoi de publication qui n'y figure pas. N'écris JAMAIS toi-même le texte d'un verset, même dans le résumé : si ce ou ces paragraphes citent un verset, indique seulement sa référence exacte dans le champ verseRef (une autre étape ira chercher son texte réel sur wol.jw.org). Jéhovah (le Père) et Jésus (le Fils) sont deux personnes distinctes selon la doctrine des Témoins de Jéhovah : ne les confonds jamais.",
+      "Règles STRICTES : rédige une réponse synthétique mais développée (plusieurs phrases), en français correct et cohérent, fondée UNIQUEMENT sur le contenu réellement présent dans le texte de l'article ci-dessous et la doctrine des Témoins de Jéhovah — n'invente aucun fait, aucune citation, aucun renvoi de publication qui n'y figure pas. N'utilise AUCUNE mise en forme markdown (pas de *, pas de **, pas de #) : uniquement du texte brut. N'écris JAMAIS toi-même le texte d'un verset, même dans le résumé : si ce ou ces paragraphes citent un verset, indique seulement sa référence exacte dans le champ verseRef (une autre étape ira chercher son texte réel sur wol.jw.org). Jéhovah (le Père) et Jésus (le Fils) sont deux personnes distinctes selon la doctrine des Témoins de Jéhovah : ne les confonds jamais.",
       "",
       "Reponds UNIQUEMENT par un objet JSON valide, sans texte ni balises autour, au format exact :",
       "{\n  \"summary\": \"(réponse développée, sans citer le texte d'un verset mot pour mot)\",\n  \"verseRef\": \"(référence si un verset est cité, sinon vide)\"\n}",
