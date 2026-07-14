@@ -1500,7 +1500,7 @@ function exportJWLibrary(){
       var tagMapId=((maxTMRow && maxTMRow.m) || 0) + 1;
 
       var now=new Date().toISOString().replace('Z','+00:00');
-      var added=0, skipped=0, failed=0;
+      var added=0, skipped=0, failed=0, firstErrorMsg='';
 
       for(var i=0;i<etudes.length;i++){
         var e=etudes[i];
@@ -1524,7 +1524,11 @@ function exportJWLibrary(){
           db.run('INSERT INTO TagMap (TagMapId,PlaylistItemId,LocationId,NoteId,TagId,Position) VALUES (?,NULL,NULL,?,?,0)', [tagMapId, noteId, tagId]);
 
           noteId++; tagMapId++; added++;
-        } catch(errNote) { failed++; }
+        } catch(errNote) {
+          failed++;
+          console.warn('Échec ajout note (étude) :', e.titre, errNote);
+          if(!firstErrorMsg){ firstErrorMsg = (errNote && errNote.message) || String(errNote); }
+        }
       }
 
       for(var j=0;j<reunionItems.length;j++){
@@ -1539,7 +1543,11 @@ function exportJWLibrary(){
           db.run('INSERT INTO TagMap (TagMapId,PlaylistItemId,LocationId,NoteId,TagId,Position) VALUES (?,NULL,NULL,?,?,0)', [tagMapId, noteId, tagIdR]);
 
           noteId++; tagMapId++; added++;
-        } catch(errNoteR) { failed++; }
+        } catch(errNoteR) {
+          failed++;
+          console.warn('Échec ajout note (réunion) :', it.titre, errNoteR);
+          if(!firstErrorMsg){ firstErrorMsg = (errNoteR && errNoteR.message) || String(errNoteR); }
+        }
       }
 
       setS('Création du fichier fusionné…');
@@ -1559,7 +1567,7 @@ function exportJWLibrary(){
       URL.revokeObjectURL(url);
 
       var msg='✓ ' + added + ' note(s) ajoutée(s)' + (skipped ? ', ' + skipped + ' déjà présente(s)' : '') + (failed ? ', ' + failed + ' échec(s)' : '') + '.';
-      setS(msg + ' Restaure ce fichier dans JW Library.');
+      setS(msg + (failed ? ' Détail du 1er échec : ' + firstErrorMsg + '.' : '') + ' Restaure ce fichier dans JW Library.');
       toast(msg);
     } catch(err) {
       setS('Erreur : ' + err.message);
