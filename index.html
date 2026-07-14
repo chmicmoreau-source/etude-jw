@@ -1526,6 +1526,14 @@ function exportJWLibrary(){
       var zip=await window.JSZip.loadAsync(buf);
       var dbFile=zip.file('userData.db'); if(!dbFile) throw new Error('userData.db introuvable dans ce fichier');
       var dbBuf=await dbFile.async('arraybuffer');
+      // Reprend le schemaVersion (et le reste) du manifest ORIGINAL plutôt que
+      // d'en coder un en dur : un schemaVersion erroné fait croire à JW
+      // Library qu'il doit migrer une base plus ancienne qu'elle ne l'est
+      // réellement à la restauration, ce qui peut faire disparaître
+      // silencieusement les nouvelles notes sans aucune erreur visible.
+      var origManifest=null;
+      var manifestFile=zip.file('manifest.json');
+      if(manifestFile){ try{ origManifest=JSON.parse(await manifestFile.async('string')); }catch(eMan){} }
       var SQL=await window.initSqlJs({locateFile:function(f){return 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/'+f;}});
       var db=new SQL.Database(new Uint8Array(dbBuf));
 
@@ -1596,9 +1604,21 @@ function exportJWLibrary(){
       var dbBytes=db.export(); db.close();
       var dateStr=new Date().toISOString().slice(0,10);
       var fname='SAUVEGARDE_FUSIONNEE_' + dateStr + '.jwlibrary';
+      var hashBuf=await crypto.subtle.digest('SHA-256', dbBytes);
+      var hashHex=Array.prototype.map.call(new Uint8Array(hashBuf), function(b){ return ('0'+b.toString(16)).slice(-2); }).join('');
+      var origUDB=(origManifest && origManifest.userDataBackup) || {};
       var manifest={
-        name: fname, creationDate: new Date().toISOString(), version: 1, type: 0,
-        userDataBackup: { lastModifiedDate: new Date().toISOString(), deviceName: 'EtudeBibliqueJW', databaseName: 'userData.db', hash: '', schemaVersion: 16 }
+        name: fname,
+        creationDate: new Date().toISOString(),
+        version: (origManifest && origManifest.version) || 1,
+        type: (origManifest && origManifest.type) || 0,
+        userDataBackup: {
+          lastModifiedDate: new Date().toISOString(),
+          deviceName: origUDB.deviceName || 'EtudeBibliqueJW',
+          databaseName: 'userData.db',
+          hash: hashHex,
+          schemaVersion: origUDB.schemaVersion || 16
+        }
       };
       var zipOut=new window.JSZip();
       zipOut.file('manifest.json', JSON.stringify(manifest, null, 2));
