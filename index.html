@@ -1208,7 +1208,9 @@ function renderDet(entry, result) {
     + '<div style="padding:12px 14px">';
 
   if(!result) html+='<div class="lbox"><div class="spinner"></div>Préparation du plan d\'étude…</div>';
-  else if(result.error) html+='<div class="card" style="border-color:#f5c6cb;background:#fff5f5"><p style="margin:0;color:#C0392B;font-size:12px">Impossible de générer. Consultez les sources ci-dessus.</p></div>';
+  else if(result.error) html+='<div class="card" style="border-color:#f5c6cb;background:#fff5f5"><p style="margin:0 0 8px;color:#C0392B;font-size:12px">Impossible de générer'
+      + (result.msg ? (' (' + String(result.msg).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + ')') : '')
+      + '. Consultez les sources ci-dessus.</p><button onclick="retryStudy()" style="background:#C0392B;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600">Réessayer</button></div>';
   else {
     html+='<div class="card"><p style="margin:0;color:#1A2B4A;font-size:13px;line-height:1.65">' + result.resume + '</p></div>'
       + '<div class="stitle">Plan d\'étude</div>'
@@ -1292,10 +1294,11 @@ async function runStudy(entry) {
     autoSync(true);
     if(G.cur&&G.cur.id===entry.id) renderDet(entry,entry);
   } catch(e) {
-    if(G.cur&&G.cur.id===entry.id) renderDet(entry,{error:true});
+    if(G.cur&&G.cur.id===entry.id) renderDet(entry,{error:true,msg:(e&&e.message)?e.message:String(e)});
   }
   updateUI();
 }
+function retryStudy(){ if(G.cur) runStudy(G.cur); }
 
 /* ══ IMPORT .jwlibrary ═══════════════════════════════════════════════════ */
 async function importJWL(e) {
@@ -2247,11 +2250,19 @@ if (navigator.storage && navigator.storage.persist) {
     var out = text;
     for(var i=0;i<refs.length;i++){
       var ref = refs[i];
-      var verseText = null;
-      try{ verseText = await fetchVerseText(ref); }catch(e){}
-      var replacement = verseText
-        ? ("« " + verseText + " » (" + ref + ", TMN)")
-        : (ref + " (texte du verset non trouvé automatiquement — vérifie sur wol.jw.org)");
+      var replacement;
+      if(!parseFullVerseRef(ref)){
+        // Ce n'est pas une référence "Livre chapitre:verset" (ex. une référence
+        // de publication comme "w22.02 4§7-8") : pas de recherche de verset,
+        // on affiche juste la référence telle quelle sans message trompeur.
+        replacement = ref;
+      } else {
+        var verseText = null;
+        try{ verseText = await fetchVerseText(ref); }catch(e){}
+        replacement = verseText
+          ? ("« " + verseText + " » (" + ref + ", TMN)")
+          : (ref + " (texte du verset non trouvé automatiquement — vérifie sur wol.jw.org)");
+      }
       var pattern = new RegExp("\\[\\[" + ref.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\]\\]", "g");
       out = out.replace(pattern, replacement);
     }
@@ -2287,7 +2298,7 @@ if (navigator.storage && navigator.storage.persist) {
       "Prepare la partie suivante UNIQUEMENT, sans traiter les autres parties du programme : « " + part.title + " » (" + (part.meta || "") + ", section " + part.section + ").",
       "",
       "Regles STRICTES, plus importantes que la longueur du texte :",
-      "1. N'ECRIS JAMAIS toi-meme le texte d'un verset. Quand tu veux citer un verset, ecris UNIQUEMENT un marqueur au format exact [[Reference]] (exemple : [[Jean 3:16]] ou [[1 Corinthiens 2:16]]) — une application separee ira chercher le texte exact sur wol.jw.org et remplacera ce marqueur automatiquement. N'ecris jamais de guillemets ni de texte a la place : seulement le marqueur [[...]].",
+      "1. N'ECRIS JAMAIS toi-meme le texte d'un verset. Quand tu veux citer un verset BIBLIQUE (format Livre chapitre:verset), ecris UNIQUEMENT un marqueur au format exact [[Reference]] (exemple : [[Jean 3:16]] ou [[1 Corinthiens 2:16]]) — une application separee ira chercher le texte exact sur wol.jw.org et remplacera ce marqueur automatiquement. N'ecris jamais de guillemets ni de texte a la place : seulement le marqueur [[...]]. Le marqueur [[...]] est RESERVE aux versets bibliques : une reference de publication (ex. w22.02 4 par. 7-8, lfb histoires 98-99) ne doit JAMAIS etre mise entre [[...]], ecris-la simplement en texte normal.",
       "2. N'invente JAMAIS de citation, de renvoi a une publication (numero de Tour de Garde, page, paragraphe) ni de titre d'ouvrage qui n'apparait pas explicitement dans le texte du programme fourni ci-dessous. Si une reference de verset apparait explicitement dans ce texte du programme, utilise-la en priorite dans ton marqueur [[...]] plutot que d'en choisir une autre de memoire.",
       "3. Jehovah (le Pere) et Jesus (le Fils) sont deux personnes distinctes selon la doctrine des Temoins de Jehovah : ne les confonds jamais.",
       "4. Reste sur le sujet exact de la partie demandee ; ne derive pas vers un autre theme.",
