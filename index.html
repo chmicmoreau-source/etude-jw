@@ -2408,6 +2408,56 @@ if (navigator.storage && navigator.storage.persist) {
       return trimVerseFooterJunk(t);
     }catch(e){ return ""; }
   }
+  // Note d'étude officielle (Bible d'étude nwtsty) pour un verset précis, si
+  // elle existe — beaucoup de versets n'ont qu'une liste de "Renvois" (autres
+  // versets) sans commentaire rédigé ; dans ce cas on retourne null plutôt que
+  // d'inventer une source.
+  function extractStudyNoteFromHtml(html, book, chapter, verse){
+    try{
+      var doc = new DOMParser().parseFromString(html, "text/html");
+      var section = doc.querySelector('[data-key="' + book + '-' + chapter + '-' + verse + '"]');
+      if(!section){ return ""; }
+      var note = section.querySelector(".studyNoteGroup p");
+      if(!note){ return ""; }
+      var clone = note.cloneNode(true);
+      var links = clone.querySelectorAll("a");
+      for(var i=links.length-1;i>=0;i--){ links[i].parentNode.removeChild(links[i]); }
+      var t = clone.textContent.replace(/\s+/g," ").trim();
+      return t.length > 400 ? (t.slice(0,400).replace(/\s+\S*$/,"") + "…") : t;
+    }catch(e){ return ""; }
+  }
+  // Repli pour le proxy par défaut (r.jina.ai), qui convertit la page en
+  // markdown et perd les attributs data-key : la note reste néanmoins
+  // localisable via son titre "### Livre chapitre:verset" (vérifié 2026-07).
+  function extractStudyNoteFromMd(md, book, chapter, verse){
+    try{
+      var headingRe = new RegExp("^### [^\\n]*\\b" + chapter + ":" + verse + "\\b[^\\n]*$", "m");
+      var hm = headingRe.exec(md);
+      if(!hm){ return ""; }
+      var rest = md.slice(hm.index + hm[0].length);
+      var endM = rest.match(/\n#{2,3} /);
+      var block = endM ? rest.slice(0, endM.index) : rest;
+      var bm = block.match(/\*\s+\*\*[^*]+\*\*:?\s*([\s\S]*?)(?=\n\*\s+\*\*|\n\n|$)/);
+      var text = bm ? bm[1] : (block.match(/\*\*[^*]+\*\*:?\s*([\s\S]*?)(?=\n\n|$)/) || [,block])[1];
+      text = String(text).replace(/\[([^\]]+)\]\([^)]*\)/g,"$1").replace(/\s+/g," ").trim();
+      return text.length > 400 ? (text.slice(0,400).replace(/\s+\S*$/,"") + "…") : text;
+    }catch(e){ return ""; }
+  }
+  async function fetchVerseStudyNote(refStr){
+    var parsed = parseFullVerseRef(refStr);
+    if(!parsed){ return null; }
+    var verse = parsed.verses[0]; // une note par verset précis, pas de plage
+    var cacheKey = "note-" + parsed.book + "-" + parsed.chapter + "-" + verse;
+    if(Object.prototype.hasOwnProperty.call(VERSE_CACHE, cacheKey)){ return VERSE_CACHE[cacheKey]; }
+    var url = "https://wol.jw.org/fr/wol/b/r30/lp-f/nwtsty/" + parsed.book + "/" + parsed.chapter;
+    var proxy = lsGet("corsProxy") || "";
+    var raw;
+    try{ raw = await fetchViaProxy(url, proxy); }catch(e){ VERSE_CACHE[cacheKey] = null; return null; }
+    var note = extractStudyNoteFromHtml(raw, parsed.book, parsed.chapter, verse) || extractStudyNoteFromMd(raw, parsed.book, parsed.chapter, verse);
+    var result = note || null;
+    VERSE_CACHE[cacheKey] = result;
+    return result;
+  }
   async function fetchVerseText(refStr){
     var parsed = parseFullVerseRef(refStr);
     if(!parsed){ return null; }
@@ -2435,7 +2485,10 @@ if (navigator.storage && navigator.storage.persist) {
   // Remplace chaque marqueur [[Référence]] laissé par l'IA dans le markdown
   // par le texte réel du verset récupéré sur wol.jw.org (jamais par le texte
   // que l'IA aurait pu écrire elle-même).
-  async function resolveVersePlaceholders(text){
+  // includeNotes : n'ajoute la note d'étude officielle après le verset que
+  // pour les Perles (ça n'a pas de sens pour un exposé qui développe déjà
+  // son propre raisonnement) ; silencieux si aucune note fiable n'existe.
+  async function resolveVersePlaceholders(text, includeNotes){
     if(!text){ return text; }
     var re = /\[\[([^\]]{2,60})\]\]/g;
     var refs = []; var m;
@@ -2455,6 +2508,11 @@ if (navigator.storage && navigator.storage.persist) {
         replacement = verseText
           ? ("« " + verseText + " » (" + ref + ", TMN)")
           : (ref + " (texte du verset non trouvé automatiquement — vérifie sur wol.jw.org)");
+        if(includeNotes && verseText){
+          var note = null;
+          try{ note = await fetchVerseStudyNote(ref); }catch(e){}
+          if(note){ replacement += "\n   📖 *Note d'étude (Bible d'étude, " + ref + ")* : " + note; }
+        }
       }
       var pattern = new RegExp("\\[\\[" + ref.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\]\\]", "g");
       out = out.replace(pattern, replacement);
@@ -2581,7 +2639,7 @@ if (navigator.storage && navigator.storage.persist) {
       try{
         var isPerles = /perles/i.test(part.title || "");
         var raw = await callLLMWithRetry(isPerles ? buildPerlesPartPrompt(programText, part, struct.reading) : buildPartContentPrompt(programText, part));
-        var content = await resolveVersePlaceholders(stripFences(raw));
+        var content = await resolveVersePlaceholders(stripFences(raw), isPerles);
         merged.parts.push({section: part.section, title: part.title, meta: part.meta, content: content});
       }catch(e){
         failures.push((part.title || ("partie " + (i+1))) + ": " + (e && e.message ? e.message : "erreur"));
