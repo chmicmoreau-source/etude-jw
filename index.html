@@ -1218,6 +1218,10 @@ function renderDet(entry, result) {
           + '</a>';
       }).join('')
     + '</div>'
+    + '<div style="padding:0 14px 12px">'
+    + '<button onclick="copyStudyPromptGeneric()" style="width:100%;padding:10px;border-radius:12px;border:1px solid #2B5EA7;background:#fff;color:#2B5EA7;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit">📋 Copier le prompt pour Claude</button>'
+    + '<div id="det-prompt-status" style="font-size:11px;color:#7A8396;margin-top:6px;text-align:center">La génération automatique cite les versets de mémoire : pour un texte TMN vérifié, colle ce prompt dans Claude.ai.</div>'
+    + '</div>'
     + '<div style="padding:12px 14px">';
 
   if(!result) html+='<div class="lbox"><div class="spinner"></div>Préparation du plan d\'étude…</div>';
@@ -1312,6 +1316,30 @@ async function runStudy(entry) {
   updateUI();
 }
 function retryStudy(){ if(G.cur) runStudy(G.cur); }
+
+// Prompt générique (sujet interchangeable) pour une génération vérifiée dans
+// Claude.ai plutôt que via Pollinations (qui cite les versets de mémoire) :
+// contrainte stricte de citer le texte complet et exact de la TMN pour
+// chaque référence, plutôt qu'une reference nue ou reconstruite.
+function buildGenericStudyPrompt(entry) {
+  return "Tu es un assistant d'étude biblique pour Témoins de Jéhovah, basé strictement sur JW.org, wol.jw.org, JW Library et la Traduction du monde nouveau (TMN). Repères doctrinaux : Jéhovah est le nom de Dieu (Ps 83:18) ; Jésus est le Fils de Dieu, distinct de lui et qui lui est inférieur (pas de Trinité) ; les morts sont inconscients (Eccl 9:5) ; espérance d'un paradis terrestre.\n\n"
+    + "SUJET : " + entry.titre + "\n"
+    + (entry.verset ? "VERSET DE DÉPART : " + entry.verset + "\n" : "")
+    + "\nMÉTHODE : identifie 4 à 6 idées concrètes et actionnables en lien avec le sujet. Pour chaque idée, appuie-toi sur un verset biblique pertinent.\n"
+    + "\nCONTRAINTE IMPÉRATIVE SUR LES VERSETS : pour chaque référence citée dans \"points\", donne le TEXTE COMPLET ET EXACT du verset selon la TMN (édition d'étude), jamais seulement la référence, jamais une reformulation de mémoire. Si tu n'es pas certain du texte exact, indique-le clairement plutôt que d'inventer une citation.\n"
+    + "\nRéponds UNIQUEMENT avec ce JSON, sans texte autour :\n"
+    + "{\"titre\":\"titre court de l'étude\",\"categorie\":\"une valeur parmi : foi | famille | royaume | moral | etude | histoire | espoir | sang | ministere\",\"verset\":\"référence biblique principale\",\"ressource\":\"nom de la source si applicable (sinon vide)\",\"resume\":\"3 à 5 phrases : pourquoi ce sujet compte et l'angle retenu\",\"points\":[{\"titre\":\"idée courte\",\"texte\":\"développement en 1-2 phrases\",\"reference\":\"Référence — « texte complet et exact du verset TMN »\"}],\"questions\":[\"3 à 5 questions d'application à la première personne\"]}";
+}
+function copyStudyPromptGeneric() {
+  if (!G.cur) return;
+  var p = buildGenericStudyPrompt(G.cur);
+  var statusEl = document.getElementById('det-prompt-status');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(p).then(function(){ if(statusEl) statusEl.textContent = 'Prompt copié — colle-le dans Claude.ai.'; });
+  } else if (statusEl) {
+    statusEl.textContent = 'Copie automatique indisponible sur cet appareil.';
+  }
+}
 
 /* ══ IMPORT .jwlibrary ═══════════════════════════════════════════════════ */
 async function importJWL(e) {
