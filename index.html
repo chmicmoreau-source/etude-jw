@@ -1106,6 +1106,13 @@ function openStudy(id) {
   renderDet(s, s.resume?s:null); show('s-detail');
 }
 
+function deleteStudy(id) {
+  if(!confirm('Supprimer cette étude ? Cette action est irréversible.')) return;
+  G.history=G.history.filter(function(h){return String(h.id)!==String(id);});
+  saveH();
+  show('s-history');
+}
+
 /* ══ JW NOTES ════════════════════════════════════════════════════════════ */
 function renderJWNotes() {
   var t=document.getElementById('jw-title'); if(t) t.textContent='Notes JW Library ('+G.jwNotes.length+')';
@@ -1193,6 +1200,7 @@ function renderDet(entry, result) {
     + '<div style="padding:0 14px 12px">'
     + '<button onclick="copyStudyPromptGeneric()" style="width:100%;padding:10px;border-radius:12px;border:1px solid #2B5EA7;background:#fff;color:#2B5EA7;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit">📋 Copier le prompt pour Claude</button>'
     + '<div id="det-prompt-status" style="font-size:11px;color:#7A8396;margin-top:6px;text-align:center">La génération automatique cite les versets de mémoire : pour un texte TMN vérifié, colle ce prompt dans Claude.ai.</div>'
+    + '<button onclick="deleteStudy(\'' + entry.id + '\')" style="width:100%;padding:10px;border-radius:12px;border:1px solid #C0392B;background:#fff;color:#C0392B;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;margin-top:8px">🗑 Supprimer cette étude</button>'
     + '</div>'
     + '<div style="padding:12px 14px">';
 
