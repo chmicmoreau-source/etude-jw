@@ -1292,9 +1292,23 @@ async function runStudy(entry) {
       + "Sujet: \"" + entry.titre + "\""
       + (entry.verset ? "\nVerset: " + entry.verset : "")
       + "\nMéthode (comme La Tour de Garde) : nomme le doute réaliste que le verset soulève avec un précédent biblique ; réponds-y par un second verset-clé (le mécanisme doctrinal) ; termine par une application concrète qui boucle sur l'image du verset de départ.\n"
-      + "\nRéponds uniquement avec ce JSON, sans texte autour : {\"resume\":\"2-3 phrases : le verset et la tension qu'il soulève\",\"points\":[{\"titre\":\"Le doute légitime\",\"texte\":\"\",\"reference\":\"précédent biblique\"},{\"titre\":\"La réponse doctrinale\",\"texte\":\"\",\"reference\":\"second verset-clé\"},{\"titre\":\"Application concrète\",\"texte\":\"\",\"reference\":\"retour à l'image de départ\"}],\"questions\":[\"\",\"\"],\"ressource\":\"publication wol.jw.org\"}";
+      + "\nRègle impérative sur les références : pour \"reference\" dans chaque point, écris UNIQUEMENT un marqueur au format [[Livre chapitre:verset]] (ex. [[Jean 3:16]]), jamais le texte du verset toi-même. Le verset choisi DOIT parler directement et explicitement du point que tu rédiges (même thème, mêmes mots-clés) — ne choisis JAMAIS une référence qui n'a pas de rapport réel et direct avec ce point precis, même si elle semble plausible de mémoire.\n"
+      + "\nRéponds uniquement avec ce JSON, sans texte autour : {\"resume\":\"2-3 phrases : le verset et la tension qu'il soulève\",\"points\":[{\"titre\":\"Le doute légitime\",\"texte\":\"\",\"reference\":\"[[Livre chapitre:verset]]\"},{\"titre\":\"La réponse doctrinale\",\"texte\":\"\",\"reference\":\"[[Livre chapitre:verset]]\"},{\"titre\":\"Application concrète\",\"texte\":\"\",\"reference\":\"[[Livre chapitre:verset]]\"}],\"questions\":[\"\",\"\"],\"ressource\":\"publication wol.jw.org\"}";
     var txt = await generateStudyTextWithRetry(prompt);
     var parsed=parseJsonLoose(txt.replace(/```json|```/g,'').trim());
+    // Remplace le marqueur [[Reference]] laissé par l'IA par le texte reel du
+    // verset (jamais celui que l'IA aurait pu taper elle-meme) — meme
+    // mecanisme que pour les Perles spirituelles, expose par le module Reunion.
+    if(parsed && parsed.points && parsed.points.length && typeof window.resolveBibleReference === "function"){
+      for(var pi=0; pi<parsed.points.length; pi++){
+        var pt = parsed.points[pi];
+        var refM = /\[\[([^\]]{2,60})\]\]/.exec(pt.reference || "");
+        var refToResolve = refM ? refM[1] : pt.reference;
+        if(refToResolve){
+          try{ pt.reference = await window.resolveBibleReference(refToResolve); }catch(e){}
+        }
+      }
+    }
     Object.assign(entry,parsed);
     G.history=[entry].concat(G.history.filter(function(h){return h.titre!==entry.titre;})).slice(0,100);
     saveH();
@@ -3107,6 +3121,22 @@ if (navigator.storage && navigator.storage.persist) {
   }
   autoPrepareCurrentTG();
 
+  // Expose une API minimale de résolution de référence biblique pour l'onglet
+  // Études (runStudy, portée globale, hors de cette IIFE) : évite de dupliquer
+  // parseFullVerseRef/fetchVerseText, déjà éprouvés ici pour Perles/Réunion.
+  window.resolveBibleReference = async function(ref){
+    var parsedRef = parseFullVerseRef(ref);
+    if(!parsedRef){ return ref; }
+    var verseUrl = "https://wol.jw.org/fr/wol/b/r30/lp-f/nwtsty/" + parsedRef.book + "/" + parsedRef.chapter
+      + "#v=" + parsedRef.book + ":" + parsedRef.chapter + ":" + parsedRef.verses[0];
+    var verseText = null;
+    try{ verseText = await fetchVerseText(ref); }catch(e){}
+    var safeRef = String(ref).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    var safeText = verseText ? String(verseText).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") : null;
+    return safeText
+      ? ("<a href=\"" + verseUrl + "\" target=\"_blank\" rel=\"noopener\">" + safeRef + "</a> — « " + safeText + " »")
+      : ("<a href=\"" + verseUrl + "\" target=\"_blank\" rel=\"noopener\">" + safeRef + "</a> (texte non trouvé automatiquement — vérifie sur wol.jw.org)");
+  };
 })();
 </script>
 </body>
