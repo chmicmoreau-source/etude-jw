@@ -1290,6 +1290,19 @@ async function generateStudyText(prompt) {
   return r.text();
 }
 
+// Le service gratuit répond parfois 429 (limite de débit) en cas d'appels
+// rapprochés — notamment quand le module Réunion prépare sa semaine en
+// arrière-plan au même moment. Une nouvelle tentative après un court délai
+// (même correctif que callLLMWithRetry côté Réunion) évite un échec sur un
+// simple pic de charge passager.
+async function generateStudyTextWithRetry(prompt) {
+  try { return await generateStudyText(prompt); }
+  catch (e) {
+    await new Promise(function(r){ setTimeout(r, 2500); });
+    return await generateStudyText(prompt);
+  }
+}
+
 async function runStudy(entry) {
   G.history=[entry].concat(G.history.filter(function(h){return h.titre!==entry.titre;})).slice(0,100);
   saveH(); G.cur=entry;
@@ -1302,7 +1315,7 @@ async function runStudy(entry) {
       + (entry.verset ? "\nVerset: " + entry.verset : "")
       + "\nMéthode (comme La Tour de Garde) : nomme le doute réaliste que le verset soulève avec un précédent biblique ; réponds-y par un second verset-clé (le mécanisme doctrinal) ; termine par une application concrète qui boucle sur l'image du verset de départ.\n"
       + "\nRéponds uniquement avec ce JSON, sans texte autour : {\"resume\":\"2-3 phrases : le verset et la tension qu'il soulève\",\"points\":[{\"titre\":\"Le doute légitime\",\"texte\":\"\",\"reference\":\"précédent biblique\"},{\"titre\":\"La réponse doctrinale\",\"texte\":\"\",\"reference\":\"second verset-clé\"},{\"titre\":\"Application concrète\",\"texte\":\"\",\"reference\":\"retour à l'image de départ\"}],\"questions\":[\"\",\"\"],\"ressource\":\"publication wol.jw.org\"}";
-    var txt = await generateStudyText(prompt);
+    var txt = await generateStudyTextWithRetry(prompt);
     var parsed=parseJsonLoose(txt.replace(/```json|```/g,'').trim());
     Object.assign(entry,parsed);
     G.history=[entry].concat(G.history.filter(function(h){return h.titre!==entry.titre;})).slice(0,100);
