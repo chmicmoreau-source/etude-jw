@@ -2549,6 +2549,15 @@ if (navigator.storage && navigator.storage.persist) {
 
   var savedProxy = lsGet("corsProxy"); if(savedProxy && bProxy){ bProxy.value = savedProxy; }
   restoreWeeks();
+  // showWeek(weekSelect.value) a deja tourne plus haut, avant que
+  // restoreWeeks() ne recree les semaines sauvegardees dans le DOM : a ce
+  // moment-la aucune semaine dynamique n'existait encore, donc le
+  // placeholder "pas encore preparee" restait affiche meme une fois les
+  // donnees restaurees juste apres. On corrige l'affichage maintenant que
+  // les semaines dynamiques existent reellement — signale par l'utilisateur
+  // 2026-07 (donnees intactes en localStorage, mais jamais affichees apres
+  // un F5).
+  if(weekSelect){ showWeek(weekSelect.value); }
 
   // Remplit le lien wol selon la semaine choisie
   var bOpenLink = document.getElementById("bOpenLink");
