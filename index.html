@@ -2004,7 +2004,7 @@ if (navigator.storage && navigator.storage.persist) {
   function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
   function trim(s){ return s.replace(/^\s+|\s+$/g,""); }
   function mdInline(s){
-    return s.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/(^|[^*])\*([^*\s][^*]*?)\*(?!\*)/g,"$1<em>$2</em>");
+    return s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,"<a href=\"$2\" target=\"_blank\" rel=\"noopener\">$1</a>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/(^|[^*])\*([^*\s][^*]*?)\*(?!\*)/g,"$1<em>$2</em>");
   }
   function mdToHtml(md){
     var lines = md.split("\n"); var html=""; var inList=false;
@@ -2497,21 +2497,24 @@ if (navigator.storage && navigator.storage.persist) {
     for(var i=0;i<refs.length;i++){
       var ref = refs[i];
       var replacement;
-      if(!parseFullVerseRef(ref)){
+      var parsedRef = parseFullVerseRef(ref);
+      if(!parsedRef){
         // Ce n'est pas une référence "Livre chapitre:verset" (ex. une référence
         // de publication comme "w22.02 4§7-8") : pas de recherche de verset,
         // on affiche juste la référence telle quelle sans message trompeur.
         replacement = ref;
       } else {
+        var verseUrl = "https://wol.jw.org/fr/wol/b/r30/lp-f/nwtsty/" + parsedRef.book + "/" + parsedRef.chapter
+          + "#v=" + parsedRef.book + ":" + parsedRef.chapter + ":" + parsedRef.verses[0];
         var verseText = null;
         try{ verseText = await fetchVerseText(ref); }catch(e){}
         replacement = verseText
-          ? ("« " + verseText + " » (" + ref + ", TMN)")
-          : (ref + " (texte du verset non trouvé automatiquement — vérifie sur wol.jw.org)");
+          ? ("« " + verseText + " » ([" + ref + ", TMN](" + verseUrl + "))")
+          : ("[" + ref + "](" + verseUrl + ") (texte du verset non trouvé automatiquement — vérifie sur wol.jw.org)");
         if(includeNotes && verseText){
           var note = null;
           try{ note = await fetchVerseStudyNote(ref); }catch(e){}
-          if(note){ replacement += "\n   📖 *Note d'étude (Bible d'étude, " + ref + ")* : " + note; }
+          if(note){ replacement += "\n   📖 [*Note d'étude (Bible d'étude, " + ref + ")*](" + verseUrl + ") : " + note; }
         }
       }
       var pattern = new RegExp("\\[\\[" + ref.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\]\\]", "g");
