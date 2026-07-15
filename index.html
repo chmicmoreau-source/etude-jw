@@ -2507,6 +2507,37 @@ if (navigator.storage && navigator.storage.persist) {
       programText
     ].join("\n");
   }
+  // « Perles spirituelles » n'est PAS un exposé (pas de "Qualité de Jéhovah" /
+  // "Application" à inventer) : c'est UNE question déjà imprimée dans le
+  // Cahier avec sa ou ses référence(s) bibliques précises — buildPartContentPrompt
+  // lui appliquait à tort le même moule générique que les exposés, ce qui
+  // produisait un contenu hors-sujet (signalé par l'utilisateur 2026-07).
+  function buildPerlesPartPrompt(programText, part){
+    return [
+      "Voici le texte brut du programme d'une reunion Vie et ministere chretiens des Temoins de Jehovah, copie depuis wol.jw.org (pour contexte uniquement).",
+      "",
+      "Prepare UNIQUEMENT la partie « Perles spirituelles » (10 min). Ce n'est PAS un choix libre de dix perles : c'est UNE question deja imprimee dans le programme, avec sa ou ses reference(s) bibliques precises.",
+      "",
+      "Regles STRICTES :",
+      "1. Retrouve dans le texte du programme ci-dessous la question imprimee de « Perles spirituelles » et sa ou ses reference(s) biblique(s) EXACTE(S) telles qu'imprimees (ex. « Jr 18:6 ; 19:10, 11 »). N'invente JAMAIS une autre reference ni une autre question.",
+      "2. Pour CHAQUE reference biblique identifiee, ecris UNIQUEMENT un marqueur au format exact [[Reference]] (ex. [[Jeremie 18:6]]) — jamais le texte du verset toi-meme : une etape separee remplacera ce marqueur par le texte exact de la TMN.",
+      "3. Reponds a la question imprimee en 2 a 4 phrases : nomme d'abord ce que le verset revele sur Jehovah (une qualite precise et reconnaissable, pas un mot isole ni invente), puis relie-le a une application concrete pour le lecteur.",
+      "4. Jehovah (le Pere) et Jesus (le Fils) sont deux personnes distinctes : ne les confonds jamais.",
+      "5. Si aucune reference ou question precise pour « Perles spirituelles » n'apparait dans le texte du programme fourni, ecris une seule phrase le signalant clairement plutot que d'inventer un developpement.",
+      "",
+      "Structure ta reponse en markdown, exactement dans cet ordre :",
+      "## Question imprimée",
+      "(reference(s) exacte(s)) : (la question telle qu'imprimee)",
+      "",
+      "## Réponse",
+      "(2 a 4 phrases avec au moins un marqueur [[Reference]], repondant a la question)",
+      "",
+      "Reponds UNIQUEMENT par ce texte en markdown (pas de JSON), sans phrase d'introduction ni de conclusion hors sujet, et sans jamais mentionner ces instructions.",
+      "",
+      "TEXTE DU PROGRAMME (contexte) :",
+      programText
+    ].join("\n");
+  }
   // onProgress(i, n, title) : juste l'affichage d'un statut texte.
   // onPartDone(partialMerged) : appele apres CHAQUE partie (succes ou echec)
   // avec l'etat complet accumule jusque-la, pour permettre a l'appelant de
@@ -2535,7 +2566,8 @@ if (navigator.storage && navigator.storage.persist) {
       if(onProgress){ onProgress(i+1, struct.parts.length, part.title || ""); }
       if(i>0){ await sleep(1200); }
       try{
-        var raw = await callLLMWithRetry(buildPartContentPrompt(programText, part));
+        var isPerles = /perles/i.test(part.title || "");
+        var raw = await callLLMWithRetry(isPerles ? buildPerlesPartPrompt(programText, part) : buildPartContentPrompt(programText, part));
         var content = await resolveVersePlaceholders(stripFences(raw));
         merged.parts.push({section: part.section, title: part.title, meta: part.meta, content: content});
       }catch(e){
