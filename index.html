@@ -196,12 +196,6 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
           <a href="https://wol.jw.org/fr/wol/meetings/r30/lp-f" target="_blank" class="wol-link"><span style="width:5px;height:5px;border-radius:50%;background:#2B5EA7;flex-shrink:0"></span><span style="font-size:11px;color:#1A2B4A;font-weight:600">Réunions</span></a>
         </div>
       </div>
-      <div class="chip-row" id="chips-home"></div>
-      <div style="padding:0 14px 10px;display:flex;justify-content:space-between">
-        <span style="font-weight:700;color:#1A2B4A;font-size:13px">Thèmes suggérés</span>
-        <span id="sugg-count" style="font-size:11px;color:#7A8396"></span>
-      </div>
-      <div class="grid2" id="sugg-grid"></div>
       <div style="height:24px"></div>
     </div>
     <nav class="nav">
@@ -881,7 +875,7 @@ var BLOOD_LINKS = [
 
 /* ══ ÉTAT ════════════════════════════════════════════════════════════════ */
 var G = {
-  history:[], catH:'all', catHist:'all',
+  history:[], catHist:'all',
   jwNotes:[], jwTags:[], jwFilter:'all',
   cur:null,
   ghToken:'', ghUser:null, ghGistId:'', lastSync:'', lastJWL:'',
@@ -961,7 +955,6 @@ function show(id) {
   document.getElementById(id).classList.add('active');
   if(id==='s-history') renderHist();
   if(id==='s-sync')    renderSync();
-  if(id==='s-home')    renderHome();
   if(id==='s-jwnotes') renderJWNotes();
   if(id==='s-sang')    renderSang();
   updateUI();
@@ -988,7 +981,6 @@ function toast(msg, dur) {
 }
 
 /* ══ ACCUEIL ═════════════════════════════════════════════════════════════ */
-function setCH(c){G.catH=c;renderHome();}
 function setCHist(c){G.catHist=c;renderHist();}
 function setCJW(t){G.jwFilter=t;renderJWNotes();}
 
@@ -996,26 +988,6 @@ function chips(id, active, fn) {
   var el=document.getElementById(id); if(!el) return;
   el.innerHTML=CATS.map(function(c){
     return '<button class="chip' + (active===c.id?' active':'') + '" onclick="' + fn + '(\'' + c.id + '\')">' + c.icon + ' ' + c.label + '</button>';
-  }).join('');
-}
-
-function renderHome() {
-  chips('chips-home', G.catH, 'setCH');
-  var grid=document.getElementById('sugg-grid'), cnt=document.getElementById('sugg-count');
-  if(!grid) return;
-  var list=G.catH==='all'?SUGGS:SUGGS.filter(function(s){return s.cat===G.catH;});
-  if(cnt) cnt.textContent=list.length+' thèmes';
-  grid.innerHTML=list.map(function(item){
-    var cat=CATS.find(function(c){return c.id===item.cat;})||CATS[1];
-    var done=G.history.some(function(h){return h.titre===item.titre&&h.resume;});
-    return '<button class="sugg-card" onclick="study(' + item.id + ')" style="' + (done?'border-color:#00827F':'') + '">'
-      + '<div style="display:flex;justify-content:space-between;width:100%;margin-bottom:6px">'
-      + '<span style="font-size:18px">' + cat.icon + '</span>'
-      + (done?'<span style="font-size:10px;color:#1A7A4A;font-weight:700">✓</span>':'')
-      + '</div>'
-      + '<div style="font-weight:700;color:#1A2B4A;font-size:11px;line-height:1.35;margin-bottom:6px">' + item.titre + '</div>'
-      + '<span class="vtag">' + item.v + '</span>'
-      + '</button>';
   }).join('');
 }
 
@@ -1970,7 +1942,7 @@ function renderSync() {
 /* ══ INIT ════════════════════════════════════════════════════════════════ */
 setTimeout(async function() {
   load();
-  renderHome(); renderHist(); renderJWNotes(); renderSync(); updateUI();
+  renderHist(); renderJWNotes(); renderSync(); updateUI();
   // Sync automatique au démarrage si connecté
   if (G.ghToken && G.ghGistId) {
     await autoSync(true);
