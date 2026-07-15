@@ -462,9 +462,9 @@ Règles :
 - Fonde-toi uniquement sur la doctrine et les publications des Témoins de Jéhovah (jw.org, wol.jw.org, Étude perspicace des Écritures, La Tour de Garde, Traduction du monde nouveau).
 - Emploie « Jéhovah », « assemblée », « esprit saint ». N'introduis aucune doctrine non-TJ.
 - Choisis 10 versets DIFFÉRENTS et variés, répartis sur toute la lecture.
-- Pour chaque perle, respecte exactement cette structure :
-  1) la référence (livre chap:verset) suivie du texte du verset selon la TMN ;
-  2) une brève analyse (1 à 2 phrases) qui, quand c'est pertinent, nomme d'abord la question ou la tension naturelle que le verset soulève (un doute, une difficulté, un contraste) avant que la ligne suivante n'y réponde ;
+- Pour chaque perle, respecte exactement cette structure (même méthode que pour une étude complète, condensée en 3 lignes) :
+  1) la référence (livre chap:verset) suivie du texte du verset selon la TMN — c'est le point de départ concret ;
+  2) une brève analyse (1 à 2 phrases) qui nomme d'abord la question ou la tension naturelle que le verset soulève (un doute, une difficulté) ; quand c'est possible, appuie-toi sur un contraste ou un exemple concret plutôt qu'une affirmation seule ;
   3) une ligne commençant par « Ce que cela révèle : » qui résout cette tension en dégageant la leçon sur Jéhovah et une application concrète.
 - N'invente jamais le texte d'un verset ni une référence ; en cas de doute, signale-le.
 - N'utilise pas de tableaux.</div>
@@ -1292,15 +1292,21 @@ async function generateStudyText(prompt) {
 
 // Le service gratuit répond parfois 429 (limite de débit) en cas d'appels
 // rapprochés — notamment quand le module Réunion prépare sa semaine en
-// arrière-plan au même moment. Une nouvelle tentative après un court délai
-// (même correctif que callLLMWithRetry côté Réunion) évite un échec sur un
-// simple pic de charge passager.
+// arrière-plan au même moment (plusieurs appels séquentiels à lui seul).
+// Une seule nouvelle tentative retombe parfois dans la même rafale (vérifié
+// 2026-07 : rafale de 429 sur plus de 10 secondes d'affilée) — 3 tentatives
+// avec un délai croissant traversent une rafale plus longue.
 async function generateStudyTextWithRetry(prompt) {
-  try { return await generateStudyText(prompt); }
-  catch (e) {
-    await new Promise(function(r){ setTimeout(r, 2500); });
-    return await generateStudyText(prompt);
+  var delays = [3000, 6000, 10000];
+  var lastErr;
+  for (var i = 0; i <= delays.length; i++) {
+    try { return await generateStudyText(prompt); }
+    catch (e) {
+      lastErr = e;
+      if (i < delays.length) { await new Promise(function(r){ setTimeout(r, delays[i]); }); }
+    }
   }
+  throw lastErr;
 }
 
 async function runStudy(entry) {
@@ -1338,10 +1344,15 @@ function buildGenericStudyPrompt(entry) {
   return "Tu es un assistant d'étude biblique pour Témoins de Jéhovah, basé strictement sur JW.org, wol.jw.org, JW Library et la Traduction du monde nouveau (TMN). Repères doctrinaux : Jéhovah est le nom de Dieu (Ps 83:18) ; Jésus est le Fils de Dieu, distinct de lui et qui lui est inférieur (pas de Trinité) ; les morts sont inconscients (Eccl 9:5) ; espérance d'un paradis terrestre.\n\n"
     + "SUJET : " + entry.titre + "\n"
     + (entry.verset ? "VERSET DE DÉPART : " + entry.verset + "\n" : "")
-    + "\nMÉTHODE : identifie 4 à 6 idées concrètes et actionnables en lien avec le sujet. Pour chaque idée, appuie-toi sur un verset biblique pertinent.\n"
-    + "\nCONTRAINTE IMPÉRATIVE SUR LES VERSETS : pour chaque référence citée dans \"points\", donne le TEXTE COMPLET ET EXACT du verset selon la TMN (édition d'étude), jamais seulement la référence, jamais une reformulation de mémoire. Si tu n'es pas certain du texte exact, indique-le clairement plutôt que d'inventer une citation.\n"
+    + "\nMÉTHODE (6 étapes, à suivre dans l'ordre — extraite par analyse d'un corpus d'études JW Broadcasting) :\n"
+    + "1. Pars d'une scène ou d'une situation concrète (pas d'une notion abstraite) qui rend le sujet tangible : un épisode biblique précis, un cas vécu, une image.\n"
+    + "2. Nomme explicitement la difficulté réelle que cette scène soulève : une peur, un doute, une tentation, une question que beaucoup se posent. C'est cette tension que les points suivants vont résoudre.\n"
+    + "3. Développe 3 à 6 idées structurantes qui répondent à cette difficulté. Chacune a : un titre court et mémorisable, une explication en 1-2 phrases du mécanisme (pas juste une affirmation), et UN SEUL verset biblique précis qui l'ancre.\n"
+    + "4. Pour chaque idée, quand c'est possible, appuie-toi sur un contraste ou un exemple concret (avant/après, bonne/mauvaise réaction, deux personnes) plutôt qu'une affirmation seule — c'est ce qui rend l'idée tangible plutôt que théorique.\n"
+    + "5. Termine par des questions tournées vers « je », jamais rhétoriques ni des rappels du texte : elles doivent obliger le lecteur à se positionner personnellement (« Est-ce que je... », « Ai-je déjà... », « Qu'est-ce qui, dans ma vie... »).\n"
+    + "\nCONTRAINTE IMPÉRATIVE SUR LES VERSETS (étape 6) : pour chaque référence citée dans \"points\", donne le TEXTE COMPLET ET EXACT du verset selon la TMN (édition d'étude), jamais seulement la référence, jamais une reformulation de mémoire. Si tu n'es pas certain du texte exact, indique-le clairement plutôt que d'inventer une citation.\n"
     + "\nRéponds UNIQUEMENT avec ce JSON, sans texte autour :\n"
-    + "{\"titre\":\"titre court de l'étude\",\"categorie\":\"une valeur parmi : foi | famille | royaume | moral | etude | histoire | espoir | sang | ministere\",\"verset\":\"référence biblique principale\",\"ressource\":\"nom de la source si applicable (sinon vide)\",\"resume\":\"3 à 5 phrases : pourquoi ce sujet compte et l'angle retenu\",\"points\":[{\"titre\":\"idée courte\",\"texte\":\"développement en 1-2 phrases\",\"reference\":\"Référence — « texte complet et exact du verset TMN »\"}],\"questions\":[\"3 à 5 questions d'application à la première personne\"]}";
+    + "{\"titre\":\"titre court de l'étude\",\"categorie\":\"une valeur parmi : foi | famille | royaume | moral | etude | histoire | espoir | sang | ministere\",\"verset\":\"référence biblique principale\",\"ressource\":\"nom de la source si applicable (sinon vide)\",\"resume\":\"3 à 5 phrases qui posent la scène concrète (étape 1) et la difficulté qu'elle soulève (étape 2)\",\"points\":[{\"titre\":\"idée courte\",\"texte\":\"développement en 1-2 phrases, avec contraste ou exemple si possible\",\"reference\":\"Référence — « texte complet et exact du verset TMN »\"}],\"questions\":[\"3 à 5 questions d'application à la première personne\"]}";
 }
 function copyStudyPromptGeneric() {
   if (!G.cur) return;
