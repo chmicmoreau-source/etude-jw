@@ -2134,6 +2134,16 @@ if (navigator.storage && navigator.storage.persist) {
   function callLLM(prompt){
     return callPollinationsR(prompt);
   }
+  function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+  // Le service gratuit semble limiter le debit quand on enchaine trop d'appels
+  // rapproches : sur une semaine a 8-9 parties, les premieres reussissent puis
+  // tout echoue d'affilee ensuite (constate 2026-07). Un court delai entre
+  // chaque appel plus une nouvelle tentative avant d'abandonner reduisent ce
+  // taux d'echec.
+  async function callLLMWithRetry(prompt){
+    try{ return await callLLM(prompt); }
+    catch(e){ await sleep(2500); return await callLLM(prompt); }
+  }
 
   // ---- Générateurs (chaque bloc .gen est autonome) ----
   var gens = document.querySelectorAll("#s-reunion .gen");
@@ -2471,8 +2481,9 @@ if (navigator.storage && navigator.storage.persist) {
     for(var i=0;i<struct.parts.length;i++){
       var part = struct.parts[i];
       if(onProgress){ onProgress(i+1, struct.parts.length, part.title || ""); }
+      if(i>0){ await sleep(1200); }
       try{
-        var raw = await callLLM(buildPartContentPrompt(programText, part));
+        var raw = await callLLMWithRetry(buildPartContentPrompt(programText, part));
         var content = await resolveVersePlaceholders(stripFences(raw));
         merged.parts.push({section: part.section, title: part.title, meta: part.meta, content: content});
       }catch(e){
@@ -2778,8 +2789,9 @@ if (navigator.storage && navigator.storage.persist) {
     for(var i=0;i<struct.points.length;i++){
       var pt = struct.points[i];
       if(onProgress){ onProgress(i+1, struct.points.length, pt.num || ""); }
+      if(i>0){ await sleep(1200); }
       try{
-        var raw = await callLLM(buildTGPointPrompt(articleText, pt));
+        var raw = await callLLMWithRetry(buildTGPointPrompt(articleText, pt));
         var d = parseWeekJSON(raw);
         var verseText = "";
         if(d.verseRef){
