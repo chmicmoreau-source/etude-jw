@@ -1310,8 +1310,11 @@ async function runStudy(entry) {
     if(parsed && parsed.points && parsed.points.length && typeof window.resolveBibleReference === "function"){
       for(var pi=0; pi<parsed.points.length; pi++){
         var pt = parsed.points[pi];
-        var refM = /\[\[([^\]]{2,60})\]\]/.exec(pt.reference || "");
-        var refToResolve = refM ? refM[1] : pt.reference;
+        // Le modele gratuit oublie parfois un crochet fermant ("[[Ref]" au
+        // lieu de "[[Ref]]") : on retire tous les crochets en bordure plutot
+        // que d'exiger un format exact, sinon la chaine brute (crochets
+        // compris) part telle quelle vers la resolution et echoue.
+        var refToResolve = String(pt.reference || "").replace(/^\[+\s*/, "").replace(/\s*\]+$/, "").trim();
         if(refToResolve){
           try{ pt.reference = await window.resolveBibleReference(refToResolve); }catch(e){}
         }
