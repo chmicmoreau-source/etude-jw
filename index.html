@@ -1289,6 +1289,32 @@ async function generateStudyTextWithRetry(prompt) {
   throw lastErr;
 }
 
+// Relit les marqueurs [[Reference]] d'une etude generee par runStudy() et
+// corrige ceux qui n'ont pas de rapport reel avec le point qu'ils sont
+// censes illustrer (le garde-fou dans le prompt principal n'est pas fiable
+// a 100% avec le modele gratuit). Non bloquant : toute erreur reseau/parsing
+// laisse l'etude d'origine intacte.
+async function verifyStudyReferences(entry, parsed) {
+  try {
+    var pointsDesc = parsed.points.map(function(pt, i) {
+      return (i + 1) + ". Titre: " + (pt.titre || "") + " / Texte: " + (pt.texte || "") + " / Reference proposee: " + (pt.reference || "");
+    }).join("\n");
+    var checkPrompt = "Sujet de l'etude biblique : \"" + entry.titre + "\""
+      + (entry.verset ? " (verset de depart : " + entry.verset + ")" : "")
+      + "\nVoici " + parsed.points.length + " points d'etude, chacun avec une reference biblique proposee :\n" + pointsDesc
+      + "\nPour CHAQUE point, verifie si la reference proposee parle vraiment et directement du meme sujet que le texte du point (meme theme, memes mots-cles) — pas seulement une analogie lointaine (ex. un voeu, un rite, une loi ceremonielle sans lien explicite). Si elle convient, renvoie-la telle quelle. Si elle ne convient PAS, remplace-la par une reference plus pertinente au format [[Livre chapitre:verset]].\n"
+      + "Reponds uniquement avec ce JSON, sans texte autour : {\"references\":[\"[[Livre chapitre:verset]]\", ...]} avec exactement " + parsed.points.length + " entrees, dans le meme ordre que les points ci-dessus.";
+    var txt = await generateStudyTextWithRetry(checkPrompt);
+    var fixed = parseJsonLoose(txt.replace(/```json|```/g, '').trim());
+    if (fixed && Array.isArray(fixed.references) && fixed.references.length === parsed.points.length) {
+      for (var i = 0; i < parsed.points.length; i++) {
+        if (fixed.references[i]) { parsed.points[i].reference = fixed.references[i]; }
+      }
+    }
+  } catch (e) { /* non bloquant : on garde les marqueurs d'origine */ }
+  return parsed;
+}
+
 async function runStudy(entry) {
   G.history=[entry].concat(G.history.filter(function(h){return h.titre!==entry.titre;})).slice(0,100);
   saveH(); G.cur=entry;
@@ -1299,11 +1325,20 @@ async function runStudy(entry) {
     var prompt = "Assistant étude biblique TJ basé sur wol.jw.org. TJ: Jéhovah (Ps 83:18), Jésus=Fils non égal à Dieu, morts=inconscients (Eccl 9:5), paradis terrestre, pas Trinité.\n"
       + "Sujet: \"" + entry.titre + "\""
       + (entry.verset ? "\nVerset: " + entry.verset : "")
-      + "\nMéthode (comme La Tour de Garde) : nomme le doute réaliste que le verset soulève avec un précédent biblique ; réponds-y par un second verset-clé (le mécanisme doctrinal) ; termine par une application concrète qui boucle sur l'image du verset de départ.\n"
-      + "\nRègle impérative sur les références : pour \"reference\" dans chaque point, écris UNIQUEMENT un marqueur au format [[Livre chapitre:verset]] (ex. [[Jean 3:16]]), jamais le texte du verset toi-même. Le verset choisi DOIT parler directement et explicitement du point que tu rédiges (même thème, mêmes mots-clés) — ne choisis JAMAIS une référence qui n'a pas de rapport réel et direct avec ce point precis, même si elle semble plausible de mémoire.\n"
+      + "\nMéthode (comme La Tour de Garde) : nomme le doute réaliste que le verset soulève, en restant ancré sur le MÊME thème que le verset de départ (jamais un épisode biblique choisi seulement par analogie lointaine) ; réponds-y par un second verset-clé (le mécanisme doctrinal) ; termine par une application concrète qui boucle sur l'image du verset de départ.\n"
+      + "\nRègle impérative sur les références : pour \"reference\" dans chaque point, écris UNIQUEMENT un marqueur au format [[Livre chapitre:verset]] (ex. [[Jean 3:16]]), jamais le texte du verset toi-même. Le verset choisi DOIT parler directement et explicitement du sujet \"" + entry.titre + "\" et du point precis que tu rédiges (même thème, mêmes mots-clés) — ne choisis JAMAIS une référence qui n'a pas de rapport réel et direct avec ce sujet, même si elle semble plausible de mémoire ou illustrer le principe par analogie lointaine (ex. un vœu, un rite, une loi cérémonielle sans lien explicite avec le sujet).\n"
       + "\nRéponds uniquement avec ce JSON, sans texte autour : {\"resume\":\"2-3 phrases : le verset et la tension qu'il soulève\",\"points\":[{\"titre\":\"Le doute légitime\",\"texte\":\"\",\"reference\":\"[[Livre chapitre:verset]]\"},{\"titre\":\"La réponse doctrinale\",\"texte\":\"\",\"reference\":\"[[Livre chapitre:verset]]\"},{\"titre\":\"Application concrète\",\"texte\":\"\",\"reference\":\"[[Livre chapitre:verset]]\"}],\"questions\":[\"\",\"\"],\"ressource\":\"publication wol.jw.org\"}";
     var txt = await generateStudyTextWithRetry(prompt);
     var parsed=parseJsonLoose(txt.replace(/```json|```/g,'').trim());
+    // Deuxieme passe : la consigne de pertinence ci-dessus n'est pas fiable a
+    // 100% avec le modele gratuit (vu 2026-07 : Nombres 30:2, sur les voeux,
+    // cite comme "precedent" pour un point sur la Regle d'or, sans aucun
+    // rapport reel). On relit chaque paire (point, reference) et on corrige
+    // les marqueurs hors-sujet avant la resolution TMN. Non bloquant : toute
+    // erreur ici laisse les marqueurs d'origine intacts.
+    if(parsed && parsed.points && parsed.points.length){
+      parsed = await verifyStudyReferences(entry, parsed);
+    }
     // Remplace le marqueur [[Reference]] laissé par l'IA par le texte reel du
     // verset (jamais celui que l'IA aurait pu taper elle-meme) — meme
     // mecanisme que pour les Perles spirituelles, expose par le module Reunion.
