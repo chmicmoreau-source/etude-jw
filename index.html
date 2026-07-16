@@ -1330,6 +1330,14 @@ async function runStudy(entry) {
       + "\nRéponds uniquement avec ce JSON, sans texte autour : {\"resume\":\"2-3 phrases : le verset et la tension qu'il soulève\",\"points\":[{\"titre\":\"Le doute légitime\",\"texte\":\"\",\"reference\":\"[[Livre chapitre:verset]]\"},{\"titre\":\"La réponse doctrinale\",\"texte\":\"\",\"reference\":\"[[Livre chapitre:verset]]\"},{\"titre\":\"Application concrète\",\"texte\":\"\",\"reference\":\"[[Livre chapitre:verset]]\"}],\"questions\":[\"\",\"\"],\"ressource\":\"publication wol.jw.org\"}";
     var txt = await generateStudyTextWithRetry(prompt);
     var parsed=parseJsonLoose(txt.replace(/```json|```/g,'').trim());
+    // Le modele gratuit repond parfois par un JSON valide mais incomplet
+    // (ex. "resume" rempli, "points"/"questions" laisses vides) — sans ce
+    // controle, une etude inutilisable etait enregistree et affichee sans
+    // aucun message d'erreur ni bouton "Reessayer" (vu 2026-07). On traite
+    // ce cas comme un echec de generation, au meme titre qu'un JSON invalide.
+    if(!parsed || !parsed.points || !parsed.points.length){
+      throw new Error("réponse incomplète du modèle (pas de plan d'étude), réessaie");
+    }
     // Deuxieme passe : la consigne de pertinence ci-dessus n'est pas fiable a
     // 100% avec le modele gratuit (vu 2026-07 : Nombres 30:2, sur les voeux,
     // cite comme "precedent" pour un point sur la Regle d'or, sans aucun
