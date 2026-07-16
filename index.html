@@ -1252,12 +1252,17 @@ function studyCustom(q){runStudy({id:Date.now(),titre:q,categorie:'foi',verset:'
 // d'où "Impossible de générer" sur certains sujets. Même correctif ici :
 // endpoint POST /openai avec reasoning_effort réduit et budget de tokens
 // plus large, repli sur l'ancien endpoint GET simple si ça échoue quand même.
-async function generateStudyText(prompt) {
+// "seed", optionnel : Pollinations renvoie sinon la MEME reponse (mise en
+// cache ou deterministe) pour un prompt identique — sans seed different a
+// chaque tentative, retenter apres un echec rejoue exactement le meme
+// echec en boucle (vu 2026-07 : "règle d'or" a echoue 4 fois d'affilee
+// avec un JSON identique a chaque essai, verifie par appel direct).
+async function generateStudyText(prompt, seed) {
   try {
     var res = await withTimeout(fetch('https://text.pollinations.ai/openai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'openai', messages: [{ role: 'user', content: prompt }], max_tokens: 3000, reasoning_effort: 'low' })
+      body: JSON.stringify({ model: 'openai', messages: [{ role: 'user', content: prompt }], max_tokens: 3000, reasoning_effort: 'low', seed: seed })
     }), 90000);
     if (res && res.ok) {
       var data = await res.json();
@@ -1265,7 +1270,8 @@ async function generateStudyText(prompt) {
       if (txt) { return txt; }
     }
   } catch (e) { /* repli */ }
-  var r = await withTimeout(fetch('https://text.pollinations.ai/' + encodeURIComponent(prompt)), 20000);
+  var fallbackUrl = 'https://text.pollinations.ai/' + encodeURIComponent(prompt) + (seed != null ? '?seed=' + seed : '');
+  var r = await withTimeout(fetch(fallbackUrl), 20000);
   if(!r.ok) throw new Error('HTTP '+r.status);
   return r.text();
 }
@@ -1292,7 +1298,9 @@ async function generateStudyTextWithRetry(prompt, validate, onAttempt) {
   for (var i = 0; i <= delays.length; i++) {
     if (onAttempt) { onAttempt(i + 1, delays.length + 1); }
     try {
-      var txt = await generateStudyText(prompt);
+      // Seed different a chaque tentative (voir generateStudyText) : sinon
+      // une reponse ratee est rejouee a l'identique par les essais suivants.
+      var txt = await generateStudyText(prompt, Math.floor(Math.random() * 1e9));
       if (validate) { validate(txt); }
       return txt;
     }
@@ -1326,7 +1334,7 @@ async function verifyStudyReferences(entry, parsed) {
       + "\nVoici " + parsed.points.length + " points d'etude, chacun avec une reference biblique proposee :\n" + pointsDesc
       + "\nPour CHAQUE point, verifie si la reference proposee parle vraiment et directement du meme sujet que le texte du point (meme theme, memes mots-cles) — pas seulement une analogie lointaine (ex. un voeu, un rite, une loi ceremonielle sans lien explicite). Si elle convient, renvoie-la telle quelle. Si elle ne convient PAS, remplace-la par une reference plus pertinente au format [[Livre chapitre:verset]].\n"
       + "Reponds uniquement avec ce JSON, sans texte autour : {\"references\":[\"[[Livre chapitre:verset]]\", ...]} avec exactement " + parsed.points.length + " entrees, dans le meme ordre que les points ci-dessus.";
-    var txt = await generateStudyText(checkPrompt);
+    var txt = await generateStudyText(checkPrompt, Math.floor(Math.random() * 1e9));
     var fixed = parseJsonLoose(txt.replace(/```json|```/g, '').trim());
     if (fixed && Array.isArray(fixed.references) && fixed.references.length === parsed.points.length) {
       for (var i = 0; i < parsed.points.length; i++) {
