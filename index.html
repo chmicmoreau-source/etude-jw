@@ -1204,7 +1204,7 @@ function renderDet(entry, result) {
     + '</div>'
     + '<div style="padding:12px 14px">';
 
-  if(!result) html+='<div class="lbox"><div class="spinner"></div>Préparation du plan d\'étude…</div>';
+  if(!result) html+='<div class="lbox"><div class="spinner"></div><span id="det-loading-status">Préparation du plan d\'étude…</span></div>';
   else if(result.error) html+='<div class="card" style="border-color:#f5c6cb;background:#fff5f5"><p style="margin:0 0 8px;color:#C0392B;font-size:12px">Impossible de générer'
       + (result.msg ? (' (' + String(result.msg).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + ')') : '')
       + '. Consultez les sources ci-dessus.</p><button onclick="retryStudy()" style="background:#C0392B;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600">Réessayer</button></div>';
@@ -1279,12 +1279,18 @@ async function generateStudyText(prompt) {
 // "validate" est optionnel : si fourni, il est appele avec le texte brut
 // renvoye par le modele et doit lever une exception si la reponse est
 // inexploitable (ex. JSON valide mais degenere, points/questions vides) —
-// ce cas est alors retente comme une erreur reseau classique, au lieu de
-// remonter tel quel jusqu'a l'appelant apres un seul essai.
-async function generateStudyTextWithRetry(prompt, validate) {
+// ce cas est alors retente au lieu de remonter tel quel apres un seul essai,
+// mais SANS le delai croissant (pas de rafale a laisser passer ici, juste
+// un nouvel essai aupres du modele) — sinon, cumule avec les 90s+20s de
+// timeout par tentative de generateStudyText, une etude qui echoue a
+// chaque fois pouvait sembler bloquee plusieurs minutes (vu 2026-07).
+// "onAttempt", optionnel, est appele avant chaque tentative avec
+// (numero 1-based, total) pour afficher une progression a l'utilisateur.
+async function generateStudyTextWithRetry(prompt, validate, onAttempt) {
   var delays = [3000, 6000, 10000];
   var lastErr;
   for (var i = 0; i <= delays.length; i++) {
+    if (onAttempt) { onAttempt(i + 1, delays.length + 1); }
     try {
       var txt = await generateStudyText(prompt);
       if (validate) { validate(txt); }
@@ -1292,7 +1298,10 @@ async function generateStudyTextWithRetry(prompt, validate) {
     }
     catch (e) {
       lastErr = e;
-      if (i < delays.length) { await new Promise(function(r){ setTimeout(r, delays[i]); }); }
+      if (i < delays.length) {
+        var wait = e && e.isValidationError ? 500 : delays[i];
+        await new Promise(function(r){ setTimeout(r, wait); });
+      }
     }
   }
   throw lastErr;
@@ -1302,7 +1311,11 @@ async function generateStudyTextWithRetry(prompt, validate) {
 // corrige ceux qui n'ont pas de rapport reel avec le point qu'ils sont
 // censes illustrer (le garde-fou dans le prompt principal n'est pas fiable
 // a 100% avec le modele gratuit). Non bloquant : toute erreur reseau/parsing
-// laisse l'etude d'origine intacte.
+// laisse l'etude d'origine intacte. Un seul essai (pas generateStudyTextWithRetry)
+// : c'est une passe d'amelioration optionnelle, pas la generation principale
+// — inutile de faire attendre l'utilisateur plusieurs tentatives pour ca
+// (vu 2026-07 : cumulee aux tentatives du prompt principal, l'attente totale
+// pouvait sembler bloquee indefiniment quand le service repond mal).
 async function verifyStudyReferences(entry, parsed) {
   try {
     var pointsDesc = parsed.points.map(function(pt, i) {
@@ -1313,7 +1326,7 @@ async function verifyStudyReferences(entry, parsed) {
       + "\nVoici " + parsed.points.length + " points d'etude, chacun avec une reference biblique proposee :\n" + pointsDesc
       + "\nPour CHAQUE point, verifie si la reference proposee parle vraiment et directement du meme sujet que le texte du point (meme theme, memes mots-cles) — pas seulement une analogie lointaine (ex. un voeu, un rite, une loi ceremonielle sans lien explicite). Si elle convient, renvoie-la telle quelle. Si elle ne convient PAS, remplace-la par une reference plus pertinente au format [[Livre chapitre:verset]].\n"
       + "Reponds uniquement avec ce JSON, sans texte autour : {\"references\":[\"[[Livre chapitre:verset]]\", ...]} avec exactement " + parsed.points.length + " entrees, dans le meme ordre que les points ci-dessus.";
-    var txt = await generateStudyTextWithRetry(checkPrompt);
+    var txt = await generateStudyText(checkPrompt);
     var fixed = parseJsonLoose(txt.replace(/```json|```/g, '').trim());
     if (fixed && Array.isArray(fixed.references) && fixed.references.length === parsed.points.length) {
       for (var i = 0; i < parsed.points.length; i++) {
@@ -1347,8 +1360,16 @@ async function runStudy(entry) {
     await generateStudyTextWithRetry(prompt, function(raw){
       parsed = parseJsonLoose(raw.replace(/```json|```/g,'').trim());
       if(!parsed || !parsed.points || !parsed.points.length){
-        throw new Error("réponse incomplète du modèle (pas de plan d'étude)");
+        var err = new Error("réponse incomplète du modèle (pas de plan d'étude)");
+        err.isValidationError = true;
+        throw err;
       }
+    }, function(attempt, total){
+      // Retour visuel pendant les tentatives : sans ca, un echec de contenu
+      // (retente automatiquement, voir ci-dessus) donnait l'impression que
+      // l'app etait bloquee, alors qu'elle reessayait juste en silence.
+      var statusEl = document.getElementById('det-loading-status');
+      if(statusEl){ statusEl.textContent = attempt > 1 ? ("Nouvelle tentative (" + attempt + "/" + total + ")…") : "Préparation du plan d'étude…"; }
     });
     // Deuxieme passe : la consigne de pertinence ci-dessus n'est pas fiable a
     // 100% avec le modele gratuit (vu 2026-07 : Nombres 30:2, sur les voeux,
@@ -1357,7 +1378,12 @@ async function runStudy(entry) {
     // les marqueurs hors-sujet avant la resolution TMN. Non bloquant : toute
     // erreur ici laisse les marqueurs d'origine intacts.
     if(parsed && parsed.points && parsed.points.length){
-      parsed = await verifyStudyReferences(entry, parsed);
+      var statusEl2 = document.getElementById('det-loading-status');
+      if(statusEl2){ statusEl2.textContent = "Vérification des références…"; }
+      // Passe optionnelle : plafonnee a 25s (au lieu des 90s+20s habituels)
+      // pour ne jamais faire attendre l'utilisateur longtemps pour un
+      // "bonus" — en cas de depassement, on garde les marqueurs d'origine.
+      parsed = await withTimeout(verifyStudyReferences(entry, parsed), 25000).catch(function(){ return parsed; });
     }
     // Remplace le marqueur [[Reference]] laissé par l'IA par le texte reel du
     // verset (jamais celui que l'IA aurait pu taper elle-meme) — meme
