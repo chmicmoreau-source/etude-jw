@@ -1337,9 +1337,18 @@ async function verifyStudyReferences(entry, parsed) {
     var txt = await generateStudyText(checkPrompt, Math.floor(Math.random() * 1e9));
     var fixed = parseJsonLoose(txt.replace(/```json|```/g, '').trim());
     if (fixed && Array.isArray(fixed.references) && fixed.references.length === parsed.points.length) {
-      for (var i = 0; i < parsed.points.length; i++) {
-        if (fixed.references[i]) { parsed.points[i].reference = fixed.references[i]; }
-      }
+      // Construit de NOUVEAUX objets plutot que de modifier "parsed" en
+      // place : l'appelant plafonne cet appel avec withTimeout, qui abandonne
+      // l'attente mais n'annule pas cette promesse pour autant — si elle se
+      // termine apres coup, une mutation en place ecraserait silencieusement
+      // des references deja resolues en texte TMN par l'appelant (vu 2026-07 :
+      // le marqueur brut d'un point reapparaissait apres coup dans l'etude
+      // affichee). En renvoyant une copie, une resolution tardive et
+      // abandonnee ne touche plus rien que personne ne regarde plus.
+      var newPoints = parsed.points.map(function(pt, i){
+        return fixed.references[i] ? Object.assign({}, pt, {reference: fixed.references[i]}) : pt;
+      });
+      return Object.assign({}, parsed, {points: newPoints});
     }
   } catch (e) { /* non bloquant : on garde les marqueurs d'origine */ }
   return parsed;
