@@ -1276,11 +1276,20 @@ async function generateStudyText(prompt) {
 // Une seule nouvelle tentative retombe parfois dans la même rafale (vérifié
 // 2026-07 : rafale de 429 sur plus de 10 secondes d'affilée) — 3 tentatives
 // avec un délai croissant traversent une rafale plus longue.
-async function generateStudyTextWithRetry(prompt) {
+// "validate" est optionnel : si fourni, il est appele avec le texte brut
+// renvoye par le modele et doit lever une exception si la reponse est
+// inexploitable (ex. JSON valide mais degenere, points/questions vides) —
+// ce cas est alors retente comme une erreur reseau classique, au lieu de
+// remonter tel quel jusqu'a l'appelant apres un seul essai.
+async function generateStudyTextWithRetry(prompt, validate) {
   var delays = [3000, 6000, 10000];
   var lastErr;
   for (var i = 0; i <= delays.length; i++) {
-    try { return await generateStudyText(prompt); }
+    try {
+      var txt = await generateStudyText(prompt);
+      if (validate) { validate(txt); }
+      return txt;
+    }
     catch (e) {
       lastErr = e;
       if (i < delays.length) { await new Promise(function(r){ setTimeout(r, delays[i]); }); }
@@ -1328,16 +1337,19 @@ async function runStudy(entry) {
       + "\nMéthode (comme La Tour de Garde) : nomme le doute réaliste que le verset soulève, en restant ancré sur le MÊME thème que le verset de départ (jamais un épisode biblique choisi seulement par analogie lointaine) ; réponds-y par un second verset-clé (le mécanisme doctrinal) ; termine par une application concrète qui boucle sur l'image du verset de départ.\n"
       + "\nRègle impérative sur les références : pour \"reference\" dans chaque point, écris UNIQUEMENT un marqueur au format [[Livre chapitre:verset]] (ex. [[Jean 3:16]]), jamais le texte du verset toi-même. Le verset choisi DOIT parler directement et explicitement du sujet \"" + entry.titre + "\" et du point precis que tu rédiges (même thème, mêmes mots-clés) — ne choisis JAMAIS une référence qui n'a pas de rapport réel et direct avec ce sujet, même si elle semble plausible de mémoire ou illustrer le principe par analogie lointaine (ex. un vœu, un rite, une loi cérémonielle sans lien explicite avec le sujet).\n"
       + "\nRéponds uniquement avec ce JSON, sans texte autour : {\"resume\":\"2-3 phrases : le verset et la tension qu'il soulève\",\"points\":[{\"titre\":\"Le doute légitime\",\"texte\":\"\",\"reference\":\"[[Livre chapitre:verset]]\"},{\"titre\":\"La réponse doctrinale\",\"texte\":\"\",\"reference\":\"[[Livre chapitre:verset]]\"},{\"titre\":\"Application concrète\",\"texte\":\"\",\"reference\":\"[[Livre chapitre:verset]]\"}],\"questions\":[\"\",\"\"],\"ressource\":\"publication wol.jw.org\"}";
-    var txt = await generateStudyTextWithRetry(prompt);
-    var parsed=parseJsonLoose(txt.replace(/```json|```/g,'').trim());
     // Le modele gratuit repond parfois par un JSON valide mais incomplet
     // (ex. "resume" rempli, "points"/"questions" laisses vides) — sans ce
     // controle, une etude inutilisable etait enregistree et affichee sans
-    // aucun message d'erreur ni bouton "Reessayer" (vu 2026-07). On traite
-    // ce cas comme un echec de generation, au meme titre qu'un JSON invalide.
-    if(!parsed || !parsed.points || !parsed.points.length){
-      throw new Error("réponse incomplète du modèle (pas de plan d'étude), réessaie");
-    }
+    // aucun message d'erreur ni bouton "Reessayer" (vu 2026-07). En passant
+    // ce controle a generateStudyTextWithRetry, un tel cas est retente
+    // automatiquement (comme un 429) avant de remonter une erreur a l'utilisateur.
+    var parsed;
+    await generateStudyTextWithRetry(prompt, function(raw){
+      parsed = parseJsonLoose(raw.replace(/```json|```/g,'').trim());
+      if(!parsed || !parsed.points || !parsed.points.length){
+        throw new Error("réponse incomplète du modèle (pas de plan d'étude)");
+      }
+    });
     // Deuxieme passe : la consigne de pertinence ci-dessus n'est pas fiable a
     // 100% avec le modele gratuit (vu 2026-07 : Nombres 30:2, sur les voeux,
     // cite comme "precedent" pour un point sur la Regle d'or, sans aucun
