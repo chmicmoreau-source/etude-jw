@@ -2457,12 +2457,12 @@ if (navigator.storage && navigator.storage.persist) {
     return false;
   }
 
-  async function callPollinationsR(prompt){
+  async function callPollinationsR(prompt, maxTokens){
     try{
       var fetchP = fetch("https://text.pollinations.ai/openai",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({model:"openai", messages:[{role:"user",content:prompt}], max_tokens:4000, reasoning_effort:"low"})
+        body: JSON.stringify({model:"openai", messages:[{role:"user",content:prompt}], max_tokens: maxTokens || 4000, reasoning_effort:"low"})
       });
       var toP = new Promise(function(_,rej){ setTimeout(function(){ rej(new Error("timeout")); },90000); });
       var res = await Promise.race([fetchP,toP]);
@@ -2482,8 +2482,8 @@ if (navigator.storage && navigator.storage.persist) {
     throw new Error("pollinations");
   }
 
-  function callLLM(prompt){
-    return callPollinationsR(prompt);
+  function callLLM(prompt, maxTokens){
+    return callPollinationsR(prompt, maxTokens);
   }
   function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
   // Le service gratuit semble limiter le debit quand on enchaine trop d'appels
@@ -2491,9 +2491,9 @@ if (navigator.storage && navigator.storage.persist) {
   // tout echoue d'affilee ensuite (constate 2026-07). Un court delai entre
   // chaque appel plus une nouvelle tentative avant d'abandonner reduisent ce
   // taux d'echec.
-  async function callLLMWithRetry(prompt){
-    try{ return await callLLM(prompt); }
-    catch(e){ await sleep(2500); return await callLLM(prompt); }
+  async function callLLMWithRetry(prompt, maxTokens){
+    try{ return await callLLM(prompt, maxTokens); }
+    catch(e){ await sleep(2500); return await callLLM(prompt, maxTokens); }
   }
 
   // ---- Générateurs (chaque bloc .gen est autonome) ----
@@ -3294,9 +3294,18 @@ if (navigator.storage && navigator.storage.persist) {
     if(!articleText || articleText.length < 200){
       throw new Error("article recupere trop court ou vide (" + (articleText ? articleText.length : 0) + " car.) — essaie le texte colle");
     }
+    // Un article a beaucoup de paragraphes (14-16) oblige le modele a
+    // enumerer autant de questions imprimees dans une seule reponse JSON : le
+    // budget de raisonnement interne du modele gratuit varie d'un appel a
+    // l'autre et peut tronquer la reponse avant la fin (perte silencieuse des
+    // derniers paragraphes, "repare" sans erreur par parseWeekJSON) — signale
+    // 2026-07-18 (16 paragraphes, seulement 13 recuperes, persistant meme
+    // apres avoir sorti les questions de revision de cet appel). Un budget de
+    // tokens plus large et une nouvelle tentative (le raisonnement interne
+    // varie d'un essai a l'autre) reduisent ce risque.
     var struct;
     try{
-      var rawStruct = await callLLM(buildTGStructurePrompt(articleText));
+      var rawStruct = await callLLMWithRetry(buildTGStructurePrompt(articleText), 8000);
       struct = parseWeekJSON(rawStruct);
     }catch(e){
       throw new Error("structure de l'article introuvable — " + (e && e.message ? e.message : "erreur"));
