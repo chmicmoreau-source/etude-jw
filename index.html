@@ -3229,8 +3229,10 @@ if (navigator.storage && navigator.storage.persist) {
       "",
       "Identifie UNIQUEMENT la structure de l'article (n'écris PAS encore de réponse) : le titre, la semaine d'étude si indiquée, les cantiques d'ouverture/conclusion si indiqués, la référence du texte de base (PAS son texte — une référence seule, ex. \"Jean 3:16\"), et la liste ORDONNÉE de TOUTES les questions imprimées avec leur(s) numéro(s) de paragraphe et la question EXACTEMENT telle qu'imprimée. N'écris jamais toi-même le texte d'un verset : une référence seule suffit, une autre étape ira chercher le texte exact.",
       "",
+      "Identifie aussi les QUESTIONS DE RÉVISION imprimées tout à la fin de l'article (juste avant le dernier cantique, généralement introduites par « Révision » ou similaire) : reprends-les EXACTEMENT telles qu'imprimées, dans l'ordre. S'il n'y en a pas, laisse la liste vide.",
+      "",
       "Reponds UNIQUEMENT par un objet JSON valide, sans texte ni balises autour, au format exact :",
-      "{\n  \"title\": \"(titre de l'article)\",\n  \"dates\": \"(semaine d'étude, si indiquée)\",\n  \"songOpen\": \"(cantique d'ouverture, si indiqué)\",\n  \"songClose\": \"(cantique de conclusion, si indiqué)\",\n  \"keyText\": { \"ref\": \"(référence du texte de base uniquement, sans son texte)\" },\n  \"points\": [\n    { \"num\": \"(numéro(s) de paragraphe, ex. 1-2)\", \"question\": \"(question imprimée telle quelle)\" }\n  ]\n}",
+      "{\n  \"title\": \"(titre de l'article)\",\n  \"dates\": \"(semaine d'étude, si indiquée)\",\n  \"songOpen\": \"(cantique d'ouverture, si indiqué)\",\n  \"songClose\": \"(cantique de conclusion, si indiqué)\",\n  \"keyText\": { \"ref\": \"(référence du texte de base uniquement, sans son texte)\" },\n  \"points\": [\n    { \"num\": \"(numéro(s) de paragraphe, ex. 1-2)\", \"question\": \"(question imprimée telle quelle)\" }\n  ],\n  \"reviewQuestions\": [\n    \"(question de révision imprimée telle quelle)\"\n  ]\n}",
       "",
       "TEXTE DE L'ARTICLE :",
       articleText
@@ -3246,6 +3248,25 @@ if (navigator.storage && navigator.storage.persist) {
       "",
       "Reponds UNIQUEMENT par un objet JSON valide, sans texte ni balises autour, au format exact :",
       "{\n  \"summary\": \"(réponse développée, sans citer le texte d'un verset mot pour mot)\",\n  \"verseRef\": \"(référence si un verset est cité, sinon vide)\"\n}",
+      "",
+      "TEXTE DE L'ARTICLE (contexte) :",
+      articleText
+    ].join("\n");
+  }
+  // Les questions de revision (fin d'article) resument plusieurs paragraphes
+  // a la fois, contrairement aux questions par paragraphe : un prompt dedie
+  // evite de leur appliquer a tort la consigne "traite UNIQUEMENT le
+  // paragraphe N" de buildTGPointPrompt, qui n'a pas de sens ici.
+  function buildTGReviewPrompt(articleText, question){
+    return [
+      "Voici le texte brut de l'article d'étude de La Tour de Garde des Témoins de Jéhovah (contexte ci-dessous).",
+      "",
+      "Ceci est une QUESTION DE RÉVISION imprimée à la fin de l'article, qui résume un thème couvrant PLUSIEURS paragraphes (pas un seul) : « " + (question || "") + " »",
+      "",
+      "Règles STRICTES : rédige une réponse synthétique mais développée (plusieurs phrases), en français correct et cohérent, fondée UNIQUEMENT sur le contenu réellement présent dans le texte de l'article ci-dessous et la doctrine des Témoins de Jéhovah — n'invente aucun fait, aucune citation, aucun renvoi de publication qui n'y figure pas. N'utilise AUCUNE mise en forme markdown (pas de *, pas de **, pas de #) : uniquement du texte brut. N'écris JAMAIS toi-même le texte d'un verset, même dans le résumé : indique seulement sa référence exacte dans le champ verseRef si un verset précis illustre la réponse (une autre étape ira chercher son texte réel sur wol.jw.org). Jéhovah (le Père) et Jésus (le Fils) sont deux personnes distinctes selon la doctrine des Témoins de Jéhovah : ne les confonds jamais.",
+      "",
+      "Reponds UNIQUEMENT par un objet JSON valide, sans texte ni balises autour, au format exact :",
+      "{\n  \"summary\": \"(réponse développée, sans citer le texte d'un verset mot pour mot)\",\n  \"verseRef\": \"(référence si un verset précis illustre la réponse, sinon vide)\"\n}",
       "",
       "TEXTE DE L'ARTICLE (contexte) :",
       articleText
@@ -3272,12 +3293,19 @@ if (navigator.storage && navigator.storage.persist) {
       try{ kt = await fetchVerseText(struct.keyText.ref); }catch(e){ kt = null; }
       merged.keyText = { ref: struct.keyText.ref, text: kt || "(texte non trouvé automatiquement — vérifie " + struct.keyText.ref + " sur wol.jw.org)" };
     }
-    for(var i=0;i<struct.points.length;i++){
-      var pt = struct.points[i];
-      if(onProgress){ onProgress(i+1, struct.points.length, pt.num || ""); }
+    // Les questions de revision (fin d'article) sont traitees par le meme
+    // pipeline que les paragraphes (verseText, retry, rendu carte, bouton
+    // copier) — elles sont simplement ajoutees a la suite avec un num dedie
+    // et le flag isReview, qui choisit le prompt adapte ci-dessous.
+    var items = struct.points.map(function(p){ return { num: p.num, question: p.question, isReview: false }; });
+    (struct.reviewQuestions || []).forEach(function(q, ri){ items.push({ num: "Révision " + (ri+1), question: q, isReview: true }); });
+    for(var i=0;i<items.length;i++){
+      var pt = items[i];
+      if(onProgress){ onProgress(i+1, items.length, pt.num || ""); }
       if(i>0){ await sleep(1200); }
       try{
-        var raw = await callLLMWithRetry(buildTGPointPrompt(articleText, pt));
+        var prompt = pt.isReview ? buildTGReviewPrompt(articleText, pt.question) : buildTGPointPrompt(articleText, pt);
+        var raw = await callLLMWithRetry(prompt);
         var d = parseWeekJSON(raw);
         var verseText = "";
         if(d.verseRef){
@@ -3285,10 +3313,10 @@ if (navigator.storage && navigator.storage.persist) {
           try{ vt = await fetchVerseText(d.verseRef); }catch(e2){}
           verseText = vt || "(texte non trouvé automatiquement — vérifie " + d.verseRef + " sur wol.jw.org)";
         }
-        merged.points.push({ num: pt.num, question: pt.question, summary: d.summary || "", verseRef: d.verseRef || "", verseText: verseText });
+        merged.points.push({ num: pt.num, question: pt.question, summary: d.summary || "", verseRef: d.verseRef || "", verseText: verseText, isReview: pt.isReview });
       }catch(e){
         failures.push("§" + (pt.num || (i+1)) + ": " + (e && e.message ? e.message : "erreur"));
-        merged.points.push({ num: pt.num, question: pt.question, summary: "_Génération échouée pour ce paragraphe — réessaie plus tard._", verseRef: "", verseText: "" });
+        merged.points.push({ num: pt.num, question: pt.question, summary: "_Génération échouée — réessaie plus tard._", verseRef: "", verseText: "", isReview: pt.isReview });
       }
       if(onPartDone){ merged.failures = failures; onPartDone(merged); }
     }
@@ -3313,8 +3341,9 @@ if (navigator.storage && navigator.storage.persist) {
     html += "<main style=\"margin-top:22px\">";
     for(var i=0;i<data.points.length;i++){
       var p = data.points[i];
+      var tagLabel = p.isReview ? esc(p.num || "Révision") : ("Paragraphe" + (String(p.num||"").indexOf("-")>=0?"s ":" ") + esc(p.num || "?"));
       html += "<div class=\"card\" style=\"--accent:var(--vie);--soft:var(--vie-soft);margin-bottom:16px\">"
-        + "<p class=\"tag\">Paragraphe" + (String(p.num||"").indexOf("-")>=0?"s ":" ") + esc(p.num || "?") + "</p>"
+        + "<p class=\"tag\">" + tagLabel + "</p>"
         + "<h3 style=\"margin-top:0\">" + esc(p.question || "") + "</h3>"
         + "<p>" + esc(p.summary || "") + "</p>"
         + (p.verseRef ? "<div class=\"takeaway\"><strong>" + esc(p.verseRef) + " :</strong> « " + esc(p.verseText || "") + " »</div>" : "")
