@@ -3320,15 +3320,20 @@ if (navigator.storage && navigator.storage.persist) {
     if(!struct.points || !struct.points.length){
       throw new Error("aucune question identifiée dans l'article");
     }
+    var merged = { title: struct.title || "", dates: struct.dates || "", songOpen: struct.songOpen || "", songClose: struct.songClose || "", keyText: null, points: [] };
+    var failures = [];
+    // Echec non bloquant (l'etude reste utilisable sans questions de revision),
+    // mais signale quand meme dans "failures" — un precedent essai a echoue en
+    // silence sans que rien ne l'indique nulle part, rendant le diagnostic
+    // impossible depuis l'exterieur (signale 2026-07-18).
     var reviewQuestions = [];
     try{
       await sleep(1200);
       var rawReview = await callLLMWithRetry(buildTGReviewStructurePrompt(articleText));
       var reviewStruct = parseWeekJSON(rawReview);
       reviewQuestions = (reviewStruct && reviewStruct.reviewQuestions) || [];
-    }catch(e){ /* pas bloquant : l'etude reste utilisable sans questions de revision */ }
-    var merged = { title: struct.title || "", dates: struct.dates || "", songOpen: struct.songOpen || "", songClose: struct.songClose || "", keyText: null, points: [] };
-    var failures = [];
+      if(!reviewQuestions.length){ failures.push("Que répondrais-tu ? : aucune question identifiée"); }
+    }catch(e){ failures.push("Que répondrais-tu ? : " + (e && e.message ? e.message : "erreur")); }
     if(struct.keyText && struct.keyText.ref){
       var kt;
       try{ kt = await fetchVerseText(struct.keyText.ref); }catch(e){ kt = null; }
