@@ -121,6 +121,8 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
 #s-reunion .pill{display:inline-block;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:2px 11px;font-size:13px;margin:2px 4px 2px 0}
 #s-reunion .takeaway{background:var(--soft,#f2ecdd);border-radius:12px;padding:13px 16px;margin:12px 0;font-size:15px;border-left:3px solid var(--accent,var(--gold))}
 #s-reunion .takeaway strong{color:var(--accent,var(--gold))}
+#s-reunion .tg-copy-btn{margin-top:10px;padding:8px 14px;border-radius:999px;border:1px solid var(--accent,var(--gold));background:transparent;color:var(--accent,var(--gold));font-weight:700;font-size:12px;cursor:pointer;font-family:inherit}
+#s-reunion .tg-copy-btn:active{background:var(--soft,#f2ecdd)}
 #s-reunion .instr{background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--accent,var(--gold));border-radius:10px;padding:11px 14px;margin:2px 0 20px;font-size:13.5px}
 #s-reunion .instr .ihead{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--accent,var(--gold));margin:0 0 5px}
 #s-reunion .instr p{margin:3px 0;color:#574e40}
@@ -698,7 +700,11 @@ Produis ces sections :
             <h1>Étude de la Tour de Garde</h1>
             <details class="builder" open>
               <summary>➕ Préparer l'étude de la semaine</summary>
-              <p class="builder-help">Le lien de la semaine en cours se remplit tout seul ci-dessous : l'app y retrouve l'article Tour de Garde correspondant automatiquement. Modifie-le seulement pour une autre semaine.</p>
+              <p class="builder-help">Choisis la semaine ci-dessous : le lien wol.jw.org de son article Tour de Garde se remplit tout seul. Modifie le lien uniquement pour un cas particulier.</p>
+              <div class="weeknav">
+                <label for="tgWeekSelect">Semaine</label>
+                <select id="tgWeekSelect"></select>
+              </div>
               <input id="tgUrl" type="url" placeholder="Lien wol.jw.org de la semaine (rempli automatiquement)">
               <a id="tgOpenLink" href="https://wol.jw.org/fr/wol/library/r30/lp-f/toutes-les-publications/la-tour-de-garde-etude" target="_blank" rel="noopener" style="display:inline-block;font-size:13px;color:var(--gold);font-weight:600;margin:2px 0 8px;text-decoration:none">Ouvrir la bibliothèque Tour de Garde →</a>
               <input id="tgProxy" type="text" value="" placeholder="Proxy CORS personnel (optionnel — laisse vide pour utiliser les proxys par défaut)">
@@ -1671,7 +1677,28 @@ var BOOK_MAP={"genese":1,"exode":2,"levitique":3,"nombres":4,"deuteronome":5,"jo
   "mt":40,"mc":41,"lc":42,"jn":43,"ac":44,"rm":45,"1 co":46,"2 co":47,
   "ga":48,"ep":49,"eph":49,"php":50,"col":51,"1 th":52,"2 th":53,
   "1 tm":54,"2 tm":55,"tt":56,"phm":57,"he":58,"heb":58,"jc":59,"1 p":60,"2 p":61,
-  "1 jn":62,"2 jn":63,"3 jn":64,"jd":65,"re":66,"ap":66};
+  "1 jn":62,"2 jn":63,"3 jn":64,"jd":65,"re":66,"ap":66,
+  // Abréviations/noms ANGLAIS : le modèle IA gratuit (Pollinations) écrit
+  // parfois une référence à l'anglaise (ex. "Gen 1:26-27" au lieu de
+  // "Genèse 1:26-27" ou "Gn 1:26-27"), ce qui faisait échouer silencieusement
+  // la recherche du verset et affichait le texte de repli "non trouvé
+  // automatiquement" — repéré 2026-07-17 sur l'étude Tour de Garde.
+  "gen":1,"genesis":1,"exod":2,"exodus":2,"lev":3,"leviticus":3,"num":4,"numbers":4,
+  "deut":5,"deuteronomy":5,"josh":6,"joshua":6,"judg":7,"judges":7,
+  "1 sam":9,"1 samuel":9,"2 sam":10,"2 samuel":10,"1 kgs":11,"1 kings":11,"2 kgs":12,"2 kings":12,
+  "1 chr":13,"1 chronicles":13,"2 chr":14,"2 chronicles":14,"ezra":15,"neh":16,"nehemiah":16,
+  "psa":19,"psalm":19,"psalms":19,"prov":20,"proverbs":20,"eccl":21,"ecclesiastes":21,
+  "song":22,"sos":22,"song of solomon":22,"song of songs":22,"isa":23,"isaiah":23,
+  "jer":24,"jeremiah":24,"lam":25,"lamentations":25,"ezek":26,"ezekiel":26,"dan":27,
+  "hos":28,"hosea":28,"obad":31,"obadiah":31,"jonah":32,"mic":33,"micah":33,"nah":34,"nahum":34,
+  "habakkuk":35,"zeph":36,"zephaniah":36,"hag":37,"haggai":37,"zech":38,"zechariah":38,"malachi":39,
+  "matt":40,"mark":41,"luke":42,"john":43,"acts":44,"rom":45,"romans":45,
+  "1 cor":46,"1 corinthians":46,"2 cor":47,"2 corinthians":47,"gal":48,"galatians":48,
+  "ephesians":49,"phil":50,"philippians":50,"colossians":51,
+  "1 thess":52,"1 thessalonians":52,"2 thess":53,"2 thessalonians":53,
+  "1 tim":54,"1 timothy":54,"2 tim":55,"2 timothy":55,"tit":56,"titus":56,"philemon":57,"hebrews":58,
+  "jas":59,"james":59,"1 pet":60,"1 peter":60,"2 pet":61,"2 peter":61,
+  "1 john":62,"2 john":63,"3 john":64,"rev":66};
 
 // Texte TMN (français) récupéré sur jw.org pour les versets cités dans les
 // fiches issues de vidéos JW Broadcasting (voir CLAUDE.md, section Études) —
@@ -1688,7 +1715,7 @@ function normalizeStr(s){
 function parseVerseRef(str){
   if(!str) return null;
   var s=str.split(/[,;]/)[0];
-  var m=s.match(/^\s*([1-3])?\s*([\p{L}][\p{L}\s]*?)\s+(\d+)/u);
+  var m=s.match(/^\s*([1-3])?\s*([\p{L}][\p{L}\s]*?)\.?\s+(\d+)/u);
   if(!m) return null;
   var chapter=parseInt(m[3],10); if(!chapter) return null;
   var key=(m[1] ? m[1]+' ' : '') + normalizeStr(m[2]).replace(/\s+/g,' ');
@@ -2604,7 +2631,7 @@ if (navigator.storage && navigator.storage.persist) {
   function parseFullVerseRef(str){
     if(!str){ return null; }
     var s = String(str).split(/[;]/)[0];
-    var m = s.match(/^\s*([1-3])?\s*([\p{L}][\p{L}\séèàâîôûäëïöüçÉÈÀÂÎÔÛÄËÏÖÜÇ]*?)\s+(\d+)\s*[:.]\s*(\d+)(?:\s*[-–]\s*(\d+))?/u);
+    var m = s.match(/^\s*([1-3])?\s*([\p{L}][\p{L}\séèàâîôûäëïöüçÉÈÀÂÎÔÛÄËÏÖÜÇ]*?)\.?\s+(\d+)\s*[:.]\s*(\d+)(?:\s*[-–]\s*(\d+))?/u);
     if(!m){ return null; }
     var chapter = parseInt(m[3],10);
     var v1 = parseInt(m[4],10);
@@ -3256,8 +3283,13 @@ if (navigator.storage && navigator.storage.persist) {
     return merged;
   }
 
+  // Retient les donnees du dernier rendu pour que le clic delegue sur les
+  // boutons "Copier" (voir plus bas) puisse retrouver le texte exact du
+  // paragraphe sans avoir a le reparser depuis le DOM.
+  var lastTGData = null;
   function renderTG(data){
     var el = document.getElementById("tgArticle"); if(!el){ return; }
+    lastTGData = data;
     var html = "<p class=\"eyebrow wk-dates\">" + esc(data.dates || "") + "</p>"
       + "<h2 class=\"wk-title\">" + esc(data.title || "Étude de la Tour de Garde") + "</h2>";
     if(data.keyText && data.keyText.ref){
@@ -3273,11 +3305,40 @@ if (navigator.storage && navigator.storage.persist) {
         + "<h3 style=\"margin-top:0\">" + esc(p.question || "") + "</h3>"
         + "<p>" + esc(p.summary || "") + "</p>"
         + (p.verseRef ? "<div class=\"takeaway\"><strong>" + esc(p.verseRef) + " :</strong> « " + esc(p.verseText || "") + " »</div>" : "")
+        + "<button type=\"button\" class=\"tg-copy-btn\" data-idx=\"" + i + "\">📋 Copier ce commentaire</button>"
         + "</div>";
     }
     html += "</main>";
     if(data.songClose){ html += "<p class=\"pill\">Cantique de conclusion : " + esc(data.songClose) + "</p>"; }
     el.innerHTML = html;
+  }
+
+  // Pas d'ecriture directe dans les cases "reponse" de JW Library (table
+  // InputField) : son TextTag est un identifiant opaque propre au balisage
+  // source de chaque publication, non derivable du texte recupere depuis
+  // wol.jw.org (voir tentative du 2026-07, abandonnee). Solution retenue a la
+  // place : un bouton par paragraphe qui copie le commentaire genere, a coller
+  // manuellement dans la case correspondante en lisant l'article dans JW
+  // Library — meme principe que le repli copier-coller deja utilise ailleurs
+  // dans ce module.
+  var tgArticleEl = document.getElementById("tgArticle");
+  if(tgArticleEl){
+    tgArticleEl.addEventListener("click", function(ev){
+      var btn = ev.target.closest ? ev.target.closest(".tg-copy-btn") : null;
+      if(!btn || !lastTGData) return;
+      var idx = parseInt(btn.getAttribute("data-idx"), 10);
+      var p = lastTGData.points && lastTGData.points[idx];
+      if(!p) return;
+      var text = (p.question || "") + (p.summary ? "\n\n" + p.summary : "");
+      if(p.verseRef && p.verseText){ text += "\n\n" + p.verseRef + " : « " + p.verseText + " »"; }
+      var original = btn.textContent;
+      var reset = function(label){ btn.textContent = label; setTimeout(function(){ btn.textContent = original; }, 1800); };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(function(){ reset("✓ Copié"); }, function(){ reset("Échec de la copie"); });
+      } else {
+        reset("Copie indisponible sur cet appareil");
+      }
+    });
   }
 
   // Un seul id de semaine est retenu (l'etude conservee est toujours la plus
@@ -3305,16 +3366,37 @@ if (navigator.storage && navigator.storage.persist) {
   var savedTgProxy = lsGet("corsProxy"); if(savedTgProxy && tgProxy){ tgProxy.value = savedTgProxy; }
 
   // La page hebdomadaire de reunion liste aussi l'article Tour de Garde de la
-  // semaine (voir findTGUrl) : on pre-remplit donc le lien avec la meme page
-  // que la reunion, plutot que de laisser l'utilisateur chercher l'article
-  // manuellement dans la bibliotheque.
-  function fillTgUrl(){
+  // semaine (voir findTGUrl) : un lien wol.jw.org de semaine suffit donc pour
+  // retrouver l'article correspondant. Le selecteur reprend le meme calendrier
+  // glissant (SCHEDULE, deja construit plus haut pour l'onglet Reunion) afin
+  // que l'utilisateur puisse choisir une autre semaine sans taper une URL a la
+  // main — auparavant le lien etait uniquement auto-rempli sur la semaine du
+  // jour et modifiable qu'a la main, sans indication de format ; signale
+  // 2026-07-18 ("je ne peux pas choisir la tour de garde [d'une autre semaine]").
+  var tgWeekSelect = document.getElementById("tgWeekSelect");
+  function fillTgUrlFromMonday(mon){
     if(!tgUrl){ return; }
-    var url = wolUrl(mondayOf(new Date()));
+    var url = wolUrl(mon);
     tgUrl.value = url;
     if(tgOpenLink){ tgOpenLink.href = url; }
   }
-  fillTgUrl();
+  if(tgWeekSelect){
+    var tgOpts = "";
+    for(var tw=0; tw<SCHEDULE.length; tw++){ tgOpts += "<option value=\"" + SCHEDULE[tw].id + "\">" + SCHEDULE[tw].dates + "</option>"; }
+    tgWeekSelect.innerHTML = tgOpts;
+    var tgTodayId = weekId(mondayOf(new Date()));
+    var hasTgOption = false;
+    for(var tw2=0; tw2<tgWeekSelect.options.length; tw2++){ if(tgWeekSelect.options[tw2].value === tgTodayId){ hasTgOption = true; } }
+    tgWeekSelect.value = hasTgOption ? tgTodayId : (tgWeekSelect.options[0] ? tgWeekSelect.options[0].value : "");
+    tgWeekSelect.addEventListener("change", function(){
+      var wk = schedById(tgWeekSelect.value);
+      fillTgUrlFromMonday(wk ? new Date(wk.t) : mondayOf(new Date()));
+    });
+    var tgInitWk = schedById(tgWeekSelect.value);
+    fillTgUrlFromMonday(tgInitWk ? new Date(tgInitWk.t) : mondayOf(new Date()));
+  } else {
+    fillTgUrlFromMonday(mondayOf(new Date()));
+  }
 
   if(tgRun){
     tgRun.addEventListener("click", function(){
