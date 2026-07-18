@@ -3060,8 +3060,16 @@ if (navigator.storage && navigator.storage.persist) {
     function(u){ return "https://corsproxy.io/?url=" + encodeURIComponent(u); },
     function(u){ return "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(u); }
   ];
-  async function fetchViaProxy(url, preferredProxy){
+  // skipReaderProxy : r.jina.ai (proxy par defaut, mode "lecture") applique
+  // sa propre extraction du contenu principal et omet parfois la toute fin
+  // d'un article Tour de Garde (section "Que repondrais-tu ?" + cantique de
+  // conclusion), meme quand elle tient largement dans le plafond de texte de
+  // l'appli — verifie 2026-07-18 sur un article reel (present en HTML brut,
+  // absent du rendu r.jina.ai). Un appelant qui a besoin specifiquement de
+  // cette fin d'article peut donc demander de sauter ce proxy par defaut.
+  async function fetchViaProxy(url, preferredProxy, skipReaderProxy){
     var list = CORS_PROXIES.slice();
+    if(skipReaderProxy){ list.shift(); }
     if(preferredProxy){
       list.unshift(function(u){ return preferredProxy + encodeURIComponent(u); });
     }
@@ -3076,6 +3084,20 @@ if (navigator.storage && navigator.storage.persist) {
       }catch(e){ lastErr = e; }
     }
     throw lastErr;
+  }
+
+  // Recuperation dediee a la fin de l'article Tour de Garde ("Que
+  // repondrais-tu ?" + cantique de conclusion), en sautant r.jina.ai — voir
+  // le commentaire sur fetchViaProxy. Uniquement possible quand l'URL de
+  // l'article est connue (mode recuperation automatique) ; en mode texte
+  // colle, ou si cette recuperation echoue, on retombe sur le texte deja en
+  // main plutot que de bloquer toute la generation pour cette seule section.
+  async function fetchReviewArticleText(articleUrl, proxy, fallbackText){
+    if(!articleUrl){ return fallbackText; }
+    try{
+      var raw = await fetchViaProxy(articleUrl, proxy, true);
+      return extractText(raw);
+    }catch(e){ return fallbackText; }
   }
 
   // ---- Préparation automatique de la semaine en cours, au lancement de l'app ----
@@ -3297,7 +3319,7 @@ if (navigator.storage && navigator.storage.persist) {
       articleText
     ].join("\n");
   }
-  async function generateTGData(articleText, onProgress, onPartDone){
+  async function generateTGData(articleText, onProgress, onPartDone, reviewArticleText){
     if(!articleText || articleText.length < 200){
       throw new Error("article recupere trop court ou vide (" + (articleText ? articleText.length : 0) + " car.) — essaie le texte colle");
     }
@@ -3329,7 +3351,7 @@ if (navigator.storage && navigator.storage.persist) {
     var reviewQuestions = [];
     try{
       await sleep(1200);
-      var rawReview = await callLLMWithRetry(buildTGReviewStructurePrompt(articleText));
+      var rawReview = await callLLMWithRetry(buildTGReviewStructurePrompt(reviewArticleText || articleText));
       var reviewStruct = parseWeekJSON(rawReview);
       reviewQuestions = (reviewStruct && reviewStruct.reviewQuestions) || [];
       if(!reviewQuestions.length){ failures.push("Que répondrais-tu ? : aucune question identifiée"); }
@@ -3494,6 +3516,7 @@ if (navigator.storage && navigator.storage.persist) {
       if(!url && !pasted){ setTG("Colle le lien wol.jw.org de l'article, ou colle directement son texte ci-dessous."); return; }
       lsSet("corsProxy", proxy);
       tgRun.disabled = true;
+      var articleUrl = null; // connue seulement en mode recuperation automatique, pas en mode texte colle
       var htmlChain;
       if(pasted){
         setTG("Texte collé détecté — pas besoin de proxy.");
@@ -3503,6 +3526,7 @@ if (navigator.storage && navigator.storage.persist) {
         htmlChain = fetchViaProxy(url, proxy).then(function(html1){
           var art = findTGUrl(html1);
           if(art){
+            articleUrl = art;
             setTG("Ouverture de l'article Tour de Garde...");
             return fetchViaProxy(art, proxy);
           }
@@ -3512,14 +3536,17 @@ if (navigator.storage && navigator.storage.persist) {
       var tgId = weekId(mondayOf(new Date()));
       htmlChain.then(function(html2){
         setTG("Structuration (gratuite, sans cle)...");
-        return generateTGData(extractText(html2), function(i,n){
-          setTG("Génération de la question " + i + "/" + n + "…");
-        }, function(partial){
-          // Sauvegarde apres chaque question (meme raison que pour la
-          // reunion : ne pas perdre tout le travail deja fait si l'appli
-          // est fermee/rechargee avant la toute fin de la generation).
-          renderTG(partial);
-          saveTG(partial, tgId);
+        var articleText = extractText(html2);
+        return fetchReviewArticleText(articleUrl, proxy, articleText).then(function(reviewText){
+          return generateTGData(articleText, function(i,n){
+            setTG("Génération de la question " + i + "/" + n + "…");
+          }, function(partial){
+            // Sauvegarde apres chaque question (meme raison que pour la
+            // reunion : ne pas perdre tout le travail deja fait si l'appli
+            // est fermee/rechargee avant la toute fin de la generation).
+            renderTG(partial);
+            saveTG(partial, tgId);
+          }, reviewText);
         });
       }).then(function(data){
         renderTG(data);
@@ -3541,17 +3568,22 @@ if (navigator.storage && navigator.storage.persist) {
 
     var proxy = lsGet("corsProxy") || "";
     var url = wolUrl(mondayOf(new Date()));
+    var articleUrl = null;
     setTG("Préparation automatique de l'étude de la semaine…");
     fetchViaProxy(url, proxy).then(function(html1){
       var art = findTGUrl(html1);
       if(!art){ throw new Error("article Tour de Garde introuvable pour cette semaine"); }
+      articleUrl = art;
       return fetchViaProxy(art, proxy);
     }).then(function(html2){
-      return generateTGData(extractText(html2), function(i,n){
-        setTG("Génération de la question " + i + "/" + n + "…");
-      }, function(partial){
-        renderTG(partial);
-        saveTG(partial, id);
+      var articleText = extractText(html2);
+      return fetchReviewArticleText(articleUrl, proxy, articleText).then(function(reviewText){
+        return generateTGData(articleText, function(i,n){
+          setTG("Génération de la question " + i + "/" + n + "…");
+        }, function(partial){
+          renderTG(partial);
+          saveTG(partial, id);
+        }, reviewText);
       });
     }).then(function(data){
       renderTG(data);
