@@ -2973,12 +2973,19 @@ if (navigator.storage && navigator.storage.persist) {
     return merged;
   }
 
+  // Plafond verifie sur un vrai article Tour de Garde (2026-07-18) : la page
+  // complete (menus wol.jw.org + article + section finale "Que repondrais-tu ?")
+  // pesait 17719 caracteres une fois nettoyee, alors que le plafond etait a
+  // 12000 — les derniers paragraphes et la section finale etaient coupes
+  // silencieusement avant meme d'atteindre l'IA (aucune reponse a tronquer,
+  // le contenu n'existait deja plus dans le texte envoye). 30000 laisse une
+  // marge confortable pour des articles plus longs ou des pages plus verbeuses.
   function extractText(html){
     try{
       var doc = new DOMParser().parseFromString(html, "text/html");
       var t = doc.body ? (doc.body.textContent || "") : html;
-      return t.replace(/\s+/g," ").replace(/^\s+/,"").slice(0, 12000);
-    }catch(e){ return String(html).slice(0, 12000); }
+      return t.replace(/\s+/g," ").replace(/^\s+/,"").slice(0, 30000);
+    }catch(e){ return String(html).slice(0, 30000); }
   }
   function stripFences(s){ return s.replace(/```json/gi,"").replace(/```/g,"").replace(/^\s+|\s+$/g,""); }
 
@@ -3247,7 +3254,7 @@ if (navigator.storage && navigator.storage.persist) {
     return [
       "Voici le texte brut de l'article d'étude de La Tour de Garde des Témoins de Jéhovah, copié depuis wol.jw.org.",
       "",
-      "Identifie UNIQUEMENT les QUESTIONS DE RÉVISION imprimées tout à la fin de l'article (juste avant le dernier cantique, généralement introduites par « Révision » ou similaire) : reprends-les EXACTEMENT telles qu'imprimées, dans l'ordre. S'il n'y en a pas, réponds avec une liste vide.",
+      "Identifie UNIQUEMENT les questions de récapitulation imprimées tout à la fin de l'article, juste avant le cantique de conclusion (section généralement intitulée « Que répondrais-tu ? », parfois « Révision » dans d'autres formats) : reprends-les EXACTEMENT telles qu'imprimées, dans l'ordre, sans le texte « Ta réponse » qui les suit. S'il n'y en a pas, réponds avec une liste vide.",
       "",
       "Reponds UNIQUEMENT par un objet JSON valide, sans texte ni balises autour, au format exact :",
       "{\n  \"reviewQuestions\": [\n    \"(question de révision imprimée telle quelle)\"\n  ]\n}",
