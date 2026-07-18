@@ -2014,6 +2014,19 @@ function exportJWLibrary(){
       var zipOut=new window.JSZip();
       zipOut.file('manifest.json', JSON.stringify(manifest, null, 2));
       zipOut.file('userData.db', dbBytes);
+      // Recopie les médias indépendants (photos/vidéos/audio joints aux notes)
+      // et la miniature de la sauvegarde d'origine : la base fusionnée continue
+      // de les référencer (table IndependentMedia inchangée), et les omettre du
+      // zip de sortie efface silencieusement ces pièces jointes à la restauration
+      // dans JW Library, sans aucune erreur visible (constaté 2026-07).
+      var mediaCopyPromises=[];
+      zip.forEach(function(relPath, zipEntry){
+        if(relPath==='manifest.json' || relPath==='userData.db' || zipEntry.dir) return;
+        mediaCopyPromises.push(zipEntry.async('uint8array').then(function(content){
+          zipOut.file(relPath, content);
+        }));
+      });
+      await Promise.all(mediaCopyPromises);
       var blob=await zipOut.generateAsync({type:'blob', compression:'DEFLATE', compressionOptions:{level:6}});
       var url=URL.createObjectURL(blob);
       var a=document.createElement('a'); a.href=url; a.download=fname; a.click();
