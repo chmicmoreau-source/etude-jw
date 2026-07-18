@@ -3229,10 +3229,28 @@ if (navigator.storage && navigator.storage.persist) {
       "",
       "Identifie UNIQUEMENT la structure de l'article (n'écris PAS encore de réponse) : le titre, la semaine d'étude si indiquée, les cantiques d'ouverture/conclusion si indiqués, la référence du texte de base (PAS son texte — une référence seule, ex. \"Jean 3:16\"), et la liste ORDONNÉE de TOUTES les questions imprimées avec leur(s) numéro(s) de paragraphe et la question EXACTEMENT telle qu'imprimée. N'écris jamais toi-même le texte d'un verset : une référence seule suffit, une autre étape ira chercher le texte exact.",
       "",
-      "Identifie aussi les QUESTIONS DE RÉVISION imprimées tout à la fin de l'article (juste avant le dernier cantique, généralement introduites par « Révision » ou similaire) : reprends-les EXACTEMENT telles qu'imprimées, dans l'ordre. S'il n'y en a pas, laisse la liste vide.",
+      "Reponds UNIQUEMENT par un objet JSON valide, sans texte ni balises autour, au format exact :",
+      "{\n  \"title\": \"(titre de l'article)\",\n  \"dates\": \"(semaine d'étude, si indiquée)\",\n  \"songOpen\": \"(cantique d'ouverture, si indiqué)\",\n  \"songClose\": \"(cantique de conclusion, si indiqué)\",\n  \"keyText\": { \"ref\": \"(référence du texte de base uniquement, sans son texte)\" },\n  \"points\": [\n    { \"num\": \"(numéro(s) de paragraphe, ex. 1-2)\", \"question\": \"(question imprimée telle quelle)\" }\n  ]\n}",
+      "",
+      "TEXTE DE L'ARTICLE :",
+      articleText
+    ].join("\n");
+  }
+  // Requete separee (et non un champ de plus dans buildTGStructurePrompt) :
+  // demander aussi les questions de revision dans le meme appel JSON que TOUS
+  // les points d'un article a 16 paragraphes a fait depasser le budget de
+  // tokens du modele gratuit, tronquant la reponse — les derniers paragraphes
+  // ET les questions de revision (dernier champ du schema) disparaissaient
+  // silencieusement. Repere 2026-07-18 (16 paragraphes, seulement 13 traites,
+  // aucune revision). Un second appel, petit et independant, isole ce risque.
+  function buildTGReviewStructurePrompt(articleText){
+    return [
+      "Voici le texte brut de l'article d'étude de La Tour de Garde des Témoins de Jéhovah, copié depuis wol.jw.org.",
+      "",
+      "Identifie UNIQUEMENT les QUESTIONS DE RÉVISION imprimées tout à la fin de l'article (juste avant le dernier cantique, généralement introduites par « Révision » ou similaire) : reprends-les EXACTEMENT telles qu'imprimées, dans l'ordre. S'il n'y en a pas, réponds avec une liste vide.",
       "",
       "Reponds UNIQUEMENT par un objet JSON valide, sans texte ni balises autour, au format exact :",
-      "{\n  \"title\": \"(titre de l'article)\",\n  \"dates\": \"(semaine d'étude, si indiquée)\",\n  \"songOpen\": \"(cantique d'ouverture, si indiqué)\",\n  \"songClose\": \"(cantique de conclusion, si indiqué)\",\n  \"keyText\": { \"ref\": \"(référence du texte de base uniquement, sans son texte)\" },\n  \"points\": [\n    { \"num\": \"(numéro(s) de paragraphe, ex. 1-2)\", \"question\": \"(question imprimée telle quelle)\" }\n  ],\n  \"reviewQuestions\": [\n    \"(question de révision imprimée telle quelle)\"\n  ]\n}",
+      "{\n  \"reviewQuestions\": [\n    \"(question de révision imprimée telle quelle)\"\n  ]\n}",
       "",
       "TEXTE DE L'ARTICLE :",
       articleText
@@ -3286,6 +3304,13 @@ if (navigator.storage && navigator.storage.persist) {
     if(!struct.points || !struct.points.length){
       throw new Error("aucune question identifiée dans l'article");
     }
+    var reviewQuestions = [];
+    try{
+      await sleep(1200);
+      var rawReview = await callLLMWithRetry(buildTGReviewStructurePrompt(articleText));
+      var reviewStruct = parseWeekJSON(rawReview);
+      reviewQuestions = (reviewStruct && reviewStruct.reviewQuestions) || [];
+    }catch(e){ /* pas bloquant : l'etude reste utilisable sans questions de revision */ }
     var merged = { title: struct.title || "", dates: struct.dates || "", songOpen: struct.songOpen || "", songClose: struct.songClose || "", keyText: null, points: [] };
     var failures = [];
     if(struct.keyText && struct.keyText.ref){
@@ -3298,7 +3323,7 @@ if (navigator.storage && navigator.storage.persist) {
     // copier) — elles sont simplement ajoutees a la suite avec un num dedie
     // et le flag isReview, qui choisit le prompt adapte ci-dessous.
     var items = struct.points.map(function(p){ return { num: p.num, question: p.question, isReview: false }; });
-    (struct.reviewQuestions || []).forEach(function(q, ri){ items.push({ num: "Révision " + (ri+1), question: q, isReview: true }); });
+    reviewQuestions.forEach(function(q, ri){ items.push({ num: "Révision " + (ri+1), question: q, isReview: true }); });
     for(var i=0;i<items.length;i++){
       var pt = items[i];
       if(onProgress){ onProgress(i+1, items.length, pt.num || ""); }
