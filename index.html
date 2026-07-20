@@ -2004,7 +2004,8 @@ function exportJWLibrary(){
   var setS=function(msg){ if(status) status.textContent=msg; };
   var etudes=G.history.filter(function(h){ return h.resume; });
   var reunionItems=gatherReunionExportItems();
-  if(!etudes.length && !reunionItems.length){ setS('Aucune étude ou partie de réunion générée à exporter pour le moment.'); return; }
+  var sujets=G.sujets;
+  if(!etudes.length && !reunionItems.length && !sujets.length){ setS('Aucune étude, partie de réunion ou sujet à exporter pour le moment.'); return; }
 
   setS('Sélectionnez votre sauvegarde .jwlibrary…');
   var input=document.createElement('input');
@@ -2100,6 +2101,33 @@ function exportJWLibrary(){
           failed++;
           console.warn('Échec ajout note (réunion) :', it.titre, errNoteR);
           if(!firstErrorMsg){ firstErrorMsg = (errNoteR && errNoteR.message) || String(errNoteR); }
+        }
+      }
+
+      for(var k=0;k<sujets.length;k++){
+        var su=sujets[k];
+        if(existTitles[su.titre]){ skipped++; continue; }
+        try {
+          var partsS=[];
+          if(su.type) partsS.push('Type : ' + su.type);
+          if(su.reference) partsS.push('Référence : ' + su.reference);
+          if(su.duree) partsS.push('Durée : ' + su.duree);
+          if(su.dateReunion) partsS.push('Date de réunion : ' + su.dateReunion);
+          if(su.notes) partsS.push('\n' + su.notes);
+          var contentS=partsS.join('\n').trim();
+
+          var tagIdS=findOrCreateTag(db, su.type || 'Sujet');
+          var refS=parseVerseRef(su.reference) || {book:1, chapter:1};
+          var locIdS=findOrCreateBibleLocation(db, bibleInfo, refS.book, refS.chapter);
+
+          db.run('INSERT INTO Note (NoteId,Guid,UserMarkId,LocationId,Title,Content,LastModified,Created,BlockType,BlockIdentifier) VALUES (?,?,NULL,?,?,?,?,?,0,NULL)', [noteId, uuid(), locIdS, su.titre, contentS, now, now]);
+          db.run('INSERT INTO TagMap (TagMapId,PlaylistItemId,LocationId,NoteId,TagId,Position) VALUES (?,NULL,NULL,?,?,?)', [tagMapId, noteId, tagIdS, nextTagPosition(db, tagPosCache, tagIdS)]);
+
+          noteId++; tagMapId++; added++;
+        } catch(errNoteS) {
+          failed++;
+          console.warn('Échec ajout note (sujet) :', su.titre, errNoteS);
+          if(!firstErrorMsg){ firstErrorMsg = (errNoteS && errNoteS.message) || String(errNoteS); }
         }
       }
 
@@ -2290,7 +2318,7 @@ function renderSync() {
     + (G.lastJWL?'✓ Dernier import : '+G.lastJWL:'')
     + '</div>'
     + '<div style="height:14px"></div>'
-    + '<div style="font-size:12px;color:#555;line-height:1.6;margin-bottom:10px">Ajoute vos études générées, vos parties de réunion préparées et votre étude Tour de Garde à une sauvegarde JW Library existante, pour les retrouver comme notes dans JW Library lui-même.</div>'
+    + '<div style="font-size:12px;color:#555;line-height:1.6;margin-bottom:10px">Ajoute vos études générées, vos parties de réunion préparées, votre étude Tour de Garde et vos sujets en préparation à une sauvegarde JW Library existante, pour les retrouver comme notes dans JW Library lui-même.</div>'
     + '<button class="btn" style="background:#8E44AD;margin-bottom:0" onclick="exportJWLibrary()">📖 Exporter vers JW Library</button>'
     + '<div id="export-status" style="font-size:11px;color:#7A8396;margin-top:6px;text-align:center"></div>'
     + '<div style="height:10px"></div>'
