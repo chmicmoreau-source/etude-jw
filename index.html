@@ -213,6 +213,7 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
       <button class="ntab" onclick="show('s-jwnotes')"><span class="ntab-icon">📋<span class="badge" id="b2" style="display:none"></span></span>JW Notes</button>
       <button class="ntab" onclick="show('s-sang')"><span class="ntab-icon">🩸</span>Sang</button>
       <button class="ntab" onclick="show('s-reunion')"><span class="ntab-icon">🗓️</span>Réunion</button>
+      <button class="ntab" onclick="show('s-sujets')"><span class="ntab-icon">📝</span>Sujet</button>
     </nav>
   </div>
 
@@ -228,6 +229,7 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
       <button class="ntab" onclick="show('s-jwnotes')"><span class="ntab-icon">📋<span class="badge" id="b4" style="display:none"></span></span>JW Notes</button>
       <button class="ntab" onclick="show('s-sang')"><span class="ntab-icon">🩸</span>Sang</button>
       <button class="ntab" onclick="show('s-reunion')"><span class="ntab-icon">🗓️</span>Réunion</button>
+      <button class="ntab" onclick="show('s-sujets')"><span class="ntab-icon">📝</span>Sujet</button>
     </nav>
   </div>
 
@@ -244,6 +246,7 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
       <button class="ntab" onclick="show('s-jwnotes')"><span class="ntab-icon">📋</span>JW Notes</button>
       <button class="ntab" onclick="show('s-sang')"><span class="ntab-icon">🩸</span>Sang</button>
       <button class="ntab" onclick="show('s-reunion')"><span class="ntab-icon">🗓️</span>Réunion</button>
+      <button class="ntab" onclick="show('s-sujets')"><span class="ntab-icon">📝</span>Sujet</button>
     </nav>
   </div>
 
@@ -258,6 +261,7 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
       <button class="ntab active" onclick="show('s-jwnotes')"><span class="ntab-icon">📋<span class="badge" id="b6" style="display:none"></span></span>JW Notes</button>
       <button class="ntab" onclick="show('s-sang')"><span class="ntab-icon">🩸</span>Sang</button>
       <button class="ntab" onclick="show('s-reunion')"><span class="ntab-icon">🗓️</span>Réunion</button>
+      <button class="ntab" onclick="show('s-sujets')"><span class="ntab-icon">📝</span>Sujet</button>
     </nav>
   </div>
 
@@ -274,6 +278,7 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
       <button class="ntab" onclick="show('s-jwnotes')"><span class="ntab-icon">📋</span>JW Notes</button>
       <button class="ntab" onclick="show('s-sang')"><span class="ntab-icon">🩸</span>Sang</button>
       <button class="ntab" onclick="show('s-reunion')"><span class="ntab-icon">🗓️</span>Réunion</button>
+      <button class="ntab" onclick="show('s-sujets')"><span class="ntab-icon">📝</span>Sujet</button>
     </nav>
   </div>
 
@@ -287,6 +292,7 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
       <button class="ntab" onclick="show('s-jwnotes')"><span class="ntab-icon">📋</span>JW Notes</button>
       <button class="ntab" onclick="show('s-sang')"><span class="ntab-icon">🩸</span>Sang</button>
       <button class="ntab" onclick="show('s-reunion')"><span class="ntab-icon">🗓️</span>Réunion</button>
+      <button class="ntab" onclick="show('s-sujets')"><span class="ntab-icon">📝</span>Sujet</button>
     </nav>
   </div>
 
@@ -329,6 +335,22 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
       <button class="ntab" onclick="show('s-jwnotes')"><span class="ntab-icon">📋</span>JW Notes</button>
       <button class="ntab active" onclick="show('s-sang')"><span class="ntab-icon">🩸</span>Sang</button>
       <button class="ntab" onclick="show('s-reunion')"><span class="ntab-icon">🗓️</span>Réunion</button>
+      <button class="ntab" onclick="show('s-sujets')"><span class="ntab-icon">📝</span>Sujet</button>
+    </nav>
+  </div>
+
+  <!-- SUJETS À PRÉPARER (discours, démonstrations, devoirs d'école du ministère…) -->
+  <div id="s-sujets" class="screen">
+    <div class="hdr" style="justify-content:center"><span class="hdr-title" id="sujets-title">Mes sujets</span></div>
+    <div style="padding:10px 14px 0"><button class="btn" style="background:#2B5EA7" onclick="openSujetForm()">➕ Ajouter un sujet</button></div>
+    <div class="scroll" id="sujets-list"></div>
+    <nav class="nav">
+      <button class="ntab" onclick="show('s-home')"><span class="ntab-icon">◉</span>Accueil</button>
+      <button class="ntab" onclick="show('s-history')"><span class="ntab-icon">☰</span>Études</button>
+      <button class="ntab" onclick="show('s-jwnotes')"><span class="ntab-icon">📋</span>JW Notes</button>
+      <button class="ntab" onclick="show('s-sang')"><span class="ntab-icon">🩸</span>Sang</button>
+      <button class="ntab" onclick="show('s-reunion')"><span class="ntab-icon">🗓️</span>Réunion</button>
+      <button class="ntab active" onclick="show('s-sujets')"><span class="ntab-icon">📝</span>Sujet</button>
     </nav>
   </div>
 
@@ -735,6 +757,7 @@ Produis ces sections :
       <button class="ntab" onclick="show('s-jwnotes')"><span class="ntab-icon">📋</span>JW Notes</button>
       <button class="ntab" onclick="show('s-sang')"><span class="ntab-icon">🩸</span>Sang</button>
       <button class="ntab active" onclick="show('s-reunion')"><span class="ntab-icon">🗓️</span>Réunion</button>
+      <button class="ntab" onclick="show('s-sujets')"><span class="ntab-icon">📝</span>Sujet</button>
     </nav>
   </div>
 </div>
@@ -912,6 +935,7 @@ var G = {
   syncing: false,
   bloodNotes:'', bloodSavedAt:'', bloodChoices:{},
   guideDraft:null, guideLoadingAll:false, guideLoadingField:null,
+  sujets:[], sujetDraft:null,
 };
 
 function load() {
@@ -926,10 +950,12 @@ function load() {
     var b=localStorage.getItem(SK+'blood');if(b) G.bloodNotes=b;
     var bs=localStorage.getItem(SK+'bloodTs');if(bs) G.bloodSavedAt=bs;
     var bc=localStorage.getItem(SK+'bloodChoices');if(bc) G.bloodChoices=JSON.parse(bc);
+    var suj=localStorage.getItem(SK+'suj');if(suj) G.sujets=JSON.parse(suj);
   } catch(e) {}
 }
 function saveH(){try{localStorage.setItem(SK,JSON.stringify(G.history));}catch(e){}}
 function saveN(){try{localStorage.setItem(SK+'n',JSON.stringify(G.jwNotes));}catch(e){}}
+function saveSuj(){try{localStorage.setItem(SK+'suj',JSON.stringify(G.sujets));}catch(e){}}
 function saveBloodNotes(){
   var ta=document.getElementById('blood-directive'); if(!ta) return;
   G.bloodNotes=ta.value;
@@ -989,6 +1015,7 @@ function show(id) {
   if(id==='s-jwnotes') renderJWNotes();
   if(id==='s-sang')    renderSang();
   if(id==='s-guide')   renderGuide();
+  if(id==='s-sujets')  renderSujets();
   updateUI();
 }
 
@@ -1236,6 +1263,102 @@ function saveGuide(){
   G.guideDraft=null;
   toast('✓ Étude enregistrée');
   openStudy(entry.id);
+}
+
+/* ══ SUJETS À PRÉPARER (discours, démonstrations, devoirs d'école du
+   ministère…) — simple suivi local : titre, référence, durée, date de
+   réunion, statut cyclique, et un champ notes libre où coller le discours
+   ou la fiche de notes déjà rédigés ailleurs. */
+var SUJ_STATUTS = [
+  {id:'a_preparer', label:'À préparer',    color:'#C0392B'},
+  {id:'en_cours',    label:'En préparation', color:'#C9A84C'},
+  {id:'pret',        label:'Prêt',           color:'#1A7A4A'},
+  {id:'presente',    label:'Présenté',       color:'#7A8396'},
+];
+function openSujetForm(id){
+  if(id){
+    var s=G.sujets.find(function(x){return String(x.id)===String(id);});
+    G.sujetDraft = s ? Object.assign({}, s) : null;
+  } else {
+    G.sujetDraft = {id:null, titre:'', type:'', reference:'', duree:'', dateReunion:'', statut:'a_preparer', notes:''};
+  }
+  show('s-sujets');
+}
+function closeSujetForm(){ G.sujetDraft=null; renderSujets(); }
+function saveSujet(){
+  var d=G.sujetDraft; if(!d||!d.titre||!d.titre.trim()){ toast('Indique un titre'); return; }
+  if(d.id){
+    G.sujets = G.sujets.map(function(s){ return String(s.id)===String(d.id) ? d : s; });
+  } else {
+    d.id = Date.now();
+    d.dateCreation = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});
+    G.sujets = [d].concat(G.sujets);
+  }
+  saveSuj();
+  G.sujetDraft=null;
+  toast('✓ Sujet enregistré');
+  renderSujets();
+}
+function deleteSujet(id){
+  if(!confirm('Supprimer ce sujet ? Cette action est irréversible.')) return;
+  G.sujets = G.sujets.filter(function(s){ return String(s.id)!==String(id); });
+  saveSuj();
+  renderSujets();
+}
+function cycleSujetStatut(id){
+  var s=G.sujets.find(function(x){return String(x.id)===String(id);}); if(!s) return;
+  var idx=SUJ_STATUTS.findIndex(function(x){return x.id===s.statut;});
+  s.statut = SUJ_STATUTS[(idx+1)%SUJ_STATUTS.length].id;
+  saveSuj();
+  renderSujets();
+}
+function sujetFormHtml(d){
+  return '<div style="padding:14px">'
+    + '<div class="card">'
+    + '<label class="gd-label">Titre du sujet</label>'
+    + '<input type="text" class="gd-input" value="'+escAttr(d.titre)+'" oninput="G.sujetDraft.titre=this.value" placeholder="Ex. Que dit la Bible sur le libre arbitre ?">'
+    + '<label class="gd-label">Type</label>'
+    + '<input type="text" class="gd-input" value="'+escAttr(d.type)+'" oninput="G.sujetDraft.type=this.value" placeholder="Ex. Explique tes croyances, Discours, Démonstration…">'
+    + '<label class="gd-label">Référence</label>'
+    + '<input type="text" class="gd-input" value="'+escAttr(d.reference)+'" oninput="G.sujetDraft.reference=this.value" placeholder="Ex. ijwbq art. 44 — th leçon 20">'
+    + '<label class="gd-label">Durée</label>'
+    + '<input type="text" class="gd-input" value="'+escAttr(d.duree)+'" oninput="G.sujetDraft.duree=this.value" placeholder="Ex. 5 min">'
+    + '<label class="gd-label">Date de la réunion</label>'
+    + '<input type="text" class="gd-input" value="'+escAttr(d.dateReunion)+'" oninput="G.sujetDraft.dateReunion=this.value" placeholder="Ex. 24 juillet 2026">'
+    + '<label class="gd-label">Notes / texte du discours</label>'
+    + '<textarea class="gd-textarea" rows="8" oninput="G.sujetDraft.notes=this.value" placeholder="Colle ici ton discours, ta fiche de notes ou tes remarques…" style="margin-bottom:0">'+escAttr(d.notes)+'</textarea>'
+    + '</div>'
+    + '<button class="btn" style="background:#1A7A4A" onclick="saveSujet()">💾 Enregistrer</button>'
+    + '<button class="btn" style="background:#7A8396" onclick="closeSujetForm()">Annuler</button>'
+    + '<div style="height:20px"></div>'
+    + '</div>';
+}
+function renderSujets(){
+  var t=document.getElementById('sujets-title'); if(t) t.textContent='Mes sujets ('+G.sujets.length+')';
+  var el=document.getElementById('sujets-list'); if(!el) return;
+  if(G.sujetDraft){ el.innerHTML=sujetFormHtml(G.sujetDraft); return; }
+  if(!G.sujets.length){
+    el.innerHTML='<div class="empty"><div style="font-size:40px">📝</div><div style="margin-top:8px">Aucun sujet en préparation</div></div>';
+    return;
+  }
+  el.innerHTML='<div style="padding:8px 14px">'+G.sujets.map(function(s){
+    var st=SUJ_STATUTS.find(function(x){return x.id===s.statut;})||SUJ_STATUTS[0];
+    return '<div class="hist-card" style="cursor:default">'
+      + '<div style="font-weight:700;color:#1A2B4A;font-size:13px;margin-bottom:3px;line-height:1.3">' + escAttr(s.titre) + '</div>'
+      + '<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:6px">'
+      + (s.type?'<span class="vtag">'+escAttr(s.type)+'</span>':'')
+      + (s.reference?'<span style="color:#7A8396;font-size:11px">'+escAttr(s.reference)+'</span>':'')
+      + (s.duree?'<span style="color:#7A8396;font-size:11px">· '+escAttr(s.duree)+'</span>':'')
+      + '</div>'
+      + (s.dateReunion?'<div style="color:#7A8396;font-size:11px;margin-bottom:6px">📅 '+escAttr(s.dateReunion)+'</div>':'')
+      + '<button onclick="cycleSujetStatut(\''+s.id+'\')" style="background:'+st.color+'22;color:'+st.color+';border:1px solid '+st.color+';border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">'+st.label+'</button>'
+      + (s.notes?'<div style="margin-top:8px;padding-top:8px;border-top:1px solid #EEE;color:#444;font-size:12px;line-height:1.5;white-space:pre-wrap">'+escAttr(s.notes)+'</div>':'')
+      + '<div style="display:flex;gap:8px;margin-top:10px">'
+      + '<button onclick="openSujetForm(\''+s.id+'\')" style="flex:1;background:#fff;border:1px solid #2B5EA7;color:#2B5EA7;border-radius:8px;padding:7px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">✏️ Modifier</button>'
+      + '<button onclick="deleteSujet(\''+s.id+'\')" style="flex:1;background:#fff;border:1px solid #C0392B;color:#C0392B;border-radius:8px;padding:7px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">🗑 Supprimer</button>'
+      + '</div>'
+      + '</div>';
+  }).join('') + '<div style="height:20px"></div></div>';
 }
 
 /* ══ JW NOTES ════════════════════════════════════════════════════════════ */
