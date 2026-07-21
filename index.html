@@ -205,6 +205,16 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
           <a href="https://wol.jw.org/fr/wol/meetings/r30/lp-f" target="_blank" class="wol-link"><span style="width:5px;height:5px;border-radius:50%;background:#2B5EA7;flex-shrink:0"></span><span style="font-size:11px;color:#1A2B4A;font-weight:600">Réunions</span></a>
         </div>
       </div>
+      <div style="padding:0 14px 10px">
+        <span style="font-weight:700;color:#1A2B4A;font-size:13px">Modules d'étude</span>
+      </div>
+      <div class="grid2" style="padding:0 14px">
+        <button class="sugg-card" onclick="show('s-history')"><div style="font-size:18px;margin-bottom:6px">☰</div><div style="font-weight:700;color:#1A2B4A;font-size:11px;line-height:1.35">Études</div></button>
+        <button class="sugg-card" onclick="show('s-sang')"><div style="font-size:18px;margin-bottom:6px">🩸</div><div style="font-weight:700;color:#1A2B4A;font-size:11px;line-height:1.35">Sang & traitements</div></button>
+        <button class="sugg-card" onclick="show('s-reunion')"><div style="font-size:18px;margin-bottom:6px">🗓️</div><div style="font-weight:700;color:#1A2B4A;font-size:11px;line-height:1.35">Réunion de semaine</div></button>
+        <button class="sugg-card" onclick="show('s-sujets')"><div style="font-size:18px;margin-bottom:6px">📝</div><div style="font-weight:700;color:#1A2B4A;font-size:11px;line-height:1.35">Sujets en préparation</div></button>
+        <button class="sugg-card" onclick="show('s-mcad')"><div style="font-size:18px;margin-bottom:6px">🐫</div><div style="font-weight:700;color:#1A2B4A;font-size:11px;line-height:1.35">Marche courageusement avec Dieu</div></button>
+      </div>
       <div style="height:24px"></div>
     </div>
     <nav class="nav">
@@ -214,6 +224,7 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
       <button class="ntab" onclick="show('s-sang')"><span class="ntab-icon">🩸</span>Sang</button>
       <button class="ntab" onclick="show('s-reunion')"><span class="ntab-icon">🗓️</span>Réunion</button>
       <button class="ntab" onclick="show('s-sujets')"><span class="ntab-icon">📝</span>Sujet</button>
+      <button class="ntab" onclick="show('s-mcad')"><span class="ntab-icon">🐫</span>MCAD</button>
     </nav>
   </div>
 
@@ -230,6 +241,7 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
       <button class="ntab" onclick="show('s-sang')"><span class="ntab-icon">🩸</span>Sang</button>
       <button class="ntab" onclick="show('s-reunion')"><span class="ntab-icon">🗓️</span>Réunion</button>
       <button class="ntab" onclick="show('s-sujets')"><span class="ntab-icon">📝</span>Sujet</button>
+      <button class="ntab" onclick="show('s-mcad')"><span class="ntab-icon">🐫</span>MCAD</button>
     </nav>
   </div>
 
@@ -247,6 +259,7 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
       <button class="ntab" onclick="show('s-sang')"><span class="ntab-icon">🩸</span>Sang</button>
       <button class="ntab" onclick="show('s-reunion')"><span class="ntab-icon">🗓️</span>Réunion</button>
       <button class="ntab" onclick="show('s-sujets')"><span class="ntab-icon">📝</span>Sujet</button>
+      <button class="ntab" onclick="show('s-mcad')"><span class="ntab-icon">🐫</span>MCAD</button>
     </nav>
   </div>
 
@@ -262,6 +275,7 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
       <button class="ntab" onclick="show('s-sang')"><span class="ntab-icon">🩸</span>Sang</button>
       <button class="ntab" onclick="show('s-reunion')"><span class="ntab-icon">🗓️</span>Réunion</button>
       <button class="ntab" onclick="show('s-sujets')"><span class="ntab-icon">📝</span>Sujet</button>
+      <button class="ntab" onclick="show('s-mcad')"><span class="ntab-icon">🐫</span>MCAD</button>
     </nav>
   </div>
 
@@ -279,6 +293,7 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
       <button class="ntab" onclick="show('s-sang')"><span class="ntab-icon">🩸</span>Sang</button>
       <button class="ntab" onclick="show('s-reunion')"><span class="ntab-icon">🗓️</span>Réunion</button>
       <button class="ntab" onclick="show('s-sujets')"><span class="ntab-icon">📝</span>Sujet</button>
+      <button class="ntab" onclick="show('s-mcad')"><span class="ntab-icon">🐫</span>MCAD</button>
     </nav>
   </div>
 
@@ -293,6 +308,7 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
       <button class="ntab" onclick="show('s-sang')"><span class="ntab-icon">🩸</span>Sang</button>
       <button class="ntab" onclick="show('s-reunion')"><span class="ntab-icon">🗓️</span>Réunion</button>
       <button class="ntab" onclick="show('s-sujets')"><span class="ntab-icon">📝</span>Sujet</button>
+      <button class="ntab" onclick="show('s-mcad')"><span class="ntab-icon">🐫</span>MCAD</button>
     </nav>
   </div>
 
@@ -336,6 +352,7 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
       <button class="ntab active" onclick="show('s-sang')"><span class="ntab-icon">🩸</span>Sang</button>
       <button class="ntab" onclick="show('s-reunion')"><span class="ntab-icon">🗓️</span>Réunion</button>
       <button class="ntab" onclick="show('s-sujets')"><span class="ntab-icon">📝</span>Sujet</button>
+      <button class="ntab" onclick="show('s-mcad')"><span class="ntab-icon">🐫</span>MCAD</button>
     </nav>
   </div>
 
@@ -351,6 +368,22 @@ input[type=text],textarea{border:none;outline:none;font-family:inherit}
       <button class="ntab" onclick="show('s-sang')"><span class="ntab-icon">🩸</span>Sang</button>
       <button class="ntab" onclick="show('s-reunion')"><span class="ntab-icon">🗓️</span>Réunion</button>
       <button class="ntab active" onclick="show('s-sujets')"><span class="ntab-icon">📝</span>Sujet</button>
+      <button class="ntab" onclick="show('s-mcad')"><span class="ntab-icon">🐫</span>MCAD</button>
+    </nav>
+  </div>
+
+  <!-- MCAD : « Marche courageusement avec Dieu », fiche hebdomadaire en 8 étapes -->
+  <div id="s-mcad" class="screen">
+    <div class="hdr" style="justify-content:center"><span class="hdr-title">Marche courageusement avec Dieu</span></div>
+    <div class="scroll" id="mcad-content"></div>
+    <nav class="nav">
+      <button class="ntab" onclick="show('s-home')"><span class="ntab-icon">◉</span>Accueil</button>
+      <button class="ntab" onclick="show('s-history')"><span class="ntab-icon">☰</span>Études</button>
+      <button class="ntab" onclick="show('s-jwnotes')"><span class="ntab-icon">📋</span>JW Notes</button>
+      <button class="ntab" onclick="show('s-sang')"><span class="ntab-icon">🩸</span>Sang</button>
+      <button class="ntab" onclick="show('s-reunion')"><span class="ntab-icon">🗓️</span>Réunion</button>
+      <button class="ntab" onclick="show('s-sujets')"><span class="ntab-icon">📝</span>Sujet</button>
+      <button class="ntab active" onclick="show('s-mcad')"><span class="ntab-icon">🐫</span>MCAD</button>
     </nav>
   </div>
 
@@ -758,6 +791,7 @@ Produis ces sections :
       <button class="ntab" onclick="show('s-sang')"><span class="ntab-icon">🩸</span>Sang</button>
       <button class="ntab active" onclick="show('s-reunion')"><span class="ntab-icon">🗓️</span>Réunion</button>
       <button class="ntab" onclick="show('s-sujets')"><span class="ntab-icon">📝</span>Sujet</button>
+      <button class="ntab" onclick="show('s-mcad')"><span class="ntab-icon">🐫</span>MCAD</button>
     </nav>
   </div>
 </div>
@@ -853,6 +887,7 @@ var CATS = [
   {id:'moral',label:'Valeurs morales',icon:'⚖️'},{id:'etude',label:'Étude & Sagesse',icon:'📖'},
   {id:'histoire',label:'Histoire sacrée',icon:'📜'},{id:'espoir',label:'Espoir & Avenir',icon:'🌅'},
   {id:'sang',label:'Sang & traitements',icon:'🩸'},{id:'ministere',label:'Ministère & Prédication',icon:'📢'},
+  {id:'mcad',label:'Marche courageusement avec Dieu',icon:'🐫'},
 ];
 var SUGGS = [
   {id:1,titre:"Quel est le nom de Dieu et pourquoi est-il important ?",cat:"foi",v:"Psaume 83:18"},
@@ -877,6 +912,82 @@ var SUGGS = [
   {id:20,titre:"Comment remplir et utiliser une carte de Directives Médicales Anticipées (DPA) ?",cat:"sang",v:"Lévitique 17:10-14"},
   {id:21,titre:"Quels sont mes droits de patient face à un refus de traitement médical ?",cat:"sang",v:"Actes 5:29"},
   {id:22,titre:"Comment préparer une hospitalisation ou une intervention chirurgicale ?",cat:"sang",v:"Proverbes 22:3"},
+];
+
+/* ══ LIVRE « MARCHE COURAGEUSEMENT AVEC DIEU » (onglet MCAD) ═══════════════
+   54 chapitres en 3 parties, table des matières extraite directement du PDF
+   local de l'utilisateur (wcg_F.pdf, via PyMuPDF) le 2026-07-20 — fiable,
+   contrairement à une première extraction via wol.jw.org proxyfié.
+════════════════════════════════════════════════════════════════════════ */
+var WCG_BOOK_URL = 'https://wol.jw.org/fr/wol/publication/r30/lp-f/wcg';
+var WCG_PDF_PATH = 'C:\\Users\\chmic\\OneDrive\\Documents\\JW\\Bibliotheque\\wcg_F.pdf';
+var WCG_CHAPTERS = [
+  {n:1, titre:"Il marchait avec Dieu", personnage:"Hénoch"},
+  {n:2, titre:"Il a condamné le monde", personnage:"Noé"},
+  {n:3, titre:"Elle n'a pas regardé en arrière", personnage:"Sara"},
+  {n:4, titre:"Il a été le premier à mener une guerre juste", personnage:"Abraham"},
+  {n:5, titre:"Même ce jour-là, il a obéi à Dieu", personnage:"Abraham"},
+  {n:6, titre:"Elle est partie vers l'inconnu", personnage:"Rébecca"},
+  {n:7, titre:"Il a protégé sa famille", personnage:"Jacob"},
+  {n:8, titre:"Il a résisté à la tentation", personnage:"Joseph"},
+  {n:9, titre:"Par la foi, ils ont protégé Moïse", personnage:"Shifra, Poua, Amram, Jokébed et Miriam"},
+  {n:10, titre:"Il a fait le bon choix", personnage:"Moïse"},
+  {n:11, titre:"« Présente-toi devant Pharaon »", personnage:"Moïse"},
+  {n:12, titre:"Un guerrier fidèle à son Dieu", personnage:"Caleb"},
+  {n:13, titre:"Il a suivi des instructions étranges", personnage:"Josué"},
+  {n:14, titre:"Elle a choisi Jéhovah", personnage:"Rahab"},
+  {n:15, titre:"Ensemble, des larmes à la joie", personnage:"Noémi et Ruth"},
+  {n:16, titre:"« Oui, j'irai avec toi »", personnage:"Barak et Déborah"},
+  {n:17, titre:"« La plus bénie des femmes »", personnage:"Jaël"},
+  {n:18, titre:"Courageux et prudent", personnage:"Gédéon"},
+  {n:19, titre:"Il a fait un serment ; elle l'a respecté", personnage:"Jephté et sa fille"},
+  {n:20, titre:"Courageux alors qu'il était faible", personnage:"Samson"},
+  {n:21, titre:"Un garçon qui a parlé au nom de Jéhovah", personnage:"Samuel"},
+  // Partie 2 — Des rois à la reconstruction de Jérusalem
+  {n:22, titre:"Sa fidélité lui a demandé du courage", personnage:"Jonathan"},
+  {n:23, titre:"Il a affronté un géant", personnage:"David"},
+  {n:24, titre:"Elle a apaisé un conflit", personnage:"Abigaïl"},
+  {n:25, titre:"Il a écouté sa conscience", personnage:"David"},
+  {n:26, titre:"Il a réprimandé un roi", personnage:"Nathan"},
+  {n:27, titre:"Il n'a pas cédé à l'amertume", personnage:"Mefibosheth"},
+  {n:28, titre:"Il est resté attaché à Jéhovah toute sa vie", personnage:"Asa"},
+  {n:29, titre:"« Mon Dieu, c'est Jéhovah »", personnage:"Élie"},
+  {n:30, titre:"Courageuse dans une situation désespérée", personnage:"La veuve de Sarepta"},
+  {n:31, titre:"Une petite esclave parle de son Dieu", personnage:"La petite fille israélite"},
+  {n:32, titre:"« Ô Jéhovah, ouvre ses yeux »", personnage:"Élisée"},
+  {n:33, titre:"Il a protégé le roi", personnage:"Joad"},
+  {n:34, titre:"« Il était attaché à Jéhovah »", personnage:"Ézéchias"},
+  {n:35, titre:"Le courage de se repentir", personnage:"Manassé"},
+  {n:36, titre:"Il a ramené le peuple à Jéhovah", personnage:"Josias"},
+  {n:37, titre:"« Résolu à ne pas se rendre impur »", personnage:"Daniel"},
+  {n:38, titre:"Ils ont « éteint la violence du feu »", personnage:"Les trois Hébreux"},
+  {n:39, titre:"« Si je dois mourir, alors je mourrai »", personnage:"Esther"},
+  {n:40, titre:"Il a reconstruit les murailles", personnage:"Néhémie"},
+  // Partie 3 — Les débuts du christianisme
+  {n:41, titre:"« Dieu les considérait comme justes »", personnage:"Zacharie et Élisabeth"},
+  {n:42, titre:"Le courage de dire oui", personnage:"Marie"},
+  {n:43, titre:"Il a accepté une lourde responsabilité", personnage:"Joseph"},
+  {n:44, titre:"« Aucun homme n'est plus grand que lui »", personnage:"Jean le Baptiseur"},
+  {n:45, titre:"« Je suis un homme pécheur »", personnage:"Pierre"},
+  {n:46, titre:"« J'ai vu le Seigneur ! »", personnage:"Marie de Magdala"},
+  {n:47, titre:"« Elle a fait ce qu'elle a pu »", personnage:"Marie la sœur de Lazare"},
+  {n:48, titre:"« Plein de foi et d'esprit saint »", personnage:"Étienne"},
+  {n:49, titre:"Il est devenu un roc", personnage:"Pierre"},
+  {n:50, titre:"Il a changé du tout au tout", personnage:"Saul de Tarse"},
+  {n:51, titre:"« Fils de consolation »", personnage:"Barnabé"},
+  {n:52, titre:"« Il me sera utile »", personnage:"Marc"},
+  {n:53, titre:"« Je vous recommande de ne pas vous décourager »", personnage:"Paul"},
+  {n:54, titre:"Courageux dans une période sombre", personnage:"L'apôtre Jean"},
+];
+var WCG_STEPS = [
+  {key:'histoire', label:"1. Lis l'histoire", hint:"Résumé du récit du personnage"},
+  {key:'recit', label:"2. Consulte le récit biblique", hint:"Référence biblique centrale du chapitre"},
+  {key:'question', label:"3. Prie et médite", hint:"Question de réflexion"},
+  {key:'illustrations', label:"4. Examine les illustrations", hint:"Ce qu'on apprend sur le personnage, ses difficultés, son courage"},
+  {key:'pourAllerPlusLoin', label:"5. Pour aller plus loin", hint:"Références complémentaires à lire"},
+  {key:'lecons', label:"6. Tire des leçons", hint:"Application personnelle ou pour aider quelqu'un d'autre"},
+  {key:'reflexionElargie', label:"7. Élargis ta réflexion", hint:"Ce que le récit enseigne sur Jéhovah, son projet, ton avenir"},
+  {key:'aDecouvrir', label:"8. À découvrir aussi", hint:"Autres articles/vidéos jw.org liés au personnage"},
 ];
 
 /* ══ TRAME OFFICIELLE — FRACTIONS SANGUINES ET PROCÉDÉS MÉDICAUX ═══════════
@@ -928,7 +1039,7 @@ var BLOOD_LINKS = [
 
 /* ══ ÉTAT ════════════════════════════════════════════════════════════════ */
 var G = {
-  history:[], catHist:'all',
+  history:[], catSugg:'all', catHist:'all',
   jwNotes:[], jwTags:[], jwFilter:'all',
   cur:null,
   ghToken:'', ghUser:null, ghGistId:'', lastSync:'', lastJWL:'',
@@ -936,6 +1047,8 @@ var G = {
   bloodNotes:'', bloodSavedAt:'', bloodChoices:{},
   guideDraft:null, guideLoadingAll:false, guideLoadingField:null,
   sujets:[], sujetDraft:null,
+  wcgIdx:0, wcgWeekId:'', wcgAutoTry:0, wcgGenerating:false,
+  navSinceLoad:false,
 };
 
 function load() {
@@ -951,6 +1064,17 @@ function load() {
     var bs=localStorage.getItem(SK+'bloodTs');if(bs) G.bloodSavedAt=bs;
     var bc=localStorage.getItem(SK+'bloodChoices');if(bc) G.bloodChoices=JSON.parse(bc);
     var suj=localStorage.getItem(SK+'suj');if(suj) G.sujets=JSON.parse(suj);
+    var wi=localStorage.getItem(SK+'wcgIdx');if(wi) G.wcgIdx=Number(wi)||0;
+    if(G.wcgIdx<0) G.wcgIdx=0; if(G.wcgIdx>WCG_CHAPTERS.length-1) G.wcgIdx=WCG_CHAPTERS.length-1;
+    var ww=localStorage.getItem(SK+'wcgWeekId');if(ww) G.wcgWeekId=ww;
+    var wa=localStorage.getItem(SK+'wcgAutoTry');if(wa) G.wcgAutoTry=Number(wa)||0;
+  } catch(e) {}
+}
+function saveWCGPointer(){
+  try {
+    localStorage.setItem(SK+'wcgIdx', String(G.wcgIdx));
+    localStorage.setItem(SK+'wcgWeekId', G.wcgWeekId);
+    localStorage.setItem(SK+'wcgAutoTry', String(G.wcgAutoTry));
   } catch(e) {}
 }
 function saveH(){try{localStorage.setItem(SK,JSON.stringify(G.history));}catch(e){}}
@@ -1007,7 +1131,9 @@ async function autoSync(silent) {
 }
 
 /* ══ NAV ═════════════════════════════════════════════════════════════════ */
+var ROOT_TABS = ['s-home','s-history','s-jwnotes','s-sang','s-reunion','s-sujets','s-mcad'];
 function show(id) {
+  if(ROOT_TABS.indexOf(id) !== -1) G.navSinceLoad = true;
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
   document.getElementById(id).classList.add('active');
   if(id==='s-history') renderHist();
@@ -1016,6 +1142,7 @@ function show(id) {
   if(id==='s-sang')    renderSang();
   if(id==='s-guide')   renderGuide();
   if(id==='s-sujets')  renderSujets();
+  if(id==='s-mcad')    renderMCAD();
   updateUI();
 }
 
@@ -1040,6 +1167,7 @@ function toast(msg, dur) {
 }
 
 /* ══ ACCUEIL ═════════════════════════════════════════════════════════════ */
+function setCSugg(c){G.catSugg=c;renderHist();}
 function setCHist(c){G.catHist=c;renderHist();}
 function setCJW(t){G.jwFilter=t;renderJWNotes();}
 
@@ -1047,6 +1175,21 @@ function chips(id, active, fn) {
   var el=document.getElementById(id); if(!el) return;
   el.innerHTML=CATS.map(function(c){
     return '<button class="chip' + (active===c.id?' active':'') + '" onclick="' + fn + '(\'' + c.id + '\')">' + c.icon + ' ' + c.label + '</button>';
+  }).join('');
+}
+
+function suggGridHtml(list) {
+  return list.map(function(item){
+    var cat=CATS.find(function(c){return c.id===item.cat;})||CATS[1];
+    var done=G.history.some(function(h){return h.titre===item.titre&&h.resume;});
+    return '<button class="sugg-card" onclick="study(' + item.id + ')" style="' + (done?'border-color:#00827F':'') + '">'
+      + '<div style="display:flex;justify-content:space-between;width:100%;margin-bottom:6px">'
+      + '<span style="font-size:18px">' + cat.icon + '</span>'
+      + (done?'<span style="font-size:10px;color:#1A7A4A;font-weight:700">✓</span>':'')
+      + '</div>'
+      + '<div style="font-weight:700;color:#1A2B4A;font-size:11px;line-height:1.35;margin-bottom:6px">' + item.titre + '</div>'
+      + '<span class="vtag">' + item.v + '</span>'
+      + '</button>';
   }).join('');
 }
 
@@ -1136,25 +1279,44 @@ function renderHist() {
   chips('chips-hist', G.catHist, 'setCHist');
   var el=document.getElementById('hist-list'); if(!el) return;
   var f=G.catHist==='all'?G.history:G.history.filter(function(h){return h.categorie===G.catHist;});
-  if(!f.length){el.innerHTML='<div class="empty"><div style="font-size:40px">📭</div><div style="margin-top:8px">Aucune étude ici</div></div>';return;}
-  el.innerHTML='<div style="padding:8px 14px">'+f.map(function(h){
-    var cat=CATS.find(function(c){return c.id===h.categorie;})||CATS[1];
-    return '<button class="hist-card" onclick="openStudy(\'' + h.id + '\')">'
-      + '<div style="display:flex;gap:10px;align-items:flex-start">'
-      + '<span style="font-size:20px;margin-top:1px">' + cat.icon + '</span>'
-      + '<div style="flex:1">'
-      + '<div style="font-weight:700;color:#1A2B4A;font-size:13px;margin-bottom:3px;line-height:1.3">' + h.titre + '</div>'
-      + '<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">'
-      + '<span class="vtag">' + cat.label + '</span>'
-      + (h.verset?'<span style="color:#7A8396;font-size:11px">'+h.verset+'</span>':'')
-      + (h.resume?'<span style="font-size:10px;color:#1A7A4A;font-weight:700">✓</span>':'')
-      + '</div>'
-      + '<div style="color:#7A8396;font-size:11px;margin-top:3px">' + h.date + '</div>'
-      + '</div>'
-      + '<span style="color:#00827F;font-size:18px">›</span>'
-      + '</div>'
-      + '</button>';
-  }).join('')+'<div style="height:20px"></div></div>';
+
+  var suggList=G.catSugg==='all'?SUGGS:SUGGS.filter(function(s){return s.cat===G.catSugg;});
+  var suggHtml='<div style="padding:10px 14px 0">'
+    + '<div class="chip-row" id="chips-sugg" style="padding:0 0 10px"></div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+    + '<span style="font-weight:700;color:#1A2B4A;font-size:13px">Thèmes suggérés</span>'
+    + '<span style="font-size:11px;color:#7A8396">'+suggList.length+' thèmes</span>'
+    + '</div>'
+    + '<div class="grid2">'+suggGridHtml(suggList)+'</div>'
+    + '</div>'
+    + '<div style="height:1px;background:#DDD8CE;margin:16px 14px"></div>';
+
+  var histHtml;
+  if(!f.length){
+    histHtml='<div class="empty"><div style="font-size:40px">📭</div><div style="margin-top:8px">Aucune étude ici</div></div>';
+  } else {
+    histHtml='<div style="padding:8px 14px">'+f.map(function(h){
+      var cat=CATS.find(function(c){return c.id===h.categorie;})||CATS[1];
+      return '<button class="hist-card" onclick="openStudy(\'' + h.id + '\')">'
+        + '<div style="display:flex;gap:10px;align-items:flex-start">'
+        + '<span style="font-size:20px;margin-top:1px">' + cat.icon + '</span>'
+        + '<div style="flex:1">'
+        + '<div style="font-weight:700;color:#1A2B4A;font-size:13px;margin-bottom:3px;line-height:1.3">' + h.titre + '</div>'
+        + '<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">'
+        + '<span class="vtag">' + cat.label + '</span>'
+        + (h.verset?'<span style="color:#7A8396;font-size:11px">'+h.verset+'</span>':'')
+        + (h.resume?'<span style="font-size:10px;color:#1A7A4A;font-weight:700">✓</span>':'')
+        + '</div>'
+        + '<div style="color:#7A8396;font-size:11px;margin-top:3px">' + h.date + '</div>'
+        + '</div>'
+        + '<span style="color:#00827F;font-size:18px">›</span>'
+        + '</div>'
+        + '</button>';
+    }).join('')+'<div style="height:20px"></div></div>';
+  }
+
+  el.innerHTML = suggHtml + histHtml;
+  chips('chips-sugg', G.catSugg, 'setCSugg');
 }
 
 function openStudy(id) {
@@ -1359,6 +1521,49 @@ function renderSujets(){
       + '</div>'
       + '</div>';
   }).join('') + '<div style="height:20px"></div></div>';
+}
+
+/* ══ MCAD (livre « Marche courageusement avec Dieu ») ═══════════════════ */
+function renderMCAD(){
+  var el=document.getElementById('mcad-content'); if(!el) return;
+  var ch=WCG_CHAPTERS[G.wcgIdx];
+  var existing=G.history.find(function(h){return h.categorie==='mcad'&&h.wcgChapter===ch.n;});
+  var html='<div style="padding:10px 14px 0">'
+    + '<div class="card">'
+    + '<div style="font-size:12px;color:#7A8396;line-height:1.5;margin-bottom:6px">Une fiche est générée chaque semaine pour le chapitre suivant, selon la méthode en 8 étapes de la publication : lire l\'histoire, consulter le récit biblique, prier et méditer, examiner les illustrations, aller plus loin, tirer des leçons, élargir sa réflexion, découvrir aussi.</div>'
+    + '<a href="'+escAttr(WCG_BOOK_URL)+'" target="_blank" style="font-size:12px;color:#2B5EA7;font-weight:600">📗 Ouvrir le livre sur wol.jw.org →</a>'
+    + '<div style="font-size:11px;color:#7A8396;margin-top:6px;word-break:break-all">📄 PDF local : '+escAttr(WCG_PDF_PATH)+'</div>'
+    + '</div>'
+    + '<div class="card" style="border-top:5px solid #2B5EA7">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+    + '<button onclick="wcgMoveChapter(-1)" '+(G.wcgIdx<=0?'disabled':'')+' style="background:none;border:1px solid #DDD8CE;border-radius:8px;width:32px;height:32px;font-size:16px;cursor:pointer">◀</button>'
+    + '<span style="font-size:11px;color:#7A8396;font-weight:600">CHAPITRE '+ch.n+' / '+WCG_CHAPTERS.length+'</span>'
+    + '<button onclick="wcgMoveChapter(1)" '+(G.wcgIdx>=WCG_CHAPTERS.length-1?'disabled':'')+' style="background:none;border:1px solid #DDD8CE;border-radius:8px;width:32px;height:32px;font-size:16px;cursor:pointer">▶</button>'
+    + '</div>'
+    + '<div style="font-weight:700;color:#1A2B4A;font-size:15px;margin-bottom:2px">'+escAttr(ch.titre)+'</div>'
+    + '<div style="color:#7A8396;font-size:12px;margin-bottom:12px">'+escAttr(ch.personnage)+'</div>'
+    + (G.wcgGenerating
+        ? '<div class="lbox"><div class="spinner"></div><span>Génération en cours…</span></div>'
+        : (existing
+            ? '<button class="btn" style="background:#1A7A4A" onclick="openStudyMCAD(\''+existing.id+'\')">📖 Voir la fiche</button>'
+              + '<button class="btn" style="background:#fff;color:#2B5EA7;border:1px solid #2B5EA7;margin-top:8px" onclick="wcgGenerateCurrent()">🔄 Régénérer</button>'
+            : '<button class="btn" style="background:#2B5EA7" onclick="wcgGenerateCurrent()">🤖 Générer la fiche de ce chapitre</button>'))
+    + '</div>'
+    + '</div>';
+
+  var mine=G.history.filter(function(h){return h.categorie==='mcad';}).sort(function(a,b){return (a.wcgChapter||0)-(b.wcgChapter||0);});
+  html+='<div class="stitle" style="padding:0 14px">Fiches déjà générées ('+mine.length+')</div>';
+  if(!mine.length){
+    html+='<div class="empty"><div style="font-size:40px">🐫</div><div style="margin-top:8px">Aucune fiche pour l\'instant</div></div>';
+  } else {
+    html+='<div style="padding:0 14px">'+mine.map(function(h){
+      return '<div class="hist-card" onclick="openStudyMCAD(\''+h.id+'\')">'
+        + '<div style="font-weight:700;color:#1A2B4A;font-size:13px;margin-bottom:3px;line-height:1.3">'+escAttr(h.titre)+'</div>'
+        + (h.resume?'<div style="color:#7A8396;font-size:11px;line-height:1.4">'+escAttr(h.resume.slice(0,120))+(h.resume.length>120?'…':'')+'</div>':'<div style="color:#C0392B;font-size:11px">Échec de génération — touchez pour réessayer</div>')
+        + '</div>';
+    }).join('') + '<div style="height:20px"></div></div>';
+  }
+  el.innerHTML=html;
 }
 
 /* ══ JW NOTES ════════════════════════════════════════════════════════════ */
@@ -1678,6 +1883,138 @@ async function runStudy(entry) {
   updateUI();
 }
 function retryStudy(){ if(G.cur) runStudy(G.cur); }
+
+/* ══ ÉTUDE MCAD (chapitre du livre « Marche courageusement avec Dieu »,
+   méthode en 8 étapes de la publication) ═══════════════════════════════
+   Calquée sur runStudy() : mêmes briques bas niveau (génération, retry,
+   résolution TMN des références, sauvegarde/sync) mais prompt et mise en
+   forme dédiés à la méthode en 8 étapes plutôt qu'au format doute/réponse
+   des sujets généraux. ════════════════════════════════════════════════ */
+function wcgEntryTitle(ch){ return "MCAD " + ch.n + " — " + ch.titre + " (" + ch.personnage + ")"; }
+async function runWCGStudy(ch, auto){
+  var entry = {
+    id: Date.now(), titre: wcgEntryTitle(ch), categorie: 'mcad', wcgChapter: ch.n, verset: '',
+    date: new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}),
+    resume: null, points: null, questions: null, ressource: null
+  };
+  G.history = [entry].concat(G.history.filter(function(h){ return h.wcgChapter !== ch.n; })).slice(0,100);
+  saveH(); G.cur = entry; G.wcgGenerating = true;
+  document.getElementById('det-back').onclick = function(){ show('s-mcad'); };
+  document.getElementById('det-title').textContent = 'Marche courageusement avec Dieu';
+  renderDet(entry, null);
+  // Préparation auto au lancement : ne bascule l'écran de force que si
+  // l'utilisateur n'a pas déjà navigué depuis (sinon ça l'interrompt en
+  // pleine saisie ailleurs, sans qu'il l'ait demandé — voir show()/ROOT_TABS).
+  if(!auto || !G.navSinceLoad) show('s-detail');
+  try {
+    var prompt = "Assistant étude biblique TJ basé sur wol.jw.org. TJ: Jéhovah (Ps 83:18), Jésus=Fils non égal à Dieu, morts=inconscients (Eccl 9:5), paradis terrestre, pas Trinité.\n"
+      + "Contexte : publication « Marche courageusement avec Dieu », chapitre " + ch.n + " (\"" + ch.titre + "\"), consacré à " + ch.personnage + ".\n"
+      + "Rédige une fiche d'étude personnelle/culte familial en suivant STRICTEMENT la méthode en 8 étapes de cette publication :\n"
+      + "1. Lis l'histoire — résume le récit biblique de " + ch.personnage + " lié à ce chapitre (2-4 phrases).\n"
+      + "2. Consulte le récit biblique — indique la référence biblique centrale de ce récit.\n"
+      + "3. Prie et médite — formule UNE question de réflexion basée sur ce récit.\n"
+      + "4. Examine les illustrations — que peut-on apprendre du personnage, des difficultés rencontrées et du courage dont il a fait preuve (sans décrire une image précise, puisque tu ne la vois pas — parle du récit lui-même) ?\n"
+      + "5. Pour aller plus loin — propose 1-2 références bibliques complémentaires à lire (en clair dans le texte, ex. \"voir Hébreux 11:8\").\n"
+      + "6. Tire des leçons — quelles leçons en tirer et comment les appliquer ou aider quelqu'un d'autre avec ?\n"
+      + "7. Élargis ta réflexion — que révèle ce récit sur Jéhovah, son projet et l'avenir ?\n"
+      + "8. À découvrir aussi — suggère 1-2 sujets ou thèmes jw.org liés à ce personnage à approfondir soi-même.\n"
+      + "\nRègle impérative : pour \"reference\" du point \"Consulte le récit biblique\", écris UNIQUEMENT un marqueur au format [[Livre chapitre:verset]] (ex. [[Genèse 6:9]]), jamais le texte du verset toi-même — il DOIT parler directement de l'épisode central de ce chapitre. Pour les autres points, laisse \"reference\":\"\".\n"
+      + "\nRéponds uniquement avec ce JSON, sans texte autour : {\"resume\":\"étape 1, 2-4 phrases\",\"points\":["
+      + "{\"titre\":\"Consulte le récit biblique\",\"texte\":\"\",\"reference\":\"[[Livre chapitre:verset]]\"},"
+      + "{\"titre\":\"Examine les illustrations\",\"texte\":\"\",\"reference\":\"\"},"
+      + "{\"titre\":\"Pour aller plus loin\",\"texte\":\"\",\"reference\":\"\"},"
+      + "{\"titre\":\"Tire des leçons\",\"texte\":\"\",\"reference\":\"\"},"
+      + "{\"titre\":\"Élargis ta réflexion\",\"texte\":\"\",\"reference\":\"\"},"
+      + "{\"titre\":\"À découvrir aussi\",\"texte\":\"\",\"reference\":\"\"}"
+      + "],\"questions\":[\"étape 3, une seule question\"],\"ressource\":\"Marche courageusement avec Dieu, chapitre " + ch.n + "\"}";
+    var parsed;
+    await generateStudyTextWithRetry(prompt, function(raw){
+      parsed = parseJsonLoose(raw.replace(/```json|```/g,'').trim());
+      if(!parsed || !parsed.points || parsed.points.length < 6){
+        var err = new Error("réponse incomplète du modèle (pas de fiche en 8 étapes)");
+        err.isValidationError = true;
+        throw err;
+      }
+    }, function(attempt, total){
+      var statusEl = document.getElementById('det-loading-status');
+      if(statusEl){ statusEl.textContent = attempt > 1 ? ("Nouvelle tentative (" + attempt + "/" + total + ")…") : "Préparation de la fiche du chapitre " + ch.n + "…"; }
+    });
+    // Résout le marqueur [[Référence]] du récit biblique en texte TMN réel
+    // (jamais celui que l'IA aurait pu taper elle-même) — même mécanisme
+    // que runStudy(), voir window.resolveBibleReference exposé par le
+    // module Réunion.
+    if(parsed && parsed.points && parsed.points.length && typeof window.resolveBibleReference === "function"){
+      for(var pi=0; pi<parsed.points.length; pi++){
+        var pt = parsed.points[pi];
+        var refToResolve = String(pt.reference || "").replace(/^\[+\s*/, "").replace(/\s*\]+$/, "").trim();
+        if(refToResolve){
+          try{ pt.reference = await window.resolveBibleReference(refToResolve); }catch(e){}
+        }
+      }
+    }
+    Object.assign(entry, parsed);
+    G.history = [entry].concat(G.history.filter(function(h){ return h.wcgChapter !== ch.n; })).slice(0,100);
+    saveH();
+    autoSync(true);
+    if(G.cur && G.cur.id===entry.id) renderDet(entry, entry);
+  } catch(e) {
+    if(G.cur && G.cur.id===entry.id) renderDet(entry, {error:true, msg:(e&&e.message)?e.message:String(e)});
+  }
+  G.wcgGenerating = false;
+  updateUI();
+  if(document.getElementById('s-mcad').classList.contains('active')) renderMCAD();
+}
+function retryWCGStudy(){ if(G.cur && G.cur.wcgChapter!=null){ var ch=WCG_CHAPTERS.find(function(c){return c.n===G.cur.wcgChapter;}); if(ch) runWCGStudy(ch); } }
+function openStudyMCAD(id){
+  var s=G.history.find(function(h){return String(h.id)===String(id);}); if(!s) return;
+  G.cur=s;
+  document.getElementById('det-back').onclick=function(){show('s-mcad');};
+  document.getElementById('det-title').textContent='Marche courageusement avec Dieu';
+  renderDet(s, s.resume?s:null); show('s-detail');
+}
+function wcgMoveChapter(delta){
+  var next = G.wcgIdx + delta;
+  if(next < 0 || next >= WCG_CHAPTERS.length) return;
+  G.wcgIdx = next;
+  renderMCAD();
+}
+function wcgGenerateCurrent(){
+  var ch = WCG_CHAPTERS[G.wcgIdx]; if(!ch || G.wcgGenerating) return;
+  runWCGStudy(ch);
+}
+
+// Lundi de la semaine (locale) au format YYYY-MM-DD, pour détecter un
+// changement de semaine sans dépendre du module Réunion (qui garde son
+// isoWeek()/mondayOf() privés à sa propre IIFE).
+function mondayISO(d){
+  var day = d.getDay();
+  var diff = (day===0 ? -6 : 1-day);
+  var m = new Date(d.getFullYear(), d.getMonth(), d.getDate()+diff);
+  var mm = String(m.getMonth()+1); if(mm.length<2) mm='0'+mm;
+  var dd = String(m.getDate()); if(dd.length<2) dd='0'+dd;
+  return m.getFullYear() + '-' + mm + '-' + dd;
+}
+function autoPrepareWCG(){
+  // Si des fiches synchronisées depuis un autre appareil existent déjà,
+  // caler le pointeur dessus plutôt que sur la valeur locale — le pointeur
+  // "suit" ainsi la synchronisation Gist sans lui ajouter de champ dédié.
+  var maxSynced = -1;
+  G.history.forEach(function(h){ if(h.categorie==='mcad' && typeof h.wcgChapter==='number'){ maxSynced = Math.max(maxSynced, h.wcgChapter); } });
+  if(maxSynced >= 0){ var idxFromSync = WCG_CHAPTERS.findIndex(function(c){return c.n===maxSynced;}); if(idxFromSync > G.wcgIdx) G.wcgIdx = idxFromSync; }
+
+  var today = mondayISO(new Date());
+  if(today === G.wcgWeekId) return; // déjà la même semaine que la dernière visite
+  if(G.wcgAutoTry && (Date.now()-G.wcgAutoTry) < 6*3600000) return; // 1 tentative auto / 6h max
+
+  var firstRun = !G.wcgWeekId;
+  if(!firstRun && G.wcgIdx < WCG_CHAPTERS.length-1) G.wcgIdx++;
+  G.wcgWeekId = today; G.wcgAutoTry = Date.now();
+  saveWCGPointer();
+
+  var ch = WCG_CHAPTERS[G.wcgIdx];
+  var already = G.history.some(function(h){ return h.categorie==='mcad' && h.wcgChapter===ch.n; });
+  if(!already) runWCGStudy(ch, true);
+}
 
 // Prompt générique (sujet interchangeable) pour une génération vérifiée dans
 // Claude.ai plutôt que via Pollinations (qui cite les versets de mémoire) :
@@ -2426,6 +2763,9 @@ setTimeout(async function() {
     await autoSync(true);
     renderHist(); updateUI();
   }
+  // Prépa auto de la fiche MCAD de la semaine (après la sync ci-dessus,
+  // pour éviter de régénérer un chapitre déjà fait sur un autre appareil)
+  autoPrepareWCG();
 }, 0);
 
 if ('serviceWorker' in navigator) {

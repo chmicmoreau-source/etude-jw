@@ -36,13 +36,14 @@ Ces règles viennent d'une compatibilité Android Chrome testée et doivent êtr
 
 ## Architecture de `index.html` (onglets réels, à jour 2026-07)
 
-- **Accueil** — recherche WOL/JW.ORG/JW Library, liens rapides vers la Bibliothèque Watchtower, thèmes bibliques suggérés (16 sujets classés par catégorie) déclenchant une étude IA.
-- **Études** — historique des études générées (résumé, plan en points, questions de réflexion), filtrable par catégorie.
+- **Accueil** — recherche WOL/JW.ORG/JW Library, liens rapides vers la Bibliothèque Watchtower, raccourcis « Modules d'étude » vers les onglets du bas (Études, Sang, Réunion, Sujet, MCAD).
+- **Études** — historique des études générées (résumé, plan en points, questions de réflexion), filtrable par catégorie ; inclut aussi la grille des thèmes bibliques suggérés (22 sujets classés par catégorie, `SUGGS`) déclenchant une étude IA — déplacée ici depuis l'accueil en 2026-07-21.
 - **JW Notes** — import d'un export `.jwlibrary` (zip + SQLite, décodé en local via JSZip + sql.js) pour consulter ses notes JW Library dans l'app.
 - **Sync** — connexion GitHub (Gist privé) pour synchroniser l'historique des études entre appareils ; carte de génération IA retirée (voir plus bas).
 - **Réunion** — préparation de la réunion de semaine (voir section dédiée).
+- **MCAD** (ajouté 2026-07-20) — fiche d'étude hebdomadaire pour le livre « Marche courageusement avec Dieu » (`WCG_CHAPTERS`, 54 chapitres en 3 parties, méthode en 8 étapes `WCG_STEPS`). Avance d'un chapitre par semaine (`autoPrepareWCG()`, throttle 6h comme le module Réunion), génération via `runWCGStudy()` — calqué sur `runStudy()` (mêmes briques : Pollinations, résolution TMN via `window.resolveBibleReference`, retry). Les fiches sont de simples entrées `G.history` (`categorie:'mcad'`), donc affichées dans Études et synchronisées via le Gist existant sans code de sync dédié. Table des matières extraite directement du PDF local de l'utilisateur (via PyMuPDF, pas de wol.jw.org) — fiable.
 
-**Stockage :** `localStorage`, préfixe de clé `jw_dbx_v1` (historique des études, notes JW, token/Gist GitHub, historique du module Réunion sous des clés `wk:*`).
+**Stockage :** `localStorage`, préfixe de clé `jw_dbx_v1` (historique des études, notes JW, token/Gist GitHub, pointeur de chapitre MCAD, historique du module Réunion sous des clés `wk:*`).
 
 Note historique : une version antérieure de ce fichier documentait des modules « Perle Spirituelle », « Questions des lecteurs », « Onglet Sang », « École du ministère » et une clé `jw_v6` — ils ne correspondent plus au code actuel du dépôt et ont été retirés de cette documentation en 2026-07 pour éviter toute confusion. S'ils doivent être réintroduits, ce sera un projet à part entière.
 
