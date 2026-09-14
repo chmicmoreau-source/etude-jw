@@ -914,6 +914,179 @@ var SUGGS = [
   {id:22,titre:"Comment préparer une hospitalisation ou une intervention chirurgicale ?",cat:"sang",v:"Proverbes 22:3"},
 ];
 
+/* ══ ÉTUDES PRÉ-RÉDIGÉES (versets TMN relevés à la main) ═══════════════════
+   Fiches écrites hors application, dont les versets ont été relevés sur
+   wol.jw.org verset par verset (donc vérifiés, contrairement à la génération
+   Pollinations qui cite parfois de mémoire). Elles sont posées une seule fois
+   dans l'historique au lancement : la clé SK+'seeds' mémorise celles déjà
+   installées, pour qu'une fiche supprimée par l'utilisateur ne réapparaisse
+   pas au lancement suivant. L'id est FIXE (pas Date.now()) pour que la fusion
+   par id de autoSync() reconnaisse la même fiche d'un appareil à l'autre au
+   lieu de la dupliquer.
+════════════════════════════════════════════════════════════════════════ */
+function wolVerse(book, chapter, verse, label, texte){
+  return '<a href="https://wol.jw.org/fr/wol/b/r30/lp-f/nwtsty/' + book + '/' + chapter
+    + '#v=' + book + ':' + chapter + ':' + verse + '" target="_blank" rel="noopener">'
+    + label + '</a> — « ' + texte + ' »';
+}
+var SEED_STUDIES = [{
+  seed: 'w2410-art40-coeur-brise',
+  id: 1788159600000,
+  titre: 'Jéhovah « guérit ceux qui ont le cœur brisé » (w24.10, article 40)',
+  categorie: 'foi',
+  verset: 'Psaume 147:3',
+  date: '31 août 2026',
+  resume: 'Article d’étude 40 de la Tour de Garde d’octobre 2024. Jéhovah ne se contente pas de compatir : il « panse les blessures » de ceux qui souffrent affectivement, dès à présent. Mais comme un blessé qui doit suivre les recommandations de son médecin, encore faut-il appliquer ce qu’il a fait écrire dans sa Parole — c’est ce que reprennent ces cinq points.',
+  points: [
+    {
+      titre: 'Tu as de la valeur à ses yeux',
+      texte: 'Beaucoup pensent, en raison de leur vécu, qu’ils ne valent rien. Mais Jéhovah est proche de ceux qui ont le cœur brisé : s’il t’a attiré à lui, c’est qu’il a vu de bonnes choses dans ton cœur (Jean 6:44). La façon dont Jésus a traité les méprisés montre exactement ce que le Père ressent pour toi (Mat. 9:9-12 ; Marc 5:25-34 ; Jean 14:9). Et si tu as subi de mauvais traitements, ne pense jamais que tu l’as mérité : Jéhovah tient pour coupables ceux qui agissent mal, pas les victimes.',
+      reference: wolVerse(19, 34, 18, 'Psaume 34:18', 'Jéhovah est proche de ceux qui ont le cœur brisé ; il sauve ceux qui sont découragés.')
+    },
+    {
+      titre: 'Accepte son pardon au lieu de ressasser',
+      texte: 'Jéhovah a fourni la rançon parce qu’il nous aime intensément, et il veut que nous acceptions ce cadeau. Une fois les choses remises en ordre, il ne nous tient plus rigueur de nos péchés (Ps. 103:9, 12), mais il n’oubliera jamais le bien que nous avons fait (Héb. 6:10). Comme Paul, oublie ce qui est derrière ; comme Jonas, apprends de tes erreurs et accepte la mission qu’il te confie encore (Jon. 3:1-3). Et répare le tort causé, en commençant par des excuses sincères.',
+      reference: wolVerse(23, 1, 18, 'Isaïe 1:18', 'Venez donc et remettons les choses en ordre entre nous, dit Jéhovah. Même si vos péchés sont comme l’écarlate, ils deviendront aussi blancs que la neige ; même s’ils sont aussi rouges que de l’étoffe cramoisie, ils deviendront comme de la laine.')
+    },
+    {
+      titre: 'Demande son esprit — et agis en accord avec ta prière',
+      texte: 'Face à un évènement traumatisant, ouvre-toi à Jéhovah aussi souvent et aussi longtemps que tu le souhaites, et demande-lui son esprit saint de façon répétée (Luc 11:13). Cet esprit te rendra fort quant à l’homme que tu es intérieurement (Éph. 3:16). Puis agis en accord avec tes prières : réunions, prédication, lecture quotidienne de la Bible, et méditation sur des personnages éprouvés comme Joseph (Gen. 39:21-23).',
+      reference: wolVerse(50, 4, 6, 'Philippiens 4:6, 7', 'Ne vous inquiétez de rien, mais en tout, par la prière et la supplication avec des remerciements, faites connaître vos requêtes à Dieu ; et la paix de Dieu, qui dépasse tout ce que l’on peut comprendre, protégera vos cœurs et vos esprits par le moyen de Christ Jésus.')
+    },
+    {
+      titre: 'Laisse tes frères et sœurs te consoler',
+      texte: 'Ils sont une manifestation vivante de l’amour que Jéhovah a pour nous : écoute, présence, versets, prières, aide bien concrète. Mais ils ne devinent pas ce que nous ressentons (Prov. 14:10) : il faut parfois demander de l’aide et se confier à des amis mûrs, ou à un ancien avec qui l’on se sent à l’aise. Résiste à l’envie de t’isoler, et ne te ferme pas si quelqu’un n’a pas trouvé les bons mots (Jacq. 3:2).',
+      reference: wolVerse(51, 4, 11, 'Colossiens 4:11', 'et Jésus qui est appelé Justus. […] Eux seuls sont mes collaborateurs pour le royaume de Dieu, et ils sont devenus pour moi une source de grand réconfort.')
+    },
+    {
+      titre: 'La guérison sera bientôt complète',
+      texte: 'Jéhovah nous guérira bientôt de toutes nos maladies et de toutes nos blessures affectives ; ce qui nous fait souffrir aujourd’hui ne viendra plus remuer notre cœur (Is. 65:17). Mais il panse nos blessures dès maintenant : tirons pleinement profit des dispositions pleines d’amour qu’il a prises pour nous réconforter, sans douter un instant qu’il se soucie de nous (1 Pierre 5:7).',
+      reference: wolVerse(66, 21, 3, 'Révélation 21:3, 4', 'Voyez ! La tente de Dieu est avec les humains, et il habitera avec eux, et ils seront son peuple. […] Et il essuiera toute larme de leurs yeux, et la mort n’existera plus ; il n’y aura plus ni deuil, ni cri, ni douleur. Les choses anciennes ont disparu.')
+    }
+  ],
+  questions: [
+    'Comment Jéhovah peut-il nous aider si nous doutons de notre valeur ?',
+    'Comment Jéhovah peut-il nous aider si nous éprouvons des regrets en raison de notre passé ?',
+    'Comment Jéhovah peut-il utiliser nos frères et sœurs pour nous réconforter ?'
+  ],
+  ressource: 'Tour de Garde octobre 2024 — Jéhovah guérit ceux qui ont le cœur brisé'
+}, {
+  // Fiche MCAD pré-rédigée : même forme que runWCGStudy() (titre =
+  // wcgEntryTitle, wcgChapter) pour que l'onglet MCAD la reconnaisse comme
+  // la fiche du chapitre 8 et ne la régénère pas via Pollinations.
+  // Contexte : publications relevées sur wol.jw.org ; la rubrique « Histoire
+  // profane » est un simple éclairage historique, signalé comme tel.
+  seed: 'wcg-08-joseph',
+  id: 1789358400000,
+  titre: 'MCAD 8 — Il a résisté à la tentation (Joseph)',
+  categorie: 'mcad',
+  wcgChapter: 8,
+  verset: 'Genèse 39:9',
+  date: '14 septembre 2026',
+  resume: 'Étape 1 — Lis l’histoire. En 1750 av. n. è., Joseph, 17 ans, le fils que Jacob aime particulièrement, est haï de ses demi-frères : ils le jettent dans une citerne, le vendent à des marchands et font croire à leur père qu’un animal sauvage l’a tué. Esclave en Égypte chez Putiphar, Joseph travaille dur, et Jéhovah fait réussir tout ce qu’il entreprend. Quand la femme de son maître essaie « jour après jour » de le séduire, il refuse fermement, puis s’enfuit ; faussement accusé, il est jeté en prison, où il endure année après année sans perdre confiance en Jéhovah. En 1737 av. n. è., Jéhovah le rend capable d’interpréter les rêves de Pharaon : devenu à 30 ans le deuxième personnage d’Égypte, Joseph sauve de la famine les Égyptiens, sa propre famille et la future nation d’Israël.',
+  points: [
+    {
+      titre: 'Consulte le récit biblique',
+      texte: 'Lis <a href="https://wol.jw.org/fr/wol/b/r30/lp-f/nwtsty/1/37" target="_blank" rel="noopener">Genèse 37:1-36</a> (la haine des frères, la vente), <a href="https://wol.jw.org/fr/wol/b/r30/lp-f/nwtsty/1/39" target="_blank" rel="noopener">39:1-23</a> (la tentation, la prison) et <a href="https://wol.jw.org/fr/wol/b/r30/lp-f/nwtsty/1/41" target="_blank" rel="noopener">41:1 – 45:28</a> (l’élévation, les retrouvailles). Remarque la phrase qui revient comme un refrain : « Jéhovah était avec Joseph » — au sommet chez Putiphar comme au fond de la prison.',
+      reference: wolVerse(1, 37, 4, 'Genèse 37:4', 'Quand ses frères virent que leur père l’aimait plus qu’eux, ils se mirent à le haïr, et ils ne pouvaient plus lui parler gentiment.')
+        + '<br><br>' + wolVerse(1, 39, 2, 'Genèse 39:2', 'Mais Jéhovah était avec Joseph. C’est pourquoi Joseph réussissait tout ce qu’il entreprenait et fut placé à la tête de la maison de son maître, l’Égyptien.')
+        + '<br><br>' + wolVerse(1, 39, 9, 'Genèse 39:9, 10', 'Il n’y a personne au-dessus de moi dans cette maison, et il ne m’a rien refusé, sauf toi, parce que tu es sa femme. Comment donc pourrais-je agir aussi mal et pécher contre Dieu ? » 10 Elle parlait à Joseph jour après jour, mais il n’accepta jamais de coucher avec elle ni de rester avec elle.')
+        + '<br><br>' + wolVerse(1, 39, 21, 'Genèse 39:21', 'Cependant, Jéhovah continuait d’être avec Joseph et de lui manifester son amour fidèle. Il lui fit gagner l’approbation du chef de la prison.')
+    },
+    {
+      titre: 'Contexte — Chronologie',
+      texte: 'Dates données par les publications (tableau de l’étude « Toute Écriture », <i>si</i> p. 294 ; Index des publications, article « Dates ») :<br>• <b>1767 av. n. è.</b> — naissance de Joseph ; « Jacob avait sans doute 91 ans » (<i>it-2</i> « Joseph »).<br>• <b>1750</b> — Joseph, 17 ans, est vendu comme esclave.<br>• <b>1739</b> — Joseph, 28 ans, interprète en prison les rêves de l’échanson et du panetier ; « quelque 11 années s’étaient déjà écoulées depuis qu’il avait été vendu » (<i>it-2</i> « Joseph »). L’échanson l’oublie pendant deux ans.<br>• <b>1738</b> — mort d’Isaac, à 180 ans.<br>• <b>1737</b> — Joseph, 30 ans, devient premier ministre d’Égypte.<br>• <b>1728</b> — Jacob, 130 ans, entre en Égypte avec toute sa famille, dans la deuxième année de la famine.<br>• <b>1711</b> — mort de Jacob, à 147 ans, après 17 ans en Égypte.<br>• <b>1657</b> — mort de Joseph, à 110 ans ; il « vécut encore 54 ans environ après la mort de son père » (<i>it-2</i> « Joseph »).<br><b>À retenir :</b> environ 13 ans d’esclavage et de prison séparent la citerne du palais. Les publications ne datent pas les sept années d’abondance, et elles n’identifient pas le pharaon : la chronologie égyptienne de cette époque est « si confuse » qu’on ne peut savoir avec certitude à quel pharaon de l’histoire profane il correspond (<i>it-2</i> « Pharaon »).',
+      reference: wolVerse(1, 37, 2, 'Genèse 37:2', 'Voici l’histoire de Jacob. Joseph, âgé de 17 ans, gardait le petit bétail avec les fils de Bila et les fils de Zilpa, les femmes de son père. Un jour, le jeune homme raconta à son père les mauvaises choses que ses frères faisaient.')
+        + '<br><br>' + wolVerse(1, 41, 46, 'Genèse 41:46', 'Il avait 30 ans quand il entra au service de Pharaon, le roi d’Égypte. Puis Joseph sortit de chez Pharaon et voyagea à travers toute l’Égypte.')
+        + '<br><br>' + wolVerse(1, 45, 6, 'Genèse 45:6', 'C’est la deuxième année de famine dans le pays, et pendant encore cinq ans, on ne labourera pas et on ne moissonnera pas.')
+        + '<br><br>' + wolVerse(1, 47, 9, 'Genèse 47:9', 'Jacob lui répondit : « Cela fait 130 ans que je vis en nomade. Les années de ma vie ont été peu nombreuses et angoissantes. Elles n’ont pas atteint le nombre des années de la vie de mes ancêtres, qui vivaient eux aussi en nomades. »')
+        + '<br><br>' + wolVerse(1, 50, 26, 'Genèse 50:26', 'Joseph mourut à l’âge de 110 ans. Il fut embaumé et mis dans un cercueil en Égypte.')
+    },
+    {
+      titre: 'Contexte — Les personnages',
+      texte: '<b>Jacob (Israël)</b> — père d’au moins 14 enfants de quatre femmes. Entre Léa et Rachel, « une rivalité acharnée a alors opposé les deux femmes, et leur jalousie a déteint sur tous les enfants » (<i>w14 1/8</i> p. 10-14). Le vêtement qu’il fait faire pour Joseph était « probablement le genre d’habit que portaient les princes ».<br><b>Rachel</b> — mère de Joseph et de Benjamin, morte en donnant naissance à Benjamin ; Jacob « chérissait ses enfants plus que tous les autres » (<i>it-2</i> « Rachel »).<br><b>Ruben</b> — l’aîné. Il cherche à sauver Joseph et à le renvoyer à son père. Comme il avait perdu son droit d’aînesse, ses frères ont peut-être vu dans le vêtement de Joseph le signe que ce droit allait lui revenir (<i>w14 1/8</i>, note).<br><b>Juda</b> — il veut épargner la vie de Joseph mais propose de le vendre, un « grave péché qui tourmenta longtemps sa conscience » (<i>it-2</i> « Juda »). Plus de 20 ans après, il offre de devenir esclave à la place de Benjamin : « il n’est plus le même homme » (<i>w15 1/5</i> p. 12-15).<br><b>Siméon</b> — le deuxième fils ; la Bible ne dit pas s’il a mené le complot, mais c’est lui que Joseph fait lier (<i>it-2</i> « Siméon »).<br><b>Putiphar</b> — « fonctionnaire de cour et chef de la garde personnelle de Pharaon ». Le mot hébreu <i>saris</i> désigne ici « un fonctionnaire de confiance du trône » et non un eunuque au sens courant : « Potiphar était un militaire […] et il était marié » (<i>it-2</i> « Potiphar »).<br><b>La femme de Putiphar</b> — « épouse coquette d’un fonctionnaire de cour riche et influent ». Repoussée, « sa fierté blessée lui donne encore plus de hargne pour faire céder Joseph » ; son attitude « ressemble à celle de Satan » quand il a tenté Jésus (<i>w14 1/11</i> p. 12-15).<br><b>L’échanson et le panetier</b> — deux dignitaires importants : « l’échanson était souvent un conseiller de confiance du roi » (<i>w15 1/2</i> p. 12-15).<br><b>Asnath</b> — fille de Potiféra, prêtre d’On (Héliopolis), « probablement du dieu-soleil Râ » (<i>it-2</i> « Potiphéra ») ; mère de Manassé et d’Éphraïm.',
+      reference: wolVerse(1, 37, 3, 'Genèse 37:3', 'Israël aimait Joseph plus que tous ses autres fils parce qu’il l’avait eu dans sa vieillesse, et il lui fit faire un beau et long vêtement.')
+        + '<br><br>' + wolVerse(1, 37, 21, 'Genèse 37:21, 22', 'Quand Ruben entendit cela, il chercha à le sauver. Il dit : « Ne lui ôtons pas la vie. » 22 Il ajouta : « Ne versez pas le sang. Jetez Joseph dans cette citerne du désert, mais ne lui faites pas de mal. » Son but était de le sauver et de le renvoyer vers son père.')
+        + '<br><br>' + wolVerse(1, 37, 26, 'Genèse 37:26, 27', 'Alors Juda dit à ses frères : « À quoi nous servirait-il de tuer notre frère et de cacher son meurtre ? 27 Vendons-le aux Ismaélites, mais ne lui faisons pas de mal. Après tout, c’est notre frère, notre chair. » Ses frères l’écoutèrent.')
+        + '<br><br>' + wolVerse(1, 44, 33, 'Genèse 44:33, 34', 'Donc, s’il te plaît, mon maître, que je devienne ton esclave à la place du garçon, et que le garçon reparte avec ses frères. 34 Je ne peux pas retourner vers mon père sans le garçon. Je ne supporterais pas de voir le malheur frapper mon père ! »')
+    },
+    {
+      titre: 'Contexte — L’Égypte et la géopolitique',
+      texte: '<b>Selon les publications :</b><br>• <b>La route :</b> « Shekèm se trouve à 80 kilomètres au nord de Hébrôn », et Dothân « 22 kilomètres plus au nord » : « peut-être quatre à cinq jours de marche » (<i>w14 1/8</i>). Par Dothân passait la route qui reliait Galaad à la côte et à l’Égypte, peut-être celle de la caravane (<i>it-1</i> « Dothân »).<br>• <b>L’esclave :</b> « des papyrus anciens indiquent que les esclaves syriens […] étaient très prisés en Égypte » (<i>it-2</i> « Joseph »).<br>• <b>La maison :</b> « les demeures égyptiennes étaient conçues de telle façon qu’il fallait en traverser la partie principale pour accéder aux magasins » : Joseph ne pouvait pas éviter la femme de son maître (<i>it-2</i> « Joseph »).<br>• <b>La cour :</b> « les titres des fonctionnaires, les mœurs, l’habillement, l’usage de la magie et beaucoup d’autres détails sont confirmés par les données que fournissent les monuments, les peintures et les écrits égyptiens », par exemple l’investiture de Joseph (<i>it-1</i> « Égypte »).<br>• <b>Goshen :</b> les Égyptiens détestent les bergers ; la famille de Jacob, installée à part, ne risque pas de se fondre parmi eux (<i>it-2</i> « Joseph »).<br><br><b>Histoire profane (éclairage historique, hors publications) :</b><br>• <b>L’époque :</b> dans la chronologie égyptienne conventionnelle, les années 1750-1728 av. n. è. correspondent au début de la XIII<sup>e</sup> dynastie, à la fin du Moyen Empire — environ un siècle avant la domination des Hyksos (XV<sup>e</sup> dynastie). Les publications jugent d’ailleurs « inutile » d’expliquer l’élévation de Joseph par des « rois-pasteurs » hyksos (<i>it-1</i> « Égypte »).<br>• <b>Des Sémites en Égypte :</b> la tombe de Khnoumhotep II à Beni Hassan (vers 1890 av. n. è.) montre 37 « Âamou » (Asiatiques) conduits par un chef nommé Abisha. Le Papyrus Brooklyn 35.1446 (entre 1809 et 1743 environ) liste les 95 serviteurs d’une maison égyptienne, dont 45 Asiatiques aux noms sémitiques. À Avaris (Tell el-Dab’a, Delta oriental), les fouilles de Manfred Bietak ont mis au jour une communauté venue de Canaan, avec de grandes demeures de dignitaires.<br>• <b>Le prix :</b> l’égyptologue Kenneth Kitchen relève qu’un esclave valait environ 20 sicles aux XIX<sup>e</sup>-XVIII<sup>e</sup> siècles av. n. è., et davantage ensuite ; d’autres rappellent que la Loi fixera justement 20 sicles pour un garçon de 5 à 20 ans — l’âge de Joseph.<br>• <b>La morale égyptienne :</b> l’Enseignement de Ptahhotep (texte de sagesse du Moyen Empire) met en garde : « Si tu veux faire durer l’amitié dans une maison où tu entres, comme maître, frère ou ami, garde-toi d’approcher les femmes » (trad. d’après B. Gunn). Mais Joseph ne refuse pas par prudence sociale : ce serait « pécher contre Dieu ».<br>• <b>Prudence :</b> la statue d’un dignitaire asiatique au vêtement rayé trouvée à Avaris n’est pas « la statue de Joseph » (hypothèse de David Rohl, que les fouilleurs ne retiennent pas). La « Stèle de la famine » de Sehel, qui parle de sept années de disette, date de l’époque ptolémaïque. Le « Conte des deux frères », où une femme tente de séduire son beau-frère puis l’accuse, est copié vers 1200 av. n. è. Plusieurs parallèles souvent cités (collier d’or, 70 jours de deuil) sont surtout documentés à des époques plus tardives : les historiens en débattent.',
+      reference: wolVerse(1, 37, 28, 'Genèse 37:28', 'Ils sortirent donc Joseph de la citerne et le vendirent pour 20 pièces d’argent aux marchands madianites quand ils passèrent près d’eux. Les Ismaélites emmenèrent Joseph en Égypte.')
+        + '<br><br>' + wolVerse(3, 27, 5, 'Lévitique 27:5', 'Si l’âge est de 5 à 20 ans, la valeur d’un garçon sera de 20 sicles et celle d’une fille de 10 sicles.')
+        + '<br><br>' + wolVerse(1, 41, 42, 'Genèse 41:42, 43', 'Puis Pharaon enleva sa bague à cacheter et la mit au doigt de Joseph, le fit habiller de vêtements de fin lin et lui mit un collier d’or autour du cou. 43 De plus, il le fit monter sur son deuxième char d’honneur, et on criait devant lui : « Avrek ! » C’est ainsi qu’il lui donna autorité sur toute l’Égypte.')
+        + '<br><br>' + wolVerse(1, 46, 34, 'Genèse 46:34', 'vous devrez répondre : “Seigneur, nous sommes éleveurs depuis notre jeunesse, comme nos ancêtres.” Ainsi, vous pourrez habiter dans la région de Goshen, car les Égyptiens détestent les gardiens de moutons. »')
+    },
+    {
+      titre: 'Contexte — Ce que ressentent les personnages',
+      texte: '<b>Les frères :</b> la jalousie tourne à la haine, puis au complot. Vingt ans plus tard, la culpabilité remonte — « nous avons vu sa détresse quand il nous suppliait » — et, même après la mort de Jacob, ils restent « tourmentés par des consciences coupables » (<i>it-2</i> « Joseph »).<br><b>Joseph :</b> sur la route de l’Égypte, « il n’arrive pas à croire que ses propres frères ont été à deux doigts de le tuer » ; « il a bien du mal à retenir ses larmes » (<i>w14 1/8</i>). Il n’est pas « immunisé contre les désirs ou les pulsions propres aux jeunes hommes », mais « l’idée même de coucher avec cette femme le choque profondément » (<i>w14 1/11</i>). En prison, il demande à l’échanson de se souvenir de lui ; il est « esclave et prisonnier depuis une dizaine d’années » (<i>w15 1/2</i>). Il ne dénonce pas ses frères : « probablement pour ne pas présenter sa famille sous un mauvais jour, Joseph préféra taire l’identité de ses ravisseurs » (<i>it-2</i> « Joseph »). Devant eux, il pleure à trois reprises, et finit par pleurer si fort que la maison de Pharaon l’entend. En nommant son fils Manassé, il dit que Dieu lui a fait « oublier toutes [ses] souffrances ».<br><b>Jacob :</b> il « ne se laissait pas consoler » ; plus tard, il crie que tout lui arrive « à [lui] », et résume sa vie en années « peu nombreuses et angoissantes ». Revoyant Joseph, il dit : « Maintenant, je peux mourir »',
+      reference: wolVerse(1, 37, 34, 'Genèse 37:34, 35', 'Alors Jacob déchira ses vêtements, mit de la toile de sac autour de sa taille et mena deuil sur son fils pendant de nombreux jours. 35 Ses fils et ses filles essayaient de le réconforter, mais il ne se laissait pas consoler. Il disait : « Je descendrai dans la Tombe en pleurant mon fils ! » Et il continua de pleurer son fils.')
+        + '<br><br>' + wolVerse(1, 40, 14, 'Genèse 40:14, 15', 'Mais quand tout ira bien pour toi, souviens-toi de moi. S’il te plaît, fais preuve d’amour fidèle envers moi en parlant de moi à Pharaon pour me faire sortir de cet endroit. 15 En fait, j’ai été enlevé au pays des Hébreux et je n’ai rien fait ici pour mériter la prison. »')
+        + '<br><br>' + wolVerse(1, 41, 51, 'Genèse 41:51', 'Joseph appela le premier Manassé, car, disait-il, « Dieu m’a fait oublier toutes mes souffrances et toute la famille de mon père ».')
+        + '<br><br>' + wolVerse(1, 42, 21, 'Genèse 42:21', 'Ils se dirent l’un à l’autre : « Il est clair que nous sommes punis pour ce que nous avons fait à notre frère. Nous avons vu sa détresse quand il nous suppliait d’avoir pitié de lui, mais nous ne l’avons pas écouté. Voilà pourquoi nous sommes aujourd’hui dans la détresse. »')
+        + '<br><br>' + wolVerse(1, 42, 36, 'Genèse 42:36', 'Alors Jacob s’écria : « C’est moi que vous avez privé d’enfants ! Je n’ai plus Joseph, je n’ai plus Siméon, et vous allez me prendre Benjamin ! Toutes ces choses m’arrivent à moi ! »')
+        + '<br><br>' + wolVerse(1, 43, 30, 'Genèse 43:30', 'Puis Joseph se dépêcha de sortir, car il était bouleversé de voir son frère. Cherchant un endroit pour pleurer, il entra dans une autre pièce et, là, il fondit en larmes.')
+        + '<br><br>' + wolVerse(1, 45, 1, 'Genèse 45:1, 2', 'Alors Joseph ne put maîtriser son émotion plus longtemps devant ses serviteurs. Il leur ordonna : « Sortez tous ! » Et quand il fut seul avec ses frères, il leur dit qui il était. 2 Et il se mit à pleurer si fort que les Égyptiens l’entendirent et la maison de Pharaon aussi.')
+        + '<br><br>' + wolVerse(1, 46, 30, 'Genèse 46:30', 'Puis Israël dit à Joseph : « Maintenant, je peux mourir, puisque j’ai vu ton visage et que je sais que tu es toujours vivant. »')
+        + '<br><br>' + wolVerse(1, 50, 17, 'Genèse 50:17', '“Voici ce que vous direz à Joseph : ‘Je t’en supplie, pardonne, s’il te plaît, la faute de tes frères et le péché qu’ils ont commis en te faisant autant de mal.’” Et maintenant pardonne-nous, s’il te plaît, nous qui servons le Dieu de ton père. » En entendant ces paroles, Joseph pleura.')
+    },
+    {
+      titre: 'Examine les illustrations',
+      texte: '<b>Scène principale :</b> Joseph, serviteur dans la maison de Putiphar, avance une cruche entre les mains, le regard droit devant lui ; derrière un pilier, la femme de Putiphar le suit des yeux en souriant. La tentation surgit en plein travail ordinaire, et elle insiste ; Joseph, lui, ne se retourne pas. <br><b>A :</b> Joseph, vêtu en haut dignitaire, un rouleau à la main, donne des instructions — l’ancien esclave gère maintenant la crise de tout un pays. <br><b>B :</b> des Israélites portent le cercueil de Joseph : même à 110 ans, il était sûr que Dieu ferait sortir son peuple d’Égypte. <br><b>C, D, E :</b> une jeune fille s’éloigne de camarades qui vapotent, un couple à la réception d’un hôtel, un jeune seul avec son smartphone le soir — trois situations où, comme Joseph, on est loin de chez soi et où personne de la famille ne voit ce que l’on fait.',
+      reference: wolVerse(1, 39, 12, 'Genèse 39:12', 'Alors elle l’attrapa par son vêtement, en disant : « Couche avec moi ! » Mais il laissa son vêtement dans sa main et s’enfuit dehors.')
+    },
+    {
+      titre: 'Pour aller plus loin',
+      texte: '<b>1. Quels détails appuient l’authenticité de ce récit de la Genèse ?</b> (<i>g</i> 11/10 15 § 2)<br>Réveillez-vous ! cite J. Duncan : le rédacteur « connaissait extrêmement bien la langue, les coutumes, les croyances, la vie à la cour, l’étiquette et le fonctionnariat égyptiens » ; il « fait un emploi exact des titres en usage à l’époque dont il parle » et, devant Pharaon, fait « observer la bonne étiquette de cour » à ses personnages. Exemple donné par le même article : avant de paraître devant Pharaon, Joseph se rase, alors que les Hébreux portaient la barbe, car pour les Égyptiens les poils du visage « dénotaient la malpropreté ».<br><br><b>2. Comment Joseph savait-il qu’aux yeux de Jéhovah, il ‘agirait mal’ s’il commettait un adultère ?</b> (Gen. 39:9 ; <i>w22.08</i> 26 § 2)<br>La Loi, qui dira « Tu ne dois pas commettre d’adultère », « ne serait donnée aux Israélites que 200 ans plus tard ». « Mais Joseph connaissait suffisamment Jéhovah pour savoir ce qu’il considérait comme un acte sexuel immoral » : il savait que le mariage devait être l’union d’un homme et d’une femme, et on lui avait « certainement raconté » comment Jéhovah avait protégé Sara, puis Rébecca. « Comme il aimait son Dieu, il aimait également ses normes de justice et était déterminé à les suivre. »<br><br><b>3. Pourquoi Jéhovah a-t-il permis que Joseph devienne le second personnage d’Égypte ?</b> (<i>w96</i> 1/5 11 § 4) — illustration A<br>« La suite des événements a clairement montré que Jéhovah avait dirigé les choses de façon à pouvoir utiliser Joseph pour préserver la ‘semence d’Abraham’, ses descendants, en vue de la réalisation de Ses desseins. » La Tour de Garde de janvier 2023 le précise : Joseph était « en mesure de sauver sa famille et ainsi de préserver la succession de descendants qui mènerait au Messie ».<br><br><b>4. Qu’est-ce qui indique que la foi de Joseph n’a jamais faibli, même quand il avait 110 ans ?</b> (Gen. 50:25, 26 ; <i>w07</i> 1/6 28 § 10-11) — illustration B<br>À 110 ans, Joseph donne un ordre au sujet de ses ossements : les emporter hors d’Égypte. « Cet ordre a donné une lueur d’espoir supplémentaire aux Israélites au cours des nombreuses années de dur esclavage qu’ils ont connues après la mort de Joseph. Cela leur donnait l’assurance que leur délivrance viendrait. » Moïse, à 80 ans, a eu « le privilège d’emporter les ossements de Joseph hors d’Égypte » : un « acte de foi tout simple » qui a fortifié des générations.',
+      reference: wolVerse(1, 41, 14, 'Genèse 41:14', 'Alors Pharaon envoya chercher Joseph. On le fit vite sortir de la prison. Il se rasa, changea de vêtements et se présenta devant Pharaon.')
+        + '<br><br>' + wolVerse(2, 20, 14, 'Exode 20:14', '« Tu ne dois pas commettre d’adultère.')
+        + '<br><br>' + wolVerse(1, 2, 24, 'Genèse 2:24', 'C’est pourquoi l’homme quittera son père et sa mère, et il s’attachera à sa femme, et ils deviendront une seule chair.')
+        + '<br><br>' + wolVerse(1, 20, 6, 'Genèse 20:6', 'Le vrai Dieu lui répondit dans le rêve : « Je sais que tu as agi avec un cœur honnête. C’est pour cela que je t’ai retenu de pécher contre moi et que je ne t’ai pas permis de la toucher.')
+        + '<br><br>' + wolVerse(1, 26, 11, 'Genèse 26:11', 'Alors Abimélech donna cet avertissement à tout le peuple : « Celui qui touchera à cet homme et à sa femme sera puni de mort ! »')
+        + '<br><br>' + wolVerse(1, 45, 7, 'Genèse 45:7, 8', 'Mais Dieu m’a envoyé ici en avant de vous pour vous sauver d’une manière extraordinaire, pour que vos familles ne disparaissent pas. 8 Ainsi, ce n’est pas vous qui m’avez envoyé ici, mais c’est le vrai Dieu. Il m’a établi comme conseiller principal de Pharaon, comme seigneur sur toute sa maison et comme chef sur toute l’Égypte.')
+        + '<br><br>' + wolVerse(1, 50, 25, 'Genèse 50:25, 26', 'Puis il fit jurer les fils d’Israël et leur dit : « Dieu s’occupera de vous, c’est certain. Vous devrez emporter mes ossements hors d’ici. » 26 Joseph mourut à l’âge de 110 ans. Il fut embaumé et mis dans un cercueil en Égypte.')
+        + '<br><br>' + wolVerse(2, 13, 19, 'Exode 13:19', 'Moïse emporta aussi les ossements de Joseph avec lui, car Joseph avait fait jurer solennellement les fils d’Israël, en disant : « Dieu s’occupera de vous, c’est certain, et vous devrez emporter mes ossements hors d’ici. »')
+        + '<br><br>' + wolVerse(58, 11, 22, 'Hébreux 11:22', 'Par la foi, Joseph, à la fin de sa vie, a parlé de l’exode des fils d’Israël et a donné des instructions au sujet de ses ossements.')
+    },
+    {
+      titre: 'Tire des leçons',
+      texte: '<b>Dans l’épreuve :</b> plutôt que de sombrer, Joseph travaille de son mieux et « donne ainsi à Jéhovah de nombreuses occasions de le bénir » (<i>w14 1/11</i>). <br><b>Face à la tentation :</b> il avait décidé d’avance que céder serait « pécher contre Dieu » ; la femme revient « jour après jour », il refuse à chaque fois, et quand la pression devient physique, il s’enfuit sans négocier. <br><b>Loin de chez soi — à l’école (C), en voyage (D), sur son smartphone (E) :</b> la fidélité de Joseph ne dépendait pas du regard de sa famille. <br><b>Humilité :</b> Joseph ne s’attribue pas le mérite des interprétations, il le rend à Dieu. <br><b>Si un frère ou une sœur te traite mal :</b> Joseph éprouve d’abord ses frères, car « la vraie repentance implique bien plus que le regret des conséquences d’une action méchante » (<i>w15 1/5</i>) ; puis il pardonne, refuse de se mettre « à la place de Dieu » et continue de les nourrir. <br><b>Imiter son courage :</b> dire non fermement, même quand cela peut coûter cher, puis endurer les conséquences en continuant à bien faire ce qu’on nous confie.',
+      reference: wolVerse(46, 6, 18, '1 Corinthiens 6:18', 'Fuyez toute conduite sexuelle immorale ! N’importe quel autre péché que peut commettre un homme est extérieur à son corps, mais celui qui commet des actes sexuels immoraux pèche contre son propre corps.')
+        + '<br><br>' + wolVerse(1, 41, 16, 'Genèse 41:16', 'Joseph lui répondit : « Ce n’est pas moi, mais c’est Dieu qui annoncera un message favorable à Pharaon. »')
+        + '<br><br>' + wolVerse(1, 45, 4, 'Genèse 45:4, 5', 'Joseph leur dit : « Venez près de moi, s’il vous plaît. » Et ils s’approchèrent de lui. Il ajouta : « Je suis Joseph, votre frère que vous avez vendu pour l’Égypte. 5 Mais maintenant, ne soyez pas angoissés et ne vous reprochez pas les uns aux autres de m’avoir vendu, car c’est Dieu qui m’a envoyé ici en avant de vous pour préserver la vie.')
+        + '<br><br>' + wolVerse(1, 50, 19, 'Genèse 50:19-21', 'Joseph leur répondit : « N’ayez pas peur. Suis-je à la place de Dieu ? 20 Vous, vous vouliez me faire du mal, mais Dieu avait l’intention de changer ce mal en bien et de préserver la vie de beaucoup de gens, comme c’est le cas aujourd’hui. 21 N’ayez donc pas peur. Je continuerai à vous fournir de la nourriture, à vous et à vos jeunes enfants. » Ainsi il les consola et les rassura.')
+    },
+    {
+      titre: 'Élargis ta réflexion',
+      texte: '<b>Sur Jéhovah :</b> il n’a pas empêché les épreuves de Joseph, mais il est resté avec lui et lui a manifesté son amour fidèle à chaque étape. La Tour de Garde de janvier 2023 le nuance : Jéhovah n’agit pas « sur chaque évènement de notre vie de manière à ce que toutes nos épreuves aient une raison d’être » ; mais quand nous sommes éprouvés, il « en est parfaitement conscient », écoute nos appels à l’aide et « nous aide à endurer avec courage ». Pour Joseph, « Jéhovah a provoqué un retournement de situation pour accomplir sa volonté ». <br><b>Sur son projet :</b> en préservant la famille de Jacob pendant la famine, Jéhovah protégeait la lignée d’Abraham qui mènerait au Messie — rien, ni la haine des frères ni la prison, n’a pu faire échouer ce qu’il avait annoncé. <br><b>Pour l’avenir :</b> qu’aimerais-tu demander à Joseph quand il sera ressuscité ?',
+      reference: wolVerse(19, 105, 17, 'Psaume 105:17-19', 'Il envoya en avant d’eux un homme, Joseph, qui fut vendu comme esclave. 18 On lui lia les pieds par des entraves, on lui mit le cou dans les fers ; 19 la déclaration de Jéhovah, c’est ce qui l’affina, jusqu’au moment où la parole de Dieu s’accomplit.')
+        + '<br><br>' + wolVerse(44, 7, 9, 'Actes 7:9, 10', 'Et les chefs de famille sont devenus jaloux de Joseph ; ils l’ont vendu, et il a été emmené en Égypte. Mais Dieu était avec lui, 10 et il l’a délivré de toutes ses épreuves ; il lui a donné de la sagesse et lui a permis de gagner la faveur de Pharaon, le roi d’Égypte. Et celui-ci lui a confié la charge de gouverner l’Égypte et toute sa maison.')
+        + '<br><br>' + wolVerse(1, 50, 20, 'Genèse 50:20', 'Vous, vous vouliez me faire du mal, mais Dieu avait l’intention de changer ce mal en bien et de préserver la vie de beaucoup de gens, comme c’est le cas aujourd’hui.')
+    },
+    {
+      titre: 'À découvrir aussi',
+      texte: '<b>Article :</b> « Jéhovah peut t’aider à endurer avec courage » (<i>w23.01</i> 14-19) — Jéhovah n’a pas empêché que Joseph ait des épreuves, mais il l’a aidé à les endurer : comment peut-il t’aider toi aussi ? <br><b>Vidéo pour les enfants :</b> « Endure malgré les injustices » (1:31). <br><b>Série « Imitez leur foi » sur Joseph :</b> « Écoutez, s’il vous plaît, ce rêve » (<i>w14 1/8</i>) ; « Comment pourrais-je commettre ce grand mal ? » (<i>w14 1/11</i>) ; « Les interprétations n’appartiennent-elles pas à Dieu ? » (<i>w15 1/2</i>) ; « Suis-je à la place de Dieu ? » (<i>w15 1/5</i>). <br><b>Étude perspicace :</b> article « Joseph » (<i>it-2</i> p. 48-54).',
+      reference: '<a href="https://wol.jw.org/fr/wol/d/r30/lp-f/1102025908" target="_blank" rel="noopener">Chapitre 8 sur wol.jw.org</a>'
+        + '<br><a href="https://wol.jw.org/fr/wol/d/r30/lp-f/2023242" target="_blank" rel="noopener">w23.01 — Jéhovah peut t’aider à endurer avec courage</a>'
+        + '<br><a href="https://wol.jw.org/fr/wol/d/r30/lp-f/2014568" target="_blank" rel="noopener">Imitez leur foi — Joseph (1)</a>'
+        + '<br><a href="https://wol.jw.org/fr/wol/d/r30/lp-f/2014807" target="_blank" rel="noopener">Imitez leur foi — Joseph (2)</a>'
+        + '<br><a href="https://wol.jw.org/fr/wol/d/r30/lp-f/2015086" target="_blank" rel="noopener">Imitez leur foi — Joseph (3)</a>'
+        + '<br><a href="https://wol.jw.org/fr/wol/d/r30/lp-f/2015327" target="_blank" rel="noopener">Imitez leur foi — Joseph (4)</a>'
+        + '<br><a href="https://wol.jw.org/fr/wol/d/r30/lp-f/1200002515" target="_blank" rel="noopener">Étude perspicace — Joseph</a>'
+    }
+  ],
+  questions: [
+    'Pourquoi peut-on dire que Joseph a été courageux ? (question de réflexion du chapitre)',
+    'Sachant que la femme de son maître peut lui rendre la vie très pénible, qu’est-ce qui permet à Joseph de refuser ses avances ?',
+    'Comment Jéhovah a-t-il fait réussir ce que Joseph entreprenait alors qu’il était esclave, puis en prison ?',
+    'Comment peux-tu imiter le courage de Joseph ?',
+    'Qu’est-ce que ce récit t’apprend sur Jéhovah ?',
+    'Comment Jéhovah peut-il t’aider à endurer avec courage ?'
+  ],
+  ressource: 'Marche courageusement avec Dieu, chapitre 8'
+}];
+
 /* ══ LIVRE « MARCHE COURAGEUSEMENT AVEC DIEU » (onglet MCAD) ═══════════════
    54 chapitres en 3 parties, table des matières extraite directement du PDF
    local de l'utilisateur (wcg_F.pdf, via PyMuPDF) le 2026-07-20 — fiable,
@@ -1078,6 +1251,25 @@ function saveWCGPointer(){
   } catch(e) {}
 }
 function saveH(){try{localStorage.setItem(SK,JSON.stringify(G.history));}catch(e){}}
+// Pose les fiches de SEED_STUDIES dans l'historique au premier lancement.
+// Une fiche déjà installée n'est jamais reposée (même supprimée depuis), et
+// une fiche déjà présente par la sync n'est pas dupliquée (même id fixe).
+function installSeedStudies(){
+  var done=[];
+  try{ var raw=localStorage.getItem(SK+'seeds'); if(raw) done=JSON.parse(raw)||[]; }catch(e){}
+  var added=false;
+  SEED_STUDIES.forEach(function(s){
+    if(done.indexOf(s.seed)!==-1) return;
+    done.push(s.seed);
+    var deja=G.history.some(function(h){ return String(h.id)===String(s.id); });
+    if(!deja){
+      G.history=[JSON.parse(JSON.stringify(s))].concat(G.history).sort(function(a,b){ return b.id-a.id; });
+      added=true;
+    }
+  });
+  try{ localStorage.setItem(SK+'seeds',JSON.stringify(done)); }catch(e){}
+  if(added) saveH();
+}
 function saveN(){try{localStorage.setItem(SK+'n',JSON.stringify(G.jwNotes));}catch(e){}}
 function saveSuj(){try{localStorage.setItem(SK+'suj',JSON.stringify(G.sujets));}catch(e){}}
 function saveBloodNotes(){
@@ -2757,6 +2949,7 @@ function renderSync() {
 /* ══ INIT ════════════════════════════════════════════════════════════════ */
 setTimeout(async function() {
   load();
+  installSeedStudies();
   renderHist(); renderJWNotes(); renderSync(); updateUI();
   // Sync automatique au démarrage si connecté
   if (G.ghToken && G.ghGistId) {
