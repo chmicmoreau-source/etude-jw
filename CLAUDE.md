@@ -53,9 +53,27 @@ Note historique : une version antérieure de ce fichier documentait des modules 
 
 Le **Point actualité n° 6 du Collège central (2026)** a modifié la position sur les composants du sang. L'onglet Sang a été aligné dessus le 2026-09-20. Références officielles utilisées (toutes publiées en français) :
 
-- Vidéo : `jw.org/fr/actualites/region/international/Point-actualité-no-6-du-Collège-central-2026/`
-- Questions des lecteurs : « Comment les Témoins de Jéhovah montrent-ils du respect pour la vie ? » (`.../bibliothèque/rubriques/divers/temoins-de-jehovah-considerent-sang/`)
-- Tableau « Composants et produits dérivés du sang total » (`mrt-F 149 9/26`, PDF, docid `501100138`)
+| Document | Référence exacte | docId wol |
+|---|---|---|
+| Point actualité n° 6 du Collège central (vidéo, 14 min 34 s) | jw.org, 18 sept. 2026 | — |
+| « Comment les Témoins de Jéhovah montrent-ils du respect pour la vie ? » (Questions des lecteurs) | **pas encore paru en *Tour de Garde*** — l'article annonce qu'il « paraîtra dans un prochain numéro » | — |
+| Tableau « Composants et produits dérivés du sang total » (PDF) | `mrt-F 149 9/26` | pub-media docid `501100138` |
+| Point actualité n° 2 du Collège central — sang autologue | jw.org, 2026 | — |
+| « Le point de vue de Dieu sur le sang » | `lff leçon 39` | `1102021239` |
+| « Préparons-nous dès à présent à une urgence médicale » | `mwb23 janvier p. 7` | `202023010` |
+| « Connaissez-vous les choix qui s'offrent à vous ? » | `km 1/11 p. 2` | `202011004` |
+| Questions des lecteurs — emploi lié au sang | `w99 15/4 p. 28-30` | `1999286` |
+| Questions des lecteurs — fractions (avant 2026) | `w00 15/10 p. 30-31` | `2000767` |
+| Questions des lecteurs — fractions (avant 2026) | `w04 15/6 p. 29-31` | `2004448` |
+| « Les fractions sanguines et les techniques opératoires » (avant 2026) | `lv p. 215-218 § 1` | `1102008086` |
+| « Les Témoins de Jéhovah acceptent-ils les traitements médicaux ? » | `w11 1/2 p. 27` | `2011090` |
+| Brochure « Les Témoins de Jéhovah et la question du sang » (1977) | `bq p. 3-64` | `1101977010` |
+
+Les références ont été relevées le 2026-09-20 dans le fil de navigation de chaque document wol
+(`<div id="publicationNavigation">`), pas déduites. **Ne jamais deviner un docId wol** : `1999283`
+avait été supposé pour la Question des lecteurs de 1999 et pointait en réalité sur « Vous montrez-vous
+reconnaissant ? ». Pour retrouver un article, passer par le sommaire du numéro :
+`wol.jw.org/fr/wol/library/r30/lp-f/toutes-les-publications/la-tour-de-garde/la-tour-de-garde-<année>/<15-avril>`.
 
 **Ce qui ne change pas** : pas de transfusion de sang total, pas de don de sang destiné à une transfusion de sang total, pas de consommation de sang ni de viande non saignée, et le respect de la vie (guerre, avortement, imprudence).
 
