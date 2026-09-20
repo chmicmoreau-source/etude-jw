@@ -41,11 +41,29 @@ Ces règles viennent d'une compatibilité Android Chrome testée et doivent êtr
 - **JW Notes** — import d'un export `.jwlibrary` (zip + SQLite, décodé en local via JSZip + sql.js) pour consulter ses notes JW Library dans l'app.
 - **Sync** — connexion GitHub (Gist privé) pour synchroniser l'historique des études entre appareils ; carte de génération IA retirée (voir plus bas).
 - **Réunion** — préparation de la réunion de semaine (voir section dédiée).
+- **Sang** — « Sang & traitements » : base scripturaire (`BLOOD_DOCTRINE`), principes de décision personnelle (`BLOOD_PRINCIPLES`), fiche de décisions par produit/procédé (`BLOOD_ITEMS`) et liens officiels (`BLOOD_LINKS`). **Les décisions de l'utilisateur (`G.bloodChoices`, clé `jw_dbx_v1bloodChoices`, et le texte libre `jw_dbx_v1blood`) restent strictement locales : jamais envoyées au Gist, jamais écrites dans le dépôt.** Mis à jour le 2026-09-20 d'après le Point actualité n° 6 du Collège central (18 sept. 2026) — voir section dédiée.
+- **Sujet** — suivi des discours / démonstrations / devoirs en préparation (`G.sujets`), inclus dans l'export vers JW Library.
 - **MCAD** (ajouté 2026-07-20) — fiche d'étude hebdomadaire pour le livre « Marche courageusement avec Dieu » (`WCG_CHAPTERS`, 54 chapitres en 3 parties, méthode en 8 étapes `WCG_STEPS`). Avance d'un chapitre par semaine (`autoPrepareWCG()`, throttle 6h comme le module Réunion), génération via `runWCGStudy()` — calqué sur `runStudy()` (mêmes briques : Pollinations, résolution TMN via `window.resolveBibleReference`, retry). Les fiches sont de simples entrées `G.history` (`categorie:'mcad'`), donc affichées dans Études et synchronisées via le Gist existant sans code de sync dédié. Table des matières extraite directement du PDF local de l'utilisateur (via PyMuPDF, pas de wol.jw.org) — fiable.
 
 **Stockage :** `localStorage`, préfixe de clé `jw_dbx_v1` (historique des études, notes JW, token/Gist GitHub, pointeur de chapitre MCAD, historique du module Réunion sous des clés `wk:*`).
 
-Note historique : une version antérieure de ce fichier documentait des modules « Perle Spirituelle », « Questions des lecteurs », « Onglet Sang », « École du ministère » et une clé `jw_v6` — ils ne correspondent plus au code actuel du dépôt et ont été retirés de cette documentation en 2026-07 pour éviter toute confusion. S'ils doivent être réintroduits, ce sera un projet à part entière.
+Note historique : une version antérieure de ce fichier documentait des modules « Perle Spirituelle », « Questions des lecteurs », « École du ministère » et une clé `jw_v6` — ils ne correspondent plus au code actuel du dépôt et ont été retirés de cette documentation en 2026-07 pour éviter toute confusion. S'ils doivent être réintroduits, ce sera un projet à part entière.
+
+## Position sur le sang — mise à jour du 18 septembre 2026
+
+Le **Point actualité n° 6 du Collège central (2026)** a modifié la position sur les composants du sang. L'onglet Sang a été aligné dessus le 2026-09-20. Références officielles utilisées (toutes publiées en français) :
+
+- Vidéo : `jw.org/fr/actualites/region/international/Point-actualité-no-6-du-Collège-central-2026/`
+- Questions des lecteurs : « Comment les Témoins de Jéhovah montrent-ils du respect pour la vie ? » (`.../bibliothèque/rubriques/divers/temoins-de-jehovah-considerent-sang/`)
+- Tableau « Composants et produits dérivés du sang total » (`mrt-F 149 9/26`, PDF, docid `501100138`)
+
+**Ce qui ne change pas** : pas de transfusion de sang total, pas de don de sang destiné à une transfusion de sang total, pas de consommation de sang ni de viande non saignée, et le respect de la vie (guerre, avortement, imprudence).
+
+**Ce qui devient une décision personnelle** : les quatre composants principaux tirés du sang d'autrui (globules rouges, globules blancs, plasma, plaquettes), au même titre que les fractions ; ainsi que le don de composants ou de fractions de son propre sang destiné à autrui.
+
+Versets cités par le point actualité et repris dans `BLOOD_PRINCIPLES` : Galates 6:5, Romains 14:12, 1 Corinthiens 4:6, 2 Corinthiens 1:24, 1 Timothée 1:5, Psaume 36:9.
+
+⚠️ Des **articles d'étude de la Tour de Garde** et une **mise à jour des instructions médicales (DPA)** sont annoncés : à intégrer quand ils paraîtront.
 
 ## Module Réunion (onglet « Réunion » de `index.html`)
 
